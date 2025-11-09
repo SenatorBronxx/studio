@@ -82,6 +82,7 @@ export default function HomePage() {
   const [isBoarding, setIsBoarding] = useState(false);
   const [boardedStop, setBoardedStop] = useState<string | null>(null);
   const [selectedSeat, setSelectedSeat] = useState<string | null>(null);
+  const [isSeatSheetOpen, setIsSeatSheetOpen] = useState(false);
 
   const handleSearch = () => {
     router.push(`/search?from=${encodeURIComponent(fromLocation)}&to=${encodeURIComponent(toLocation)}`);
@@ -115,6 +116,10 @@ export default function HomePage() {
             setSelectedSeat(prevSeat => prevSeat === seatId ? null : seatId);
         }
     }
+  }
+  
+  const handleConfirmSeat = () => {
+    setIsSeatSheetOpen(false);
   }
 
 
@@ -182,11 +187,11 @@ export default function HomePage() {
                     </Button>
                 </div>
 
-                <Sheet>
+                <Sheet open={isSeatSheetOpen} onOpenChange={setIsSeatSheetOpen}>
                     <SheetTrigger asChild>
                         <Button variant="outline" className='w-full'>
                             <Armchair className="mr-2 h-5 w-5" />
-                            View Seats
+                            {selectedSeat ? `Seat ${selectedSeat} Selected` : 'View Seats'}
                         </Button>
                     </SheetTrigger>
                     <SheetContent side="bottom" className="rounded-t-2xl">
@@ -198,6 +203,7 @@ export default function HomePage() {
                             selectedSeat={selectedSeat}
                             onSeatSelect={handleSeatSelect}
                             busPlate={selectedBus.plate}
+                            onConfirm={handleConfirmSeat}
                         />
                     </SheetContent>
                 </Sheet>

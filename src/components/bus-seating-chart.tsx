@@ -16,9 +16,10 @@ type BusSeatingChartProps = {
     selectedSeat: string | null;
     onSeatSelect: (seatId: string) => void;
     busPlate: string;
+    onConfirm: () => void;
 };
 
-export function BusSeatingChart({ seating, selectedSeat, onSeatSelect, busPlate }: BusSeatingChartProps) {
+export function BusSeatingChart({ seating, selectedSeat, onSeatSelect, busPlate, onConfirm }: BusSeatingChartProps) {
     return (
         <div className="p-4 space-y-6">
             <div className="bg-muted p-4 rounded-lg flex flex-col items-center justify-center gap-4">
@@ -76,7 +77,7 @@ export function BusSeatingChart({ seating, selectedSeat, onSeatSelect, busPlate 
                 </div>
             </div>
 
-            <Button className='w-full' disabled={!selectedSeat}>
+            <Button className='w-full' disabled={!selectedSeat} onClick={onConfirm}>
                 Confirm Seat {selectedSeat}
             </Button>
         </div>
