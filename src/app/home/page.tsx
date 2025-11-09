@@ -1,3 +1,4 @@
+
 'use client';
 
 import Image from 'next/image';
@@ -137,19 +138,24 @@ export default function HomePage() {
         
         // Update bus data
         setBuses(prevBuses => {
-            const newBuses = [...prevBuses];
-            const busIndex = newBuses.findIndex(b => b.id === selectedBus?.id);
-            if (busIndex !== -1 && selectedSeat) {
-                const seatIndex = newBuses[busIndex].seating.findIndex(s => s?.id === selectedSeat);
-                if(seatIndex !== -1) {
-                    const seatToUpdate = newBuses[busIndex].seating[seatIndex];
-                    if (seatToUpdate) {
-                       seatToUpdate.isOccupied = true;
-                    }
+            const newBuses = prevBuses.map(b => {
+                if (b.id === selectedBus?.id) {
+                    const newSeating = b.seating.map(s => {
+                        if (s && s.id === selectedSeat) {
+                            return { ...s, isOccupied: true };
+                        }
+                        return s;
+                    });
+                    const updatedBus = {
+                        ...b,
+                        seating: newSeating,
+                        capacity: { ...b.capacity, current: b.capacity.current + 1 },
+                    };
+                    setSelectedBus(updatedBus); // Update selectedBus with new data
+                    return updatedBus;
                 }
-                newBuses[busIndex].capacity.current += 1;
-                setSelectedBus(newBuses[busIndex]); // Update selectedBus with new data
-            }
+                return b;
+            });
             return newBuses;
         });
 
@@ -459,3 +465,5 @@ export default function HomePage() {
     </div>
   );
 }
+
+    
