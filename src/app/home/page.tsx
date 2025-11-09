@@ -3,45 +3,28 @@
 
 import Image from 'next/image';
 import {
-  Bus,
-  Clock,
-  MapPin,
-  Search,
-  Settings2,
-  User,
+  ChevronRight,
+  Menu,
+  Share2,
+  Star,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useSearchParams } from 'next/navigation';
+import { Card, CardContent } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 
 export default function HomePage() {
-  const mapImage = PlaceHolderImages.find((p) => p.id === 'accra-map');
+  const mapImage = PlaceHolderImages.find((p) => p.id === 'map-route');
+  const avatarImage = PlaceHolderImages.find((p) => p.id === 'user-avatar');
   const searchParams = useSearchParams();
   const userName = searchParams.get('name') || 'there';
 
-  const suggestions = [
-    {
-      name: 'National Museum',
-      icon: <MapPin className="text-green-500" />,
-      distance: '5km',
-    },
-    {
-      name: 'Labadi Beach',
-      icon: <MapPin className="text-green-500" />,
-      distance: '12km',
-    },
-    {
-      name: 'W.E.B. Du Bois Centre',
-      icon: <MapPin className="text-green-500" />,
-      distance: '8km',
-    },
-  ];
-
   return (
-    <div className="relative min-h-screen w-full bg-background font-sans">
+    <div className="relative min-h-screen w-full bg-gray-100 font-sans">
       {/* Map Background */}
-      <div className="absolute inset-0">
+      <div className="absolute inset-0 h-full w-full">
         {mapImage && (
           <Image
             alt={mapImage.description}
@@ -51,67 +34,70 @@ export default function HomePage() {
             className="object-cover"
           />
         )}
-        <div className="absolute inset-0 bg-black/10" />
+        <div className="absolute inset-0 bg-white/20" />
       </div>
 
       {/* Header */}
       <header className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-20">
-        <Button variant="ghost" size="icon" className="bg-white/80 backdrop-blur-sm rounded-full hover:bg-white">
-          <User className="h-5 w-5 text-gray-700" />
-        </Button>
-        <Image
-            src="/eritas-logo.png"
-            alt="Eritas Transport Company Logo"
-            width={120}
-            height={40}
-          />
-        <Button variant="ghost" size="icon" className="bg-white/80 backdrop-blur-sm rounded-full hover:bg-white">
-          <Settings2 className="h-5 w-5 text-gray-700" />
+        <Button variant="default" size="icon" className="bg-white/90 backdrop-blur-sm rounded-full shadow-md hover:bg-white text-gray-800">
+          <Menu className="h-5 w-5" />
         </Button>
       </header>
       
-      {/* Moving buses */}
-      <Bus className="absolute top-1/4 left-0 h-10 w-10 text-white/80 drop-shadow-lg animate-bus-move" style={{ animationDelay: '0s', animationDuration: '20s' }} />
-      <Bus className="absolute top-1/2 left-0 h-8 w-8 text-white/80 drop-shadow-lg animate-bus-move" style={{ animationDelay: '5s', animationDuration: '25s' }} />
-      <Bus className="absolute top-1/3 left-0 h-9 w-9 text-white/80 drop-shadow-lg animate-bus-move" style={{ animationDelay: '10s', animationDuration: '18s' }} />
+      {/* ETA Popup */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 z-10">
+        <Card className="flex items-center shadow-lg">
+            <div className='bg-primary text-primary-foreground p-3 rounded-l-lg'>
+                <p className="text-2xl font-bold">15</p>
+                <p className="text-xs -mt-1">min</p>
+            </div>
+            <div className='p-3'>
+                <p className='font-semibold text-gray-800'>Paragon Way</p>
+            </div>
+        </Card>
+      </div>
+
+       {/* Bus Icon */}
+        <div className="absolute bottom-[45%] left-1/4 z-10 animate-float">
+            <svg width="40" height="40" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M24 44C24 44 32 36 32 26C32 17.1634 28.4183 10 24 10C19.5817 10 16 17.1634 16 26C16 36 24 44 24 44Z" fill="#16a34a" stroke="white" stroke-width="3" stroke-linejoin="round"/>
+                <path d="M24 29C26.7614 29 29 26.7614 29 24C29 21.2386 26.7614 19 24 19C21.2386 19 19 21.2386 19 24C19 26.7614 21.2386 29 24 29Z" fill="white"/>
+            </svg>
+        </div>
 
 
       {/* Bottom Sheet */}
       <div className="absolute bottom-0 left-0 right-0 z-10 p-2 sm:p-4">
-        <div className="bg-white/70 backdrop-blur-xl border border-white/30 rounded-2xl p-4 max-w-md mx-auto flex flex-col gap-4 shadow-lg">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-800">Welcome, {userName}!</h1>
-            <p className="text-gray-600">Where are you heading today?</p>
-          </div>
-
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500" />
-            <Input
-              placeholder="Search for a bus or destination..."
-              className="pl-10 bg-white/50 border-gray-300 focus:bg-white"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <h3 className="font-semibold text-gray-700">Suggestions</h3>
-            <div className="grid grid-cols-1 gap-2">
-              {suggestions.map((item) => (
-                <button
-                  key={item.name}
-                  className="w-full text-left p-3 bg-white/50 hover:bg-white/80 rounded-lg transition-all flex items-center gap-3"
-                >
-                  <div className="bg-green-100 p-2 rounded-full">
-                    {item.icon}
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-medium text-gray-800">{item.name}</p>
-                    <p className="text-sm text-gray-500">{item.distance}</p>
-                  </div>
-                  <Clock className="h-4 w-4 text-gray-400" />
-                </button>
-              ))}
+        <div className="bg-white rounded-t-2xl p-4 max-w-md mx-auto flex flex-col gap-4 shadow-lg">
+            <div className="flex justify-between items-start">
+              <div>
+                <h2 className="text-lg font-bold text-gray-800">Riding to destination</h2>
+                <p className="text-sm text-gray-500 hover:underline cursor-pointer">View ride details</p>
+              </div>
+              <div className='flex flex-col items-center gap-1'>
+                 {avatarImage && (
+                    <Avatar>
+                        <AvatarImage src={avatarImage.imageUrl} alt={avatarImage.description} data-ai-hint={avatarImage.imageHint} />
+                        <AvatarFallback>{userName.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                )}
+                <Badge variant="default" className="bg-primary/20 text-primary border-0 text-xs">
+                    <Star className="h-3 w-3 mr-1 text-yellow-500 fill-yellow-500" />
+                    4.8
+                </Badge>
+              </div>
             </div>
-          </div>
+          
+            <button className="w-full text-left p-4 bg-green-500 hover:bg-green-600 rounded-xl transition-all flex items-center gap-4 text-white">
+                <div className="bg-white/20 p-3 rounded-full">
+                    <Share2 className="h-6 w-6" />
+                </div>
+                <div className="flex-1">
+                    <p className="font-bold">Share your ETA</p>
+                    <p className="text-sm opacity-90">Share your ride details to friends!</p>
+                </div>
+                <ChevronRight className="h-6 w-6 opacity-70" />
+            </button>
         </div>
       </div>
     </div>

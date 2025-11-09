@@ -32,9 +32,21 @@
     },
     {
       "id": "accra-map",
-      "description": "A stylized map of Accra, Ghana.",
+      "description": "A stylized map of Accra, Ghana, showing a bus route.",
       "imageUrl": "https://images.unsplash.com/photo-1622372738946-62e025315332?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxtYXAlMjBvZiUyMGFjY3JhJTIwZ2hhbmF8ZW58MHx8fHwxNzYyODExNzM3fDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "accra ghana map"
+    },
+    {
+      "id": "map-route",
+      "description": "A map showing a route from one point to another.",
+      "imageUrl": "https://images.unsplash.com/photo-1613943343362-d7b3ae55c170?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxtYXAlMjByb3V0ZXxlbnwwfHx8fDE3NjM0NTUwMDN8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "map route"
+    },
+    {
+      "id": "user-avatar",
+      "description": "An avatar of a person.",
+      "imageUrl": "https://images.unsplash.com/photo-1639149888905-fb39731f2e6c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8dXNlciUyMGF2YXRhcnxlbnwwfHx8fDE3NjI2MzIyNTZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "user avatar"
     }
   ]
 }
