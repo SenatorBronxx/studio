@@ -40,7 +40,7 @@ const signUpSchema = z.object({
 });
 
 type AuthFormProps = {
-  onSignUpSuccess?: () => void;
+  onSignUpSuccess?: (name: string) => void;
 };
 
 export function AuthForm({ onSignUpSuccess }: AuthFormProps) {
@@ -79,7 +79,7 @@ export function AuthForm({ onSignUpSuccess }: AuthFormProps) {
       description: "Your account has been created. Welcome to Eritas Gateway!",
     });
     setIsSubmitting(false);
-    onSignUpSuccess?.();
+    onSignUpSuccess?.(values.firstName);
   };
   
   const handleSocialLogin = (provider: 'Google' | 'Apple') => {

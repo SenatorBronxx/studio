@@ -3,21 +3,23 @@
 
 import Image from 'next/image';
 import {
-  ArrowLeft,
   Bus,
   Clock,
   MapPin,
   Search,
   Settings2,
-  Star,
   User,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { useSearchParams } from 'next/navigation';
 
 export default function HomePage() {
   const mapImage = PlaceHolderImages.find((p) => p.id === 'accra-map');
+  const searchParams = useSearchParams();
+  const userName = searchParams.get('name') || 'there';
+
   const suggestions = [
     {
       name: 'National Museum',
@@ -78,7 +80,7 @@ export default function HomePage() {
       <div className="absolute bottom-0 left-0 right-0 z-10 p-2 sm:p-4">
         <div className="bg-white/70 backdrop-blur-xl border border-white/30 rounded-2xl p-4 max-w-md mx-auto flex flex-col gap-4 shadow-lg">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">Welcome, Jane!</h1>
+            <h1 className="text-2xl font-bold text-gray-800">Welcome, {userName}!</h1>
             <p className="text-gray-600">Where are you heading today?</p>
           </div>
 

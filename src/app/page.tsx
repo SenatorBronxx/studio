@@ -13,14 +13,16 @@ import { useRouter } from 'next/navigation';
 export default function Home() {
   const busImage = PlaceHolderImages.find(p => p.id === 'bus-side-view');
   const [showSlideshow, setShowSlideshow] = useState(false);
+  const [userName, setUserName] = useState('');
   const router = useRouter();
 
-  const handleSignUpSuccess = () => {
+  const handleSignUpSuccess = (name: string) => {
+    setUserName(name);
     setShowSlideshow(true);
   };
   
   const handleSlideshowFinish = () => {
-    router.push('/home');
+    router.push(`/home?name=${encodeURIComponent(userName)}`);
   };
 
   if (showSlideshow) {
