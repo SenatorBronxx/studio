@@ -15,12 +15,12 @@ export function MtnMomoIcon(props: SVGProps<SVGSVGElement>) {
       <path d="M20 32.55C13.065 32.55 7.45 27.01 7.45 20.185C7.45 13.36 13.065 7.82 20 7.82C26.935 7.82 32.55 13.36 32.55 20.185C32.55 27.01 26.935 32.55 20 32.55Z" fill="url(#paint1_radial_1_2)"/>
       <defs>
         <linearGradient id="paint0_linear_1_2" x1="20" y1="7.82" x2="20" y2="32.55" gradientUnits="userSpaceOnUse">
-          <stop stop-color="#0067C9"/>
-          <stop offset="1" stop-color="#004A93"/>
+          <stop stopColor="#0067C9"/>
+          <stop offset="1" stopColor="#004A93"/>
         </linearGradient>
         <radialGradient id="paint1_radial_1_2" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(20.2541 12.0159) rotate(87.9734) scale(15.9328)">
-          <stop stop-color="white" stop-opacity="0.6"/>
-          <stop offset="1" stop-color="white" stop-opacity="0"/>
+          <stop stopColor="white" stopOpacity="0.6"/>
+          <stop offset="1" stopColor="white" stopOpacity="0"/>
         </radialGradient>
       </defs>
     </svg>
