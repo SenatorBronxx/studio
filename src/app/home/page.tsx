@@ -11,6 +11,7 @@ import {
   Flag,
   Users,
   Loader2,
+  Clock,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
@@ -66,7 +67,7 @@ export default function HomePage() {
   const [toLocation, setToLocation] = useState('');
   const [selectedBus, setSelectedBus] = useState<typeof mockBusData[0] | null>(null);
   const [isBoarding, setIsBoarding] = useState(false);
-  const [showEta, setShowEta] = useState(false);
+  const [boardedStop, setBoardedStop] = useState<string | null>(null);
 
   const handleSearch = () => {
     router.push(`/search?from=${encodeURIComponent(fromLocation)}&to=${encodeURIComponent(toLocation)}`);
@@ -74,20 +75,20 @@ export default function HomePage() {
 
   const handleBusSelect = (bus: typeof mockBusData[0]) => {
     setSelectedBus(bus);
-    setShowEta(false); // Reset ETA visibility when a new bus is selected
+    setBoardedStop(null); // Reset boarded stop when a new bus is selected
   }
   
   const clearSelectedBus = () => {
     setSelectedBus(null);
-    setShowEta(false);
+    setBoardedStop(null);
   }
 
-  const handleBoard = () => {
+  const handleBoard = (stopName: string) => {
     setIsBoarding(true);
     // Simulate API call
     setTimeout(() => {
         setIsBoarding(false);
-        setShowEta(true);
+        setBoardedStop(stopName);
     }, 1500);
   }
 
@@ -113,21 +114,6 @@ export default function HomePage() {
         <ProfileSidebar />
       </header>
       
-      {/* ETA Popup */}
-      {showEta && selectedBus && (
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 z-10">
-          <Card className="flex items-center shadow-lg bg-background/80 backdrop-blur-sm overflow-hidden animate-pop-in">
-              <div className='bg-primary text-primary-foreground p-3'>
-                  <p className="text-2xl font-bold">{selectedBus.eta}</p>
-                  <p className="text-xs -mt-1">min</p>
-              </div>
-              <div className='p-3'>
-                  <p className='font-semibold text-foreground'>Paragon Way</p>
-              </div>
-          </Card>
-        </div>
-      )}
-
        {/* Bus Icon Stickers */}
         {mockBusData.map((bus, index) => (
             <div 
@@ -198,8 +184,13 @@ export default function HomePage() {
                              </AccordionTrigger>
                              <AccordionContent>
                                 <div className="px-3 pt-2 pb-2 text-center">
-                                {selectedBus.capacity.current < selectedBus.capacity.max ? (
-                                    <Button className='w-full' onClick={handleBoard} disabled={isBoarding}>
+                                {boardedStop === stop.name ? (
+                                    <div className="flex items-center justify-center gap-2 text-primary font-semibold p-2 bg-primary/10 rounded-md">
+                                        <Clock className="h-5 w-5" />
+                                        <span>Arriving in <strong>{selectedBus.eta} min</strong></span>
+                                    </div>
+                                ) : selectedBus.capacity.current < selectedBus.capacity.max ? (
+                                    <Button className='w-full' onClick={() => handleBoard(stop.name)} disabled={isBoarding}>
                                         {isBoarding && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                         BOARD
                                     </Button>
@@ -254,5 +245,3 @@ export default function HomePage() {
     </div>
   );
 }
-
-    
