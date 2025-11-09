@@ -2,7 +2,7 @@
 'use client';
 
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { ArrowRight, Search, BusFront, X, Flag, Users, Loader2, Clock, Armchair, QrCode, Bell, Trash2, MapPin } from 'lucide-react';
 import { BottomNav } from '@/components/bottom-nav';
 import { Input } from '@/components/ui/input';
@@ -18,6 +18,7 @@ import { BusSeatingChart } from '@/components/bus-seating-chart';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { useWallet } from '@/context/wallet-context';
+import Image from 'next/image';
 import { v4 as uuidv4 } from 'uuid';
 
 const initialBusData = [
@@ -76,6 +77,7 @@ export default function SearchPage() {
 
   const [fromLocation, setFromLocation] = useState(fromQuery);
   const [toLocation, setToLocation] = useState(toQuery);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   const { toast } = useToast();
   const { balance, deductBalance, addTransaction } = useWallet();
@@ -92,23 +94,25 @@ export default function SearchPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [dynamicEta, setDynamicEta] = useState<number | null>(null);
 
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   useEffect(() => {
-    setFromLocation(fromQuery);
-    setToLocation(toQuery);
-
-    if (fromQuery || toQuery) {
-        const results = buses.filter(bus => {
-            const allStops = [...bus.stops.map(s => s.name.toLowerCase()), bus.finalDestination.name.toLowerCase()];
-            const fromMatch = fromQuery ? allStops.some(stop => stop.includes(fromQuery.toLowerCase())) : true;
-            const toMatch = toQuery ? allStops.some(stop => stop.includes(toQuery.toLowerCase())) : true;
-            return fromMatch && toMatch;
-        });
-        setFilteredBuses(results);
-    } else {
-        setFilteredBuses([]);
+    if (isHydrated) {
+        if (fromQuery || toQuery) {
+            const results = buses.filter(bus => {
+                const allStops = [...bus.stops.map(s => s.name.toLowerCase()), bus.finalDestination.name.toLowerCase()];
+                const fromMatch = fromQuery ? allStops.some(stop => stop.includes(fromQuery.toLowerCase())) : true;
+                const toMatch = toQuery ? allStops.some(stop => stop.includes(toQuery.toLowerCase())) : true;
+                return fromMatch && toMatch;
+            });
+            setFilteredBuses(results);
+        } else {
+            setFilteredBuses([]);
+        }
     }
-  }, [fromQuery, toQuery, buses]);
+  }, [fromQuery, toQuery, buses, isHydrated]);
 
    useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -206,6 +210,14 @@ export default function SearchPage() {
   
   const handleConfirmSeat = () => {
     setIsSeatSheetOpen(false);
+  }
+  
+  if (!isHydrated) {
+    return (
+        <div className="flex flex-col min-h-screen bg-background items-center justify-center">
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        </div>
+    );
   }
 
   return (
@@ -332,7 +344,7 @@ export default function SearchPage() {
                             </CardContent>
                         </Card>
                     </div>
-                ) : fromQuery || toQuery ? (
+                ) : (fromQuery || toQuery) ? (
                     <div className='space-y-4'>
                         <h1 className="text-xl font-bold text-foreground">Showing results for:</h1>
                         <p className="text-muted-foreground -mt-2"><span className='font-semibold text-foreground'>{fromQuery}</span> to <span className='font-semibold text-foreground'>{toQuery}</span></p>
