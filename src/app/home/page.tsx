@@ -33,6 +33,8 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { BusSeatingChart } from '@/components/bus-seating-chart';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
+import { useWallet } from '@/context/wallet-context';
+import { v4 as uuidv4 } from 'uuid';
 
 const initialBusData = [
     {
@@ -86,6 +88,7 @@ export default function HomePage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { toast } = useToast();
+  const { balance, deductBalance, addTransaction } = useWallet();
   const userName = searchParams.get('name') || 'there';
   
   const [fromLocation, setFromLocation] = useState('');
@@ -130,11 +133,30 @@ export default function HomePage() {
   }
 
   const handleBoard = (stop: {name: string, fare: number}) => {
+    if (balance < stop.fare) {
+      toast({
+        variant: "destructive",
+        title: "Insufficient Balance",
+        description: `Your ERITAS Pay balance is too low to book this trip. Please top-up.`,
+      });
+      return;
+    }
+
     setIsBoarding(true);
     // Simulate API call
     setTimeout(() => {
         setIsBoarding(false);
         setBoardedStop(stop.name);
+        
+        deductBalance(stop.fare);
+
+        const newTransaction = {
+            id: uuidv4(),
+            type: 'payment',
+            plate: selectedBus?.plate || 'N/A',
+            amount: -stop.fare,
+        };
+        addTransaction(newTransaction);
         
         // Update bus data
         setBuses(prevBuses => {
@@ -188,7 +210,7 @@ export default function HomePage() {
 
         toast({
             title: "Seat Booked Successfully!",
-            description: `A notification has been added to your inbox.`,
+            description: `A notification has been added to your inbox. The fare of GH₵${stop.fare.toFixed(2)} has been deducted.`,
         });
 
     }, 1500);
@@ -465,5 +487,3 @@ export default function HomePage() {
     </div>
   );
 }
-
-    

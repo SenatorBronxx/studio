@@ -13,36 +13,15 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ProfileSidebar } from '@/components/profile-sidebar';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { BottomNav } from '@/components/bottom-nav';
 import { Progress } from '@/components/ui/progress';
 import { VisaIcon } from '@/components/icons/visa';
-
-const mockTransactions = [
-  {
-    id: 'txn-1',
-    type: 'payment',
-    plate: 'GT 4589-23',
-    amount: -75.0,
-  },
-  {
-    id: 'txn-2',
-    type: 'payment',
-    plate: 'AS 1234-24',
-    amount: -55.0,
-  },
-    {
-    id: 'txn-3',
-    type: 'payment',
-    plate: 'GN 2020-21',
-    amount: -80.0,
-  },
-];
+import { useWallet } from '@/context/wallet-context';
 
 export default function EritasPayPage() {
-  const currentBalance = 250.00;
+  const { balance, transactions } = useWallet();
   const maxBalance = 400.00;
-  const progressPercentage = (currentBalance / maxBalance) * 100;
+  const progressPercentage = (balance / maxBalance) * 100;
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -75,7 +54,7 @@ export default function EritasPayPage() {
                 </div>
             </CardHeader>
             <CardContent>
-              <div className="text-4xl font-bold">GH₵ {currentBalance.toFixed(2)}</div>
+              <div className="text-4xl font-bold">GH₵ {balance.toFixed(2)}</div>
               <Badge variant="secondary" className="mt-2">5% cash back on bus tickets</Badge>
             </CardContent>
           </Card>
@@ -85,7 +64,7 @@ export default function EritasPayPage() {
                 <CardContent className="p-4">
                     <div className="flex justify-between items-center mb-2">
                         <h3 className="text-sm font-medium text-foreground">Wallet Threshold</h3>
-                        <p className="text-sm font-mono text-muted-foreground">GH₵ {currentBalance.toFixed(2)} / GH₵ {maxBalance.toFixed(2)}</p>
+                        <p className="text-sm font-mono text-muted-foreground">GH₵ {balance.toFixed(2)} / GH₵ {maxBalance.toFixed(2)}</p>
                     </div>
                     <Progress value={progressPercentage} className="h-2" />
                     <p className="text-xs text-muted-foreground mt-2">Increase your limit by verifying your identity.</p>
@@ -115,7 +94,7 @@ export default function EritasPayPage() {
             <Card>
               <CardContent className="p-0">
                 <div className="space-y-2">
-                  {mockTransactions.map((tx, index) => (
+                  {transactions.map((tx, index) => (
                     <div key={tx.id}>
                         <div className="flex items-center gap-4 p-4">
                             <Avatar className="h-10 w-10 border bg-primary/10 text-primary">
@@ -131,7 +110,7 @@ export default function EritasPayPage() {
                             -GH₵{Math.abs(tx.amount).toFixed(2)}
                         </div>
                         </div>
-                        {index < mockTransactions.length - 1 && <Separator />}
+                        {index < transactions.length - 1 && <Separator />}
                     </div>
                   ))}
                 </div>

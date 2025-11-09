@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
+import { ClientProviders } from "@/components/client-providers";
 
 export const metadata: Metadata = {
   title: "Eritas Gateway",
@@ -24,8 +25,10 @@ export default function RootLayout({
         />
       </head>
       <body className={cn("h-full font-body antialiased", "bg-background")}>
-        {children}
-        <Toaster />
+        <ClientProviders>
+          {children}
+          <Toaster />
+        </ClientProviders>
       </body>
     </html>
   );
