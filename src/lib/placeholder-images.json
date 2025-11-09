@@ -27,8 +27,14 @@
     {
       "id": "real-time-availability",
       "description": "A digital display showing bus schedules.",
-      "imageUrl": "https://images.unsplash.com/photo-1759661937582-0ccd5dacf20f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxkaWdpdGFsJTIwc2NoZWR1bGV8ZW58MHx8fHwxNzYyNjA2ODYyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1759661937582-0ccd5dacf20f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxiKaWdpdGFsJTIwc2NoZWR1bGV8ZW58MHx8fHwxNzYyNjA2ODYyfDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "digital schedule"
+    },
+    {
+      "id": "accra-map",
+      "description": "A stylized map of Accra, Ghana.",
+      "imageUrl": "https://images.unsplash.com/photo-1622372738946-62e025315332?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxtYXAlMjBvZiUyMGFjY3JhJTIwZ2hhbmF8ZW58MHx8fHwxNzYyODExNzM3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "accra ghana map"
     }
   ]
 }

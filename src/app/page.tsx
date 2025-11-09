@@ -8,17 +8,19 @@ import { UserPreferences } from '@/components/user-preferences';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useState } from 'react';
 import { SignupSlideshow } from '@/components/signup-slideshow';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
   const busImage = PlaceHolderImages.find(p => p.id === 'bus-side-view');
   const [showSlideshow, setShowSlideshow] = useState(false);
+  const router = useRouter();
 
   const handleSignUpSuccess = () => {
     setShowSlideshow(true);
   };
   
   const handleSlideshowFinish = () => {
-    setShowSlideshow(false);
+    router.push('/home');
   };
 
   if (showSlideshow) {
