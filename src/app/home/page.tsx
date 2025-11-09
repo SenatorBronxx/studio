@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input';
 import { BottomNav } from '@/components/bottom-nav';
 import { useState } from 'react';
 import { Separator } from '@/components/ui/separator';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const mockBusData = [
     {
@@ -27,6 +28,7 @@ const mockBusData = [
       eta: 15,
       stops: ['Adenta', 'Madina', 'Atomic Junction'],
       position: { top: '45%', left: '25%' },
+      driverImage: PlaceHolderImages.find((p) => p.id === 'user-avatar')?.imageUrl,
     },
     {
       id: 'bus-2',
@@ -35,6 +37,7 @@ const mockBusData = [
       eta: 25,
       stops: ['Circle', 'Kaneshie', 'Mallam'],
       position: { top: '55%', left: '65%' },
+      driverImage: PlaceHolderImages.find((p) => p.id === 'user-avatar')?.imageUrl,
     },
 ];
 
@@ -125,9 +128,15 @@ export default function HomePage() {
             {selectedBus ? (
               <div>
                 <div className="flex justify-between items-start">
-                    <div>
-                        <h2 className="text-xl font-bold text-gray-800">{selectedBus.driver}</h2>
-                        <p className="text-sm text-gray-500 font-mono">{selectedBus.plate}</p>
+                    <div className="flex items-center gap-3">
+                        <Avatar>
+                            {selectedBus.driverImage && <AvatarImage src={selectedBus.driverImage} alt={selectedBus.driver} />}
+                            <AvatarFallback>{selectedBus.driver.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                            <h2 className="text-xl font-bold text-gray-800">{selectedBus.driver}</h2>
+                            <p className="text-sm text-gray-500 font-mono">{selectedBus.plate}</p>
+                        </div>
                     </div>
                     <Button variant="ghost" size="icon" onClick={clearSelectedBus} className="h-8 w-8 -mt-1 -mr-2">
                         <X className="h-5 w-5" />
