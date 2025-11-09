@@ -13,6 +13,7 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useSearchParams } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { BottomNav } from '@/components/bottom-nav';
 
 export default function HomePage() {
   const mapImage = PlaceHolderImages.find((p) => p.id === 'map-route');
@@ -64,7 +65,7 @@ export default function HomePage() {
         </div>
 
 
-      {/* Bottom Sheet - Search */}
+      {/* Bottom Sheet - Search and Nav */}
       <div className="absolute bottom-0 left-0 right-0 z-10 p-2 sm:p-4">
         <div className="bg-white/80 backdrop-blur-sm rounded-t-2xl p-4 max-w-md mx-auto flex flex-col gap-4 shadow-lg">
             <div className='text-center'>
@@ -89,6 +90,7 @@ export default function HomePage() {
                 Search Buses
             </Button>
         </div>
+        <BottomNav />
       </div>
     </div>
   );
