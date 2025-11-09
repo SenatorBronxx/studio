@@ -7,6 +7,7 @@ import {
   ChevronRight,
   CreditCard,
   LayoutGrid,
+  QrCode,
   Search,
   Wallet,
 } from 'lucide-react';
@@ -102,11 +103,11 @@ export default function EritasPayPage() {
           <div className="grid grid-cols-2 gap-4">
             <Button size="lg" className="flex-col h-20">
               <ArrowUpRight className="h-6 w-6 mb-1" />
-              Send
+              Top-up
             </Button>
             <Button size="lg" variant="secondary" className="flex-col h-20">
-              <ArrowDownLeft className="h-6 w-6 mb-1" />
-              Receive
+              <QrCode className="h-6 w-6 mb-1" />
+              Pay with QR
             </Button>
           </div>
 
