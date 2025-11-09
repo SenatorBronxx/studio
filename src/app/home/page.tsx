@@ -65,7 +65,7 @@ export default function HomePage() {
 
 
   return (
-    <div className="relative min-h-screen w-full bg-gray-100 font-sans">
+    <div className="relative min-h-screen w-full bg-background font-sans">
       {/* Map Background */}
       <div className="absolute inset-0 h-full w-full">
         {mapImage && (
@@ -77,7 +77,7 @@ export default function HomePage() {
             className="object-cover"
           />
         )}
-        <div className="absolute inset-0 bg-white/20" />
+        <div className="absolute inset-0 bg-background/20" />
       </div>
 
       {/* Header */}
@@ -87,13 +87,13 @@ export default function HomePage() {
       
       {/* ETA Popup */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 z-10">
-        <Card className="flex items-center shadow-lg bg-white/80 backdrop-blur-sm overflow-hidden animate-pop-in">
+        <Card className="flex items-center shadow-lg bg-background/80 backdrop-blur-sm overflow-hidden animate-pop-in">
             <div className='bg-primary text-primary-foreground p-3'>
                 <p className="text-2xl font-bold">{selectedBus ? selectedBus.eta : '15'}</p>
                 <p className="text-xs -mt-1">min</p>
             </div>
             <div className='p-3'>
-                <p className='font-semibold text-gray-800'>Paragon Way</p>
+                <p className='font-semibold text-foreground'>Paragon Way</p>
             </div>
         </Card>
       </div>
@@ -122,7 +122,7 @@ export default function HomePage() {
 
       {/* Bottom Sheet - Search and Nav */}
       <div className="absolute bottom-0 left-0 right-0 z-10 p-2 sm:p-4">
-        <div className="bg-white/80 backdrop-blur-sm rounded-t-2xl p-4 max-w-md mx-auto flex flex-col gap-4 shadow-lg">
+        <div className="bg-background/80 backdrop-blur-sm rounded-t-2xl p-4 max-w-md mx-auto flex flex-col gap-4 shadow-lg">
             {selectedBus ? (
               <div>
                 <div className="flex justify-between items-start">
@@ -132,8 +132,8 @@ export default function HomePage() {
                             <AvatarFallback>{selectedBus.driver.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <div>
-                            <h2 className="text-xl font-bold text-gray-800">{selectedBus.driver}</h2>
-                            <p className="text-sm text-gray-500 font-mono">{selectedBus.plate}</p>
+                            <h2 className="text-xl font-bold text-foreground">{selectedBus.driver}</h2>
+                            <p className="text-sm text-muted-foreground font-mono">{selectedBus.plate}</p>
                         </div>
                     </div>
                     <Button variant="ghost" size="icon" onClick={clearSelectedBus} className="h-8 w-8 -mt-1 -mr-2">
@@ -142,14 +142,14 @@ export default function HomePage() {
                 </div>
                  <Separator className="my-3" />
                  <div>
-                    <h3 className="text-sm font-semibold text-gray-700 mb-2">Upcoming Stops:</h3>
+                    <h3 className="text-sm font-semibold text-foreground/80 mb-2">Upcoming Stops:</h3>
                     <div className="flex flex-col gap-2">
                         {selectedBus.stops.map((stop, index) => (
                              <div key={index} className="flex items-center gap-3">
                                 <div className="h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center">
                                     <MapPin className="h-3 w-3 text-primary" />
                                 </div>
-                                <p className="text-gray-600">{stop}</p>
+                                <p className="text-muted-foreground">{stop}</p>
                             </div>
                         ))}
                     </div>
@@ -158,12 +158,12 @@ export default function HomePage() {
             ) : (
             <>
                 <div className='text-center'>
-                    <h2 className="text-xl font-bold text-gray-800">Hi {userName}, ready for your next trip?</h2>
-                    <p className="text-sm text-gray-500">Find the perfect bus for your journey</p>
+                    <h2 className="text-xl font-bold text-foreground">Hi {userName}, ready for your next trip?</h2>
+                    <p className="text-sm text-muted-foreground">Find the perfect bus for your journey</p>
                 </div>
                 <div className='flex items-center gap-2'>
                     <div className='relative flex-1'>
-                        <BusFront className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                        <BusFront className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                         <Input 
                         placeholder='From' 
                         className='pl-10' 
@@ -171,11 +171,11 @@ export default function HomePage() {
                         onChange={(e) => setFromLocation(e.target.value)}
                         />
                     </div>
-                    <div className="p-2 rounded-full bg-gray-100">
-                        <ArrowRight className="h-5 w-5 text-gray-500" />
+                    <div className="p-2 rounded-full bg-muted">
+                        <ArrowRight className="h-5 w-5 text-muted-foreground" />
                     </div>
                     <div className='relative flex-1'>
-                        <BusFront className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                        <BusFront className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                         <Input 
                         placeholder='To' 
                         className='pl-10'

@@ -43,6 +43,9 @@ export function ProfileSidebar() {
         if (localTheme) {
             setTheme(localTheme);
             document.documentElement.classList.toggle('dark', localTheme === 'dark');
+        } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            setTheme('dark');
+            document.documentElement.classList.add('dark');
         }
     }, []);
 
@@ -59,7 +62,7 @@ export function ProfileSidebar() {
                 <Button
                     variant="default"
                     size="icon"
-                    className="bg-white/80 backdrop-blur-sm rounded-full shadow-md hover:bg-white text-gray-800"
+                    className="bg-background/80 backdrop-blur-sm rounded-full shadow-md hover:bg-card text-foreground"
                 >
                     <Menu className="h-5 w-5" />
                 </Button>
