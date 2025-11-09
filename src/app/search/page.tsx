@@ -26,14 +26,16 @@ export default function SearchPage() {
 
 
   const handleSearch = () => {
+    // In a real app, this would trigger a search and update the results below.
+    // For now, it will just update the URL query params.
     router.push(`/search?from=${encodeURIComponent(fromLocation)}&to=${encodeURIComponent(toLocation)}`);
   };
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
-        <div className="flex-grow p-4">
+        <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm p-4 shadow-sm">
              <div className="max-w-md mx-auto">
-                <div className='flex items-center gap-2 mb-4'>
+                <div className='flex items-center gap-2 mb-2'>
                     <div className='relative flex-1'>
                         <BusFront className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                         <Input 
@@ -58,36 +60,37 @@ export default function SearchPage() {
                 </div>
                 <Button onClick={handleSearch} className='w-full'>
                     <Search className='mr-2 h-5 w-5' />
-                    Search Buses
+                    Search For Buses
                 </Button>
             </div>
+        </div>
 
-            <div className="text-center mt-8">
-                <Bus className="h-16 w-16 text-primary mb-4 mx-auto" />
-                <h1 className="text-2xl font-bold text-gray-800">Search Results</h1>
-                <p className="text-gray-500 mt-2 mb-6">
-                    Finding the best buses for your journey.
-                </p>
-
-                <Card className="max-w-md mx-auto text-left">
-                    <CardHeader>
-                        <CardTitle>Your Search</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        {fromQuery && toQuery ? (
-                            <div>
-                                <p><span className='font-semibold'>From:</span> {fromQuery}</p>
-                                <p><span className='font-semibold'>To:</span> {toQuery}</p>
-                                <p className="text-sm text-muted-foreground mt-4">Bus results would be displayed here...</p>
-                            </div>
-                        ) : (
-                            <p>No search details provided. Use the search bar above to find a bus.</p>
-                        )}
-                    </CardContent>
-                </Card>
+        <div className="flex-grow p-4">
+            <div className="max-w-md mx-auto text-center">
+                
+                {fromQuery && toQuery ? (
+                    <div>
+                        <h1 className="text-xl font-bold text-gray-800 mb-2">Showing results for:</h1>
+                        <p className="text-gray-600 mb-6"><span className='font-semibold'>{fromQuery}</span> to <span className='font-semibold'>{toQuery}</span></p>
+                        {/* Bus results would be mapped and displayed here */}
+                        <Card className="text-left">
+                            <CardContent className='p-4'>
+                                <p className='text-muted-foreground'>Bus results would appear here.</p>
+                            </CardContent>
+                        </Card>
+                    </div>
+                ) : (
+                    <div className="text-center mt-16">
+                        <Search className="h-16 w-16 text-gray-300 mb-4 mx-auto" />
+                        <h1 className="text-2xl font-bold text-gray-800">Find Your Bus</h1>
+                        <p className="text-gray-500 mt-2">
+                            Enter a destination to see available buses.
+                        </p>
+                    </div>
+                )}
             </div>
         </div>
-        <div className="sticky bottom-0 p-2 sm:p-4">
+        <div className="sticky bottom-0">
             <BottomNav />
         </div>
     </div>
