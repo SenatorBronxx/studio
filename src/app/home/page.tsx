@@ -8,6 +8,7 @@ import {
   MapPin,
   Search,
   X,
+  Flag,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
@@ -26,7 +27,11 @@ const mockBusData = [
       driver: 'Kofi Mensah',
       plate: 'GT 4589-23',
       eta: 15,
-      stops: ['Adenta', 'Madina', 'Atomic Junction'],
+      stops: [
+        { name: 'Adenta', fare: 5.00 },
+        { name: 'Madina', fare: 7.50 },
+      ],
+      finalDestination: { name: 'Atomic Junction', fare: 10.00 },
       position: { top: '45%', left: '25%' },
       driverImage: PlaceHolderImages.find((p) => p.id === 'user-avatar')?.imageUrl,
     },
@@ -35,7 +40,11 @@ const mockBusData = [
       driver: 'Ama Serwaa',
       plate: 'AS 1234-24',
       eta: 25,
-      stops: ['Circle', 'Kaneshie', 'Mallam'],
+      stops: [
+        { name: 'Circle', fare: 6.00 },
+        { name: 'Kaneshie', fare: 8.50 },
+      ],
+      finalDestination: { name: 'Mallam', fare: 12.00 },
       position: { top: '55%', left: '65%' },
       driverImage: PlaceHolderImages.find((p) => p.id === 'user-avatar')?.imageUrl,
     },
@@ -142,16 +151,28 @@ export default function HomePage() {
                 </div>
                  <Separator className="my-3" />
                  <div>
-                    <h3 className="text-sm font-semibold text-foreground/80 mb-2">Upcoming Stops:</h3>
+                    <h3 className="text-sm font-semibold text-foreground/80 mb-2">Bus Fares:</h3>
                     <div className="flex flex-col gap-2">
                         {selectedBus.stops.map((stop, index) => (
-                             <div key={index} className="flex items-center gap-3">
-                                <div className="h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center">
-                                    <MapPin className="h-3 w-3 text-primary" />
+                             <div key={index} className="flex items-center justify-between gap-3">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-5 w-5 rounded-full bg-muted flex items-center justify-center">
+                                        <MapPin className="h-3 w-3 text-muted-foreground" />
+                                    </div>
+                                    <p className="text-muted-foreground">{stop.name}</p>
                                 </div>
-                                <p className="text-muted-foreground">{stop}</p>
+                                <p className="font-mono text-sm text-foreground">GH₵{stop.fare.toFixed(2)}</p>
                             </div>
                         ))}
+                         <div className="flex items-center justify-between gap-3 mt-2 pt-2 border-t border-dashed">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center">
+                                        <Flag className="h-3 w-3 text-primary" />
+                                    </div>
+                                    <p className="font-semibold text-primary">{selectedBus.finalDestination.name} (Final)</p>
+                                </div>
+                                <p className="font-mono text-sm font-semibold text-primary">GH₵{selectedBus.finalDestination.fare.toFixed(2)}</p>
+                            </div>
                     </div>
                  </div>
               </div>
