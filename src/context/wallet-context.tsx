@@ -43,29 +43,38 @@ const initialTransactions: Transaction[] = [
   },
 ];
 
-const getInitialBalance = () => {
-    if (typeof window === 'undefined') return 250.00;
-    const storedBalance = localStorage.getItem('eritas-wallet-balance');
-    return storedBalance ? parseFloat(storedBalance) : 250.00;
-};
-
-const getInitialTransactions = () => {
-    if (typeof window === 'undefined') return initialTransactions;
-    const storedTransactions = localStorage.getItem('eritas-wallet-transactions');
-    return storedTransactions ? JSON.parse(storedTransactions) : initialTransactions;
-};
+const INITIAL_BALANCE = 250.00;
 
 export function WalletProvider({ children }: { children: ReactNode }) {
-  const [balance, setBalance] = useState<number>(getInitialBalance);
-  const [transactions, setTransactions] = useState<Transaction[]>(getInitialTransactions);
+  const [balance, setBalance] = useState<number>(INITIAL_BALANCE);
+  const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
-    localStorage.setItem('eritas-wallet-balance', balance.toString());
-  }, [balance]);
+    const storedBalance = localStorage.getItem('eritas-wallet-balance');
+    if (storedBalance) {
+      setBalance(parseFloat(storedBalance));
+    }
+
+    const storedTransactions = localStorage.getItem('eritas-wallet-transactions');
+    if (storedTransactions) {
+      setTransactions(JSON.parse(storedTransactions));
+    }
+    
+    setIsHydrated(true);
+  }, []);
 
   useEffect(() => {
-    localStorage.setItem('eritas-wallet-transactions', JSON.stringify(transactions));
-  }, [transactions]);
+    if (isHydrated) {
+        localStorage.setItem('eritas-wallet-balance', balance.toString());
+    }
+  }, [balance, isHydrated]);
+
+  useEffect(() => {
+    if (isHydrated) {
+        localStorage.setItem('eritas-wallet-transactions', JSON.stringify(transactions));
+    }
+  }, [transactions, isHydrated]);
 
 
   const deductBalance = (amount: number) => {
@@ -84,6 +93,13 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const removeTransaction = (id: string) => {
     setTransactions((prevTransactions) => prevTransactions.filter(tx => tx.id !== id));
   };
+  
+  if (!isHydrated) {
+    // Render a loading state or null until the client has hydrated
+    // This ensures the server-rendered output and initial client render match
+    return null; 
+  }
+
 
   return (
     <WalletContext.Provider value={{ balance, transactions, deductBalance, addBalance, addTransaction, removeTransaction }}>
