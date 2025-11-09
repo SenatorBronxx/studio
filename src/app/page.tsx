@@ -12,10 +12,14 @@ export default function Home() {
       <div className="flex items-center justify-center p-6 sm:p-12">
         <div className="mx-auto grid w-[380px] gap-6">
           <div className="grid gap-2 text-center">
-            <h1 className="flex items-center justify-center gap-2 text-3xl font-bold font-headline">
-              <Bus className="h-8 w-8 text-primary" />
-              Eritas Gateway
-            </h1>
+            <div className="flex justify-center">
+              <Image
+                src="/eritas-logo.png"
+                alt="Eritas Transport Company Logo"
+                width={200}
+                height={100}
+              />
+            </div>
             <p className="text-balance text-muted-foreground">
               Your journey starts here. Access your account or create a new one.
             </p>
