@@ -2,6 +2,7 @@
 'use client';
 
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 
 type Transaction = {
   id: string;
@@ -16,25 +17,26 @@ type WalletContextType = {
   deductBalance: (amount: number) => void;
   addBalance: (amount: number) => void;
   addTransaction: (transaction: Omit<Transaction, 'id' | 'amount'> & { amount: number }) => void;
+  removeTransaction: (id: string) => void;
 };
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
 
 const initialTransactions: Transaction[] = [
   {
-    id: 'txn-1',
+    id: uuidv4(),
     type: 'payment',
     plate: 'GT 4589-23',
     amount: -75.0,
   },
   {
-    id: 'txn-2',
+    id: uuidv4(),
     type: 'payment',
     plate: 'AS 1234-24',
     amount: -55.0,
   },
   {
-    id: 'txn-3',
+    id: uuidv4(),
     type: 'payment',
     plate: 'GN 2020-21',
     amount: -80.0,
@@ -75,12 +77,16 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   };
 
   const addTransaction = (transaction: Omit<Transaction, 'id'>) => {
-    const newTransaction = { ...transaction, id: crypto.randomUUID() };
+    const newTransaction = { ...transaction, id: uuidv4() };
     setTransactions((prevTransactions) => [newTransaction, ...prevTransactions]);
+  };
+  
+  const removeTransaction = (id: string) => {
+    setTransactions((prevTransactions) => prevTransactions.filter(tx => tx.id !== id));
   };
 
   return (
-    <WalletContext.Provider value={{ balance, transactions, deductBalance, addBalance, addTransaction }}>
+    <WalletContext.Provider value={{ balance, transactions, deductBalance, addBalance, addTransaction, removeTransaction }}>
       {children}
     </WalletContext.Provider>
   );

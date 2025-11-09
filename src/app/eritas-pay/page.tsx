@@ -18,9 +18,10 @@ import { BottomNav } from '@/components/bottom-nav';
 import { Progress } from '@/components/ui/progress';
 import { VisaIcon } from '@/components/icons/visa';
 import { useWallet } from '@/context/wallet-context';
+import { DeletableItem } from '@/components/deletable-item';
 
 export default function EritasPayPage() {
-  const { balance, transactions } = useWallet();
+  const { balance, transactions, removeTransaction } = useWallet();
   const maxBalance = 400.00;
   const progressPercentage = (balance / maxBalance) * 100;
 
@@ -96,25 +97,24 @@ export default function EritasPayPage() {
             </div>
             <Card>
               <CardContent className="p-0">
-                <div className="space-y-2">
-                  {transactions.map((tx, index) => (
-                    <div key={tx.id}>
-                        <div className="flex items-center gap-4 p-4">
+                <div className="divide-y divide-border">
+                  {transactions.map((tx) => (
+                    <DeletableItem key={tx.id} onDelete={() => removeTransaction(tx.id)}>
+                        <div className="flex items-center gap-4 p-4 bg-background">
                             <Avatar className="h-10 w-10 border bg-primary/10 text-primary">
                                 <AvatarFallback>
                                     <Bus className='w-5 h-5'/>
                                 </AvatarFallback>
                             </Avatar>
-                        <div className="flex-grow">
-                            <p className="font-semibold">{tx.type === 'payment' ? 'Bus Ticket Payment' : 'Mobile Money Top-up'}</p>
-                            <p className="text-sm text-muted-foreground font-mono">{tx.plate}</p>
+                            <div className="flex-grow">
+                                <p className="font-semibold">{tx.type === 'payment' ? 'Bus Ticket Payment' : 'Mobile Money Top-up'}</p>
+                                <p className="text-sm text-muted-foreground font-mono">{tx.plate}</p>
+                            </div>
+                            <div className={`font-semibold ${tx.amount > 0 ? 'text-green-600' : 'text-foreground'}`}>
+                               {tx.amount > 0 ? '+' : ''}GH₵{tx.amount.toFixed(2)}
+                            </div>
                         </div>
-                        <div className={`font-semibold ${tx.amount > 0 ? 'text-green-600' : 'text-foreground'}`}>
-                           {tx.amount > 0 ? '+' : ''}GH₵{tx.amount.toFixed(2)}
-                        </div>
-                        </div>
-                        {index < transactions.length - 1 && <Separator />}
-                    </div>
+                    </DeletableItem>
                   ))}
                 </div>
               </CardContent>
