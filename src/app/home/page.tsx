@@ -14,11 +14,13 @@ import {
   Clock,
   Armchair,
   QrCode,
+  Bell,
+  Trash2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { BottomNav } from '@/components/bottom-nav';
 import { useState } from 'react';
@@ -72,6 +74,12 @@ const mockBusData = [
 ];
 
 type BusData = typeof mockBusData[0];
+type Notification = {
+    id: number;
+    title: string;
+    description: string;
+    action?: React.ReactNode;
+};
 
 export default function HomePage() {
   const mapImage = PlaceHolderImages.find((p) => p.id === 'map-route');
@@ -89,6 +97,7 @@ export default function HomePage() {
   const [isSeatSheetOpen, setIsSeatSheetOpen] = useState(false);
   const [isQrSheetOpen, setIsQrSheetOpen] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
 
   const handleSearch = () => {
     router.push(`/search?from=${encodeURIComponent(fromLocation)}&to=${encodeURIComponent(toLocation)}`);
@@ -124,16 +133,24 @@ export default function HomePage() {
         };
         const encodedQrData = encodeURIComponent(JSON.stringify(qrData));
         setQrCodeUrl(`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodedQrData}`);
-
-        toast({
-            title: "Seat Booked Successfully!",
+        
+        const newNotification: Notification = {
+            id: Date.now(),
+            title: 'Seat Booked Successfully!',
             description: `Your seat ${selectedSeat} on bus ${selectedBus?.plate} is confirmed.`,
             action: (
-                <Button variant="outline" size="sm" onClick={() => setIsQrSheetOpen(true)}>
+                 <Button variant="outline" size="sm" onClick={() => setIsQrSheetOpen(true)}>
                     <QrCode className="mr-2 h-4 w-4" />
                     View QR Code
                 </Button>
             )
+        }
+        
+        setNotifications(prev => [newNotification, ...prev]);
+
+        toast({
+            title: "Seat Booked Successfully!",
+            description: `A notification has been added to your inbox.`,
         });
 
     }, 1500);
@@ -172,6 +189,56 @@ export default function HomePage() {
       {/* Header */}
       <header className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-20">
         <ProfileSidebar />
+        <Sheet>
+            <SheetTrigger asChild>
+                 <Button
+                    variant="default"
+                    size="icon"
+                    className="bg-background/80 backdrop-blur-sm rounded-full shadow-md hover:bg-card text-foreground relative"
+                >
+                    <Bell className="h-5 w-5" />
+                    {notifications.length > 0 && (
+                        <span className="absolute -top-1 -right-1 flex h-4 w-4">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-4 w-4 bg-primary text-primary-foreground text-xs items-center justify-center">
+                                {notifications.length}
+                            </span>
+                        </span>
+                    )}
+                </Button>
+            </SheetTrigger>
+            <SheetContent>
+                <SheetHeader>
+                    <SheetTitle>Notifications</SheetTitle>
+                </SheetHeader>
+                <div className="py-4 h-full flex flex-col">
+                    {notifications.length > 0 ? (
+                        <>
+                            <div className="flex-grow space-y-4 overflow-y-auto">
+                                {notifications.map(notification => (
+                                    <Card key={notification.id}>
+                                        <CardContent className='p-4 space-y-2'>
+                                            <h3 className="font-semibold">{notification.title}</h3>
+                                            <p className="text-sm text-muted-foreground">{notification.description}</p>
+                                            {notification.action && <div className='pt-2'>{notification.action}</div>}
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </div>
+                            <Button variant="outline" className="mt-4" onClick={() => setNotifications([])}>
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Clear All
+                            </Button>
+                        </>
+                    ) : (
+                        <div className="flex flex-col items-center justify-center text-center h-full text-muted-foreground">
+                            <Bell className="h-12 w-12 mb-4" />
+                            <p>You have no new notifications.</p>
+                        </div>
+                    )}
+                </div>
+            </SheetContent>
+        </Sheet>
       </header>
       
        {/* Bus Icon Stickers */}
@@ -360,6 +427,8 @@ export default function HomePage() {
     </div>
   );
 }
+
+    
 
     
 
