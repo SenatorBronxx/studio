@@ -4,7 +4,6 @@
 import { LayoutGrid, Music, Search, Wallet } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
 
 const navItems = [
@@ -28,10 +27,10 @@ export function BottomNav() {
             <Link href={item.href} key={item.label} className="flex-1">
               <div
                 className={cn(
-                  'flex flex-col items-center justify-center gap-1 h-full py-2',
+                  'flex flex-col items-center justify-center gap-1 h-full py-2 transition-colors',
                    isActive
                     ? 'bg-primary text-primary-foreground rounded-lg'
-                    : 'text-gray-600 hover:text-primary transition-colors'
+                    : 'text-gray-600 hover:text-primary'
                 )}
               >
                 <Icon className="h-6 w-6" />
