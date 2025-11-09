@@ -2,14 +2,10 @@
 'use client';
 
 import {
-  ArrowDownLeft,
   ArrowUpRight,
-  ChevronRight,
-  CreditCard,
+  Bus,
   LayoutGrid,
-  QrCode,
   Search,
-  Wallet,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,26 +22,20 @@ const mockTransactions = [
   {
     id: 'txn-1',
     type: 'payment',
-    name: 'STC Bus Ticket',
-    description: 'Accra to Kumasi',
+    plate: 'GT 4589-23',
     amount: -75.0,
-    avatar: PlaceHolderImages.find((p) => p.id === 'bus-side-view')?.imageUrl,
   },
   {
     id: 'txn-2',
-    type: 'top-up',
-    name: 'Mobile Money Top-up',
-    description: 'MTN Mobile Money',
-    amount: 200.0,
-    avatar: PlaceHolderImages.find((p) => p.id === 'user-avatar')?.imageUrl,
+    type: 'payment',
+    plate: 'AS 1234-24',
+    amount: -55.0,
   },
     {
     id: 'txn-3',
     type: 'payment',
-    name: 'Streetwise 2',
-    description: 'KFC, Circle',
-    amount: -55.0,
-    avatar: PlaceHolderImages.find((p) => p.id === 'bus-side-view')?.imageUrl,
+    plate: 'GN 2020-21',
+    amount: -80.0,
   },
 ];
 
@@ -80,7 +70,9 @@ export default function EritasPayPage() {
               <CardTitle className="text-sm font-medium">
                 ERITAS Pay Balance
               </CardTitle>
-              <CreditCard className="h-4 w-4 text-muted-foreground" />
+                <div className='p-2 bg-primary/10 rounded-lg'>
+                    <Bus className="h-4 w-4 text-primary" />
+                </div>
             </CardHeader>
             <CardContent>
               <div className="text-4xl font-bold">GH₵ {currentBalance.toFixed(2)}</div>
@@ -126,16 +118,17 @@ export default function EritasPayPage() {
                   {mockTransactions.map((tx, index) => (
                     <div key={tx.id}>
                         <div className="flex items-center gap-4 p-4">
-                        <Avatar className="h-10 w-10 border">
-                            {tx.avatar && <AvatarImage src={tx.avatar} alt={tx.name} className='object-cover' />}
-                            <AvatarFallback>{tx.name.charAt(0)}</AvatarFallback>
-                        </Avatar>
+                            <Avatar className="h-10 w-10 border bg-primary/10 text-primary">
+                                <AvatarFallback>
+                                    <Bus className='w-5 h-5'/>
+                                </AvatarFallback>
+                            </Avatar>
                         <div className="flex-grow">
-                            <p className="font-semibold">{tx.name}</p>
-                            <p className="text-sm text-muted-foreground">{tx.description}</p>
+                            <p className="font-semibold">Bus Ticket Payment</p>
+                            <p className="text-sm text-muted-foreground font-mono">{tx.plate}</p>
                         </div>
-                        <div className={`font-semibold ${tx.amount > 0 ? 'text-green-500' : 'text-foreground'}`}>
-                            {tx.amount > 0 ? `+GH₵${tx.amount.toFixed(2)}` : `-GH₵${Math.abs(tx.amount).toFixed(2)}`}
+                        <div className={`font-semibold text-foreground`}>
+                            -GH₵{Math.abs(tx.amount).toFixed(2)}
                         </div>
                         </div>
                         {index < mockTransactions.length - 1 && <Separator />}
