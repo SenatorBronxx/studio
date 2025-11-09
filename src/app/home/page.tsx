@@ -37,15 +37,15 @@ export default function HomePage() {
 
       {/* Header */}
       <header className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-20">
-        <Button variant="default" size="icon" className="bg-white/90 backdrop-blur-sm rounded-full shadow-md hover:bg-white text-gray-800">
+        <Button variant="default" size="icon" className="bg-white/80 backdrop-blur-sm rounded-full shadow-md hover:bg-white text-gray-800">
           <Menu className="h-5 w-5" />
         </Button>
       </header>
       
       {/* ETA Popup */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 z-10">
-        <Card className="flex items-center shadow-lg bg-white/80 backdrop-blur-sm">
-            <div className='bg-primary text-primary-foreground p-3 rounded-l-lg'>
+        <Card className="flex items-center shadow-lg bg-white/80 backdrop-blur-sm overflow-hidden">
+            <div className='bg-primary text-primary-foreground p-3'>
                 <p className="text-2xl font-bold">15</p>
                 <p className="text-xs -mt-1">min</p>
             </div>
