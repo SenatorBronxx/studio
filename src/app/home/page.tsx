@@ -236,9 +236,18 @@ export default function HomePage() {
                                         <span>Arriving in <strong>{selectedBus.eta} min</strong></span>
                                     </div>
                                 ) : selectedBus.capacity.current < selectedBus.capacity.max ? (
-                                    <Button className='w-full' onClick={() => handleBoard(stop.name)} disabled={isBoarding}>
-                                        {isBoarding && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                        BOARD
+                                    <Button 
+                                        className='w-full' 
+                                        onClick={() => handleBoard(stop.name)} 
+                                        disabled={isBoarding || !selectedSeat}
+                                    >
+                                        {isBoarding ? (
+                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        ) : !selectedSeat ? (
+                                            'Select bus seat first'
+                                        ) : (
+                                            'BOARD'
+                                        )}
                                     </Button>
                                 ) : (
                                     <p className="text-sm text-destructive font-medium p-2 bg-destructive/10 rounded-md">This bus is full.</p>
@@ -291,3 +300,5 @@ export default function HomePage() {
     </div>
   );
 }
+
+    
