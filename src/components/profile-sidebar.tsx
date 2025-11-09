@@ -19,6 +19,7 @@ import {
     Settings,
     Sun,
     Moon,
+    QrCode,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
@@ -30,6 +31,7 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 const menuItems = [
     { icon: Settings, label: 'Profile Settings' },
     { icon: History, label: 'Recent Trips' },
+    { icon: QrCode, label: 'Trip QR Codes' },
     { icon: Percent, label: 'User Discounts' },
     { icon: Award, label: 'Loyalty Points' },
 ];
