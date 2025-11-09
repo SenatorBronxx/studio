@@ -12,13 +12,11 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useWallet } from '@/context/wallet-context';
 import { useToast } from '@/hooks/use-toast';
 import { MtnMomoIcon } from '@/components/icons/mtn-momo';
-import { TelecelCashIcon } from '@/components/icons/telecel-cash';
-import { AtMoneyIcon } from '@/components/icons/at-money';
 
 const mobileMoneyNetworks = [
     { id: 'mtn', name: 'MTN Mobile Money', logo: MtnMomoIcon },
-    { id: 'telecel', name: 'Telecel Cash', logo: TelecelCashIcon },
-    { id: 'airteltigo', name: 'AirtelTigo Money', logo: AtMoneyIcon },
+    { id: 'telecel', name: 'Telecel Cash', logo: null },
+    { id: 'airteltigo', name: 'AirtelTigo Money', logo: null },
 ];
 
 export default function TopUpPage() {
@@ -91,7 +89,13 @@ export default function TopUpPage() {
                                 return (
                                 <Label key={net.id} htmlFor={net.id} className="flex items-center justify-between p-4 border rounded-lg cursor-pointer has-[:checked]:bg-primary/10 has-[:checked]:border-primary">
                                     <div className="flex items-center gap-4">
-                                        <LogoComponent className={net.id === 'mtn' ? 'w-20 h-auto' : 'w-10 h-10 object-contain'} />
+                                        {LogoComponent ? (
+                                            <LogoComponent className={net.id === 'mtn' ? 'w-20 h-auto' : 'w-10 h-10 object-contain'} />
+                                        ) : (
+                                            <div className='w-10 h-10 flex items-center justify-center'>
+                                                <Wallet className='h-6 w-6 text-muted-foreground' />
+                                            </div>
+                                        )}
                                         <span className="font-medium">{net.name}</span>
                                     </div>
                                     <RadioGroupItem value={net.id} id={net.id} />
