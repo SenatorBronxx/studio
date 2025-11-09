@@ -197,6 +197,7 @@ export default function HomePage() {
                             seating={selectedBus.seating}
                             selectedSeat={selectedSeat}
                             onSeatSelect={handleSeatSelect}
+                            busPlate={selectedBus.plate}
                         />
                     </SheetContent>
                 </Sheet>
@@ -290,5 +291,3 @@ export default function HomePage() {
     </div>
   );
 }
-
-    

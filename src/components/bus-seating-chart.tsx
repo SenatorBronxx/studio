@@ -4,6 +4,7 @@
 import { Armchair, BusFront } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
+import { Badge } from './ui/badge';
 
 type Seat = {
     id: string;
@@ -14,12 +15,14 @@ type BusSeatingChartProps = {
     seating: Seat[];
     selectedSeat: string | null;
     onSeatSelect: (seatId: string) => void;
+    busPlate: string;
 };
 
-export function BusSeatingChart({ seating, selectedSeat, onSeatSelect }: BusSeatingChartProps) {
+export function BusSeatingChart({ seating, selectedSeat, onSeatSelect, busPlate }: BusSeatingChartProps) {
     return (
         <div className="p-4 space-y-6">
-            <div className="bg-muted p-4 rounded-lg flex justify-center">
+            <div className="bg-muted p-4 rounded-lg flex flex-col items-center justify-center gap-4">
+                <Badge variant="secondary" className="font-mono">{busPlate}</Badge>
                 <div className="grid grid-cols-5 gap-2 w-full max-w-xs">
                     {/* Driver's Seat */}
                     <div className="col-span-1 flex items-center justify-center">
