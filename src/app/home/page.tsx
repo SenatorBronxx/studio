@@ -3,21 +3,19 @@
 
 import Image from 'next/image';
 import {
-  ChevronRight,
+  ArrowRight,
+  BusFront,
   Menu,
-  Share2,
-  Star,
+  Search,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useSearchParams } from 'next/navigation';
-import { Card, CardContent } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 
 export default function HomePage() {
   const mapImage = PlaceHolderImages.find((p) => p.id === 'map-route');
-  const avatarImage = PlaceHolderImages.find((p) => p.id === 'user-avatar');
   const searchParams = useSearchParams();
   const userName = searchParams.get('name') || 'there';
 
@@ -66,38 +64,30 @@ export default function HomePage() {
         </div>
 
 
-      {/* Bottom Sheet */}
+      {/* Bottom Sheet - Search */}
       <div className="absolute bottom-0 left-0 right-0 z-10 p-2 sm:p-4">
         <div className="bg-white rounded-t-2xl p-4 max-w-md mx-auto flex flex-col gap-4 shadow-lg">
-            <div className="flex justify-between items-start">
-              <div>
-                <h2 className="text-lg font-bold text-gray-800">Riding to destination</h2>
-                <p className="text-sm text-gray-500 hover:underline cursor-pointer">View ride details</p>
-              </div>
-              <div className='flex flex-col items-center gap-1'>
-                 {avatarImage && (
-                    <Avatar>
-                        <AvatarImage src={avatarImage.imageUrl} alt={avatarImage.description} data-ai-hint={avatarImage.imageHint} />
-                        <AvatarFallback>{userName.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                )}
-                <Badge variant="default" className="bg-primary/20 text-primary border-0 text-xs">
-                    <Star className="h-3 w-3 mr-1 text-yellow-500 fill-yellow-500" />
-                    4.8
-                </Badge>
-              </div>
+            <div className='text-center'>
+                <h2 className="text-xl font-bold text-gray-800">Hi {userName}, ready for your next trip?</h2>
+                <p className="text-sm text-gray-500">Find the perfect bus for your journey</p>
             </div>
-          
-            <button className="w-full text-left p-4 bg-green-500 hover:bg-green-600 rounded-xl transition-all flex items-center gap-4 text-white">
-                <div className="bg-white/20 p-3 rounded-full">
-                    <Share2 className="h-6 w-6" />
+            <div className='flex items-center gap-2'>
+                <div className='relative flex-1'>
+                    <BusFront className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <Input placeholder='From' className='pl-10' />
                 </div>
-                <div className="flex-1">
-                    <p className="font-bold">Share your ETA</p>
-                    <p className="text-sm opacity-90">Share your ride details to friends!</p>
+                <div className="p-2 rounded-full bg-gray-100">
+                    <ArrowRight className="h-5 w-5 text-gray-500" />
                 </div>
-                <ChevronRight className="h-6 w-6 opacity-70" />
-            </button>
+                <div className='relative flex-1'>
+                     <BusFront className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <Input placeholder='To' className='pl-10' />
+                </div>
+            </div>
+            <Button>
+                <Search className='mr-2 h-5 w-5' />
+                Search Buses
+            </Button>
         </div>
       </div>
     </div>
