@@ -46,7 +46,6 @@ const mockTransactions = [
 ];
 
 export default function EritasPayPage() {
-  const eritasLogo = PlaceHolderImages.find((p) => p.id === 'eritas-logo');
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
