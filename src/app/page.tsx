@@ -56,7 +56,7 @@ export default function Home() {
         </div>
       </div>
       <div className="bg-muted relative flex flex-col justify-end lg:h-full">
-        <div className="relative h-full">
+        <div className="relative h-full min-h-[400px] lg:min-h-0">
             {busImage && (
                 <Image
                     alt={busImage.description}
@@ -73,10 +73,10 @@ export default function Home() {
             <div className="absolute top-1/3 right-1/4 animate-float">
                 <MapPin className="h-16 w-16 text-white/30" />
             </div>
-        </div>
-        <div className="absolute bottom-0 left-0 right-0 p-8">
-            <div className="flex h-full items-end justify-center">
-                <UserPreferences />
+            <div className="absolute bottom-0 left-0 right-0 p-8">
+                <div className="flex h-full items-end justify-center">
+                    <UserPreferences />
+                </div>
             </div>
         </div>
       </div>
