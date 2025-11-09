@@ -22,7 +22,7 @@ export function BottomNav() {
       <div className="flex justify-around items-center">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = pathname === item.href;
+          const isActive = pathname.startsWith(item.href);
 
           if (item.primary) {
             return (
