@@ -23,7 +23,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { BottomNav } from '@/components/bottom-nav';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ProfileSidebar } from '@/components/profile-sidebar';
@@ -98,6 +98,17 @@ export default function HomePage() {
   const [isQrSheetOpen, setIsQrSheetOpen] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [dynamicEta, setDynamicEta] = useState<number | null>(null);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (boardedStop && dynamicEta !== null && dynamicEta > 0) {
+      interval = setInterval(() => {
+        setDynamicEta(prevEta => (prevEta ? prevEta - 1 : 0));
+      }, 60 * 1000); // Decrease every minute
+    }
+    return () => clearInterval(interval);
+  }, [boardedStop, dynamicEta]);
 
   const handleSearch = () => {
     router.push(`/search?from=${encodeURIComponent(fromLocation)}&to=${encodeURIComponent(toLocation)}`);
@@ -107,12 +118,14 @@ export default function HomePage() {
     setSelectedBus(bus);
     setBoardedStop(null); // Reset boarded stop when a new bus is selected
     setSelectedSeat(null); // Reset selected seat
+    setDynamicEta(bus.eta); // Initialize dynamic ETA
   }
   
   const clearSelectedBus = () => {
     setSelectedBus(null);
     setBoardedStop(null);
     setSelectedSeat(null);
+    setDynamicEta(null);
   }
 
   const handleBoard = (stop: {name: string, fare: number}) => {
@@ -336,7 +349,7 @@ export default function HomePage() {
                                 {boardedStop === stop.name ? (
                                     <div className="flex items-center justify-center gap-2 text-primary font-semibold p-2 bg-primary/10 rounded-md">
                                         <Clock className="h-5 w-5" />
-                                        <span>Arriving in <strong>{selectedBus.eta} min</strong></span>
+                                        <span>Arriving in <strong>{dynamicEta} min</strong></span>
                                     </div>
                                 ) : selectedBus.capacity.current < selectedBus.capacity.max ? (
                                     <Button 
