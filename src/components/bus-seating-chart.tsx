@@ -1,7 +1,7 @@
 
 'use client';
 
-import { Armchair, SteeringWheel } from 'lucide-react';
+import { Armchair, BusFront } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
 
@@ -23,7 +23,7 @@ export function BusSeatingChart({ seating, selectedSeat, onSeatSelect }: BusSeat
                 <div className="grid grid-cols-5 gap-2 w-full max-w-xs">
                     {/* Driver's Seat */}
                     <div className="col-span-1 flex items-center justify-center">
-                        <SteeringWheel className="w-8 h-8 text-foreground" />
+                        <BusFront className="w-8 h-8 text-foreground" />
                     </div>
                     <div className="col-span-4"></div>
 
@@ -79,6 +79,3 @@ export function BusSeatingChart({ seating, selectedSeat, onSeatSelect }: BusSeat
         </div>
     );
 }
-
-
-    
