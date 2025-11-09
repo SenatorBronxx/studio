@@ -5,6 +5,30 @@
       "description": "A green bus on a road through mountains",
       "imageUrl": "https://images.unsplash.com/photo-1570125909517-53cb21c89ff2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxidXMlMjB0cmF2ZWx8ZW58MHx8fHwxNzYyNjI3NTMzfDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "bus travel"
+    },
+    {
+      "id": "smart-routing",
+      "description": "A winding road through a forest, representing smart routing.",
+      "imageUrl": "https://images.unsplash.com/photo-1489641024260-20e5cb3ee4aa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHx3aW5kaW5nJTIwcm9hZHxlbnwwfHx8fDE3NjI2NTE1NDB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "winding road"
+    },
+    {
+      "id": "gps-tracking",
+      "description": "A map with a pin on it, representing GPS tracking.",
+      "imageUrl": "https://images.unsplash.com/photo-1532154066703-3973764c81fe?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxtYXAlMjBsb2NhdGlvbnxlbnwwfHx8fDE3NjI1ODc4OTB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "map location"
+    },
+    {
+      "id": "personal-music",
+      "description": "A person wearing headphones and enjoying music.",
+      "imageUrl": "https://images.unsplash.com/photo-1617714313606-283484c136be?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxwZXJzb24lMjBoZWFkcGhvbmVzfGVufDB8fHx8MTc2MjY0MTUyMXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "person headphones"
+    },
+    {
+      "id": "real-time-availability",
+      "description": "A digital display showing bus schedules.",
+      "imageUrl": "https://images.unsplash.com/photo-1759661937582-0ccd5dacf20f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxkaWdpdGFsJTIwc2NoZWR1bGV8ZW58MHx8fHwxNzYyNjA2ODYyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "digital schedule"
     }
   ]
 }

@@ -1,11 +1,29 @@
+
+'use client';
+
 import Image from 'next/image';
 import { Bus, MapPin } from 'lucide-react';
 import { AuthForm } from '@/components/auth-form';
 import { UserPreferences } from '@/components/user-preferences';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { useState } from 'react';
+import { SignupSlideshow } from '@/components/signup-slideshow';
 
 export default function Home() {
   const busImage = PlaceHolderImages.find(p => p.id === 'bus-side-view');
+  const [showSlideshow, setShowSlideshow] = useState(false);
+
+  const handleSignUpSuccess = () => {
+    setShowSlideshow(true);
+  };
+  
+  const handleSlideshowFinish = () => {
+    setShowSlideshow(false);
+  };
+
+  if (showSlideshow) {
+    return <SignupSlideshow onFinish={handleSlideshowFinish} />;
+  }
 
   return (
     <div className="min-h-screen w-full lg:grid lg:grid-cols-2">
@@ -24,7 +42,7 @@ export default function Home() {
               Your journey starts here. Access your account or create a new one.
             </p>
           </div>
-          <AuthForm />
+          <AuthForm onSignUpSuccess={handleSignUpSuccess} />
         </div>
         <div className="mt-8 w-full max-w-md lg:hidden">
           <UserPreferences />

@@ -31,7 +31,11 @@ const signUpSchema = z.object({
   password: z.string().min(8, { message: "Password must be at least 8 characters." }),
 });
 
-export function AuthForm() {
+type AuthFormProps = {
+  onSignUpSuccess?: () => void;
+};
+
+export function AuthForm({ onSignUpSuccess }: AuthFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
@@ -64,9 +68,10 @@ export function AuthForm() {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     toast({
       title: "Sign Up Successful",
-      description: "Your account has been created.",
+      description: "Your account has been created. Welcome to Eritas Gateway!",
     });
     setIsSubmitting(false);
+    onSignUpSuccess?.();
   };
   
   const handleSocialLogin = (provider: 'Google' | 'Apple') => {
