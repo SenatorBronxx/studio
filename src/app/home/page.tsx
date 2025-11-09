@@ -13,6 +13,7 @@ import {
   Loader2,
   Clock,
   Armchair,
+  QrCode,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
@@ -28,6 +29,8 @@ import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { BusSeatingChart } from '@/components/bus-seating-chart';
+import { useToast } from '@/hooks/use-toast';
+import { Badge } from '@/components/ui/badge';
 
 const mockBusData = [
     {
@@ -74,6 +77,7 @@ export default function HomePage() {
   const mapImage = PlaceHolderImages.find((p) => p.id === 'map-route');
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { toast } = useToast();
   const userName = searchParams.get('name') || 'there';
   
   const [fromLocation, setFromLocation] = useState('');
@@ -83,6 +87,8 @@ export default function HomePage() {
   const [boardedStop, setBoardedStop] = useState<string | null>(null);
   const [selectedSeat, setSelectedSeat] = useState<string | null>(null);
   const [isSeatSheetOpen, setIsSeatSheetOpen] = useState(false);
+  const [isQrSheetOpen, setIsQrSheetOpen] = useState(false);
+  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
 
   const handleSearch = () => {
     router.push(`/search?from=${encodeURIComponent(fromLocation)}&to=${encodeURIComponent(toLocation)}`);
@@ -100,12 +106,36 @@ export default function HomePage() {
     setSelectedSeat(null);
   }
 
-  const handleBoard = (stopName: string) => {
+  const handleBoard = (stop: {name: string, fare: number}) => {
     setIsBoarding(true);
     // Simulate API call
     setTimeout(() => {
         setIsBoarding(false);
-        setBoardedStop(stopName);
+        setBoardedStop(stop.name);
+
+        // Generate QR code data
+        const qrData = {
+          bus: selectedBus?.plate,
+          seat: selectedSeat,
+          from: stop.name,
+          to: selectedBus?.finalDestination.name,
+          fare: stop.fare,
+          timestamp: new Date().toISOString(),
+        };
+        const encodedQrData = encodeURIComponent(JSON.stringify(qrData));
+        setQrCodeUrl(`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodedQrData}`);
+
+        toast({
+            title: "Seat Booked Successfully!",
+            description: `Your seat ${selectedSeat} on bus ${selectedBus?.plate} is confirmed.`,
+            action: (
+                <Button variant="outline" size="sm" onClick={() => setIsQrSheetOpen(true)}>
+                    <QrCode className="mr-2 h-4 w-4" />
+                    View QR Code
+                </Button>
+            )
+        });
+
     }, 1500);
   }
   
@@ -244,7 +274,7 @@ export default function HomePage() {
                                 ) : selectedBus.capacity.current < selectedBus.capacity.max ? (
                                     <Button 
                                         className='w-full' 
-                                        onClick={() => handleBoard(stop.name)} 
+                                        onClick={() => handleBoard(stop)} 
                                         disabled={isBoarding || !selectedSeat}
                                     >
                                         {isBoarding ? (
@@ -303,8 +333,34 @@ export default function HomePage() {
         </div>
         <BottomNav />
       </div>
+
+       <Sheet open={isQrSheetOpen} onOpenChange={setIsQrSheetOpen}>
+            <SheetContent side="bottom" className="rounded-t-2xl">
+                <SheetHeader>
+                    <SheetTitle>Your Boarding Pass</SheetTitle>
+                </SheetHeader>
+                <div className="p-4 flex flex-col items-center justify-center space-y-4">
+                    {qrCodeUrl ? (
+                        <Image src={qrCodeUrl} alt="Boarding QR Code" width={200} height={200} />
+                    ) : (
+                        <div className="h-[200px] w-[200px] flex items-center justify-center bg-muted rounded-md">
+                            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                        </div>
+                    )}
+                    <div className="text-center space-y-1">
+                        <p className="text-sm text-muted-foreground">Show this QR code to the driver for verification.</p>
+                        <div className="flex items-center gap-4 justify-center">
+                            <Badge variant="outline">{selectedBus?.plate}</Badge>
+                            <Badge>Seat {selectedSeat}</Badge>
+                        </div>
+                    </div>
+                </div>
+            </SheetContent>
+        </Sheet>
     </div>
   );
 }
+
+    
 
     
