@@ -42,8 +42,8 @@ const slideContent = [
 
 export function SignupSlideshow({ onFinish }: SignupSlideshowProps) {
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background p-4">
-      <div className="w-full max-w-md mx-auto">
+    <div className="flex items-center justify-center min-h-screen bg-background p-4 sm:p-6">
+      <div className="w-full max-w-sm sm:max-w-md mx-auto">
         <Carousel className="w-full">
           <CarouselContent>
             {slideContent.map((slide) => {
@@ -52,19 +52,20 @@ export function SignupSlideshow({ onFinish }: SignupSlideshowProps) {
                 <CarouselItem key={slide.id}>
                   <div className="p-1">
                     <Card>
-                      <CardContent className="flex flex-col items-center justify-center p-6 aspect-square">
+                      <CardContent className="flex flex-col items-center justify-center p-6 space-y-4 aspect-[9/10] sm:aspect-square">
                         {image && (
-                          <Image
-                            src={image.imageUrl}
-                            alt={image.description}
-                            width={600}
-                            height={400}
-                            data-ai-hint={image.imageHint}
-                            className="rounded-lg object-cover mb-4 w-full h-48"
-                          />
+                          <div className="relative w-full h-40 sm:h-48">
+                            <Image
+                              src={image.imageUrl}
+                              alt={image.description}
+                              fill
+                              data-ai-hint={image.imageHint}
+                              className="rounded-lg object-cover"
+                            />
+                          </div>
                         )}
-                        <h3 className="text-2xl font-semibold text-center">{slide.title}</h3>
-                        <p className="text-sm text-muted-foreground text-center mt-2">{slide.description}</p>
+                        <h3 className="text-xl sm:text-2xl font-semibold text-center">{slide.title}</h3>
+                        <p className="text-sm text-muted-foreground text-center">{slide.description}</p>
                       </CardContent>
                     </Card>
                   </div>
@@ -72,8 +73,8 @@ export function SignupSlideshow({ onFinish }: SignupSlideshowProps) {
               );
             })}
           </CarouselContent>
-          <CarouselPrevious />
-          <CarouselNext />
+          <CarouselPrevious className="hidden sm:flex" />
+          <CarouselNext className="hidden sm:flex" />
         </Carousel>
         <Button onClick={onFinish} className="w-full mt-6">
           Get Started
