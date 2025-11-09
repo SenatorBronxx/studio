@@ -12,6 +12,7 @@ import {
   Users,
   Loader2,
   Clock,
+  Armchair,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
@@ -25,6 +26,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ProfileSidebar } from '@/components/profile-sidebar';
 import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { BusSeatingChart } from '@/components/bus-seating-chart';
 
 const mockBusData = [
     {
@@ -40,6 +43,13 @@ const mockBusData = [
       finalDestination: { name: 'Atomic Junction', fare: 10.00 },
       position: { top: '45%', left: '25%' },
       driverImage: PlaceHolderImages.find((p) => p.id === 'user-avatar')?.imageUrl,
+      seating: [
+        { id: '1A', isOccupied: true }, { id: '1B', isOccupied: false }, null, { id: '1C', isOccupied: false }, { id: '1D', isOccupied: true },
+        { id: '2A', isOccupied: false }, { id: '2B', isOccupied: true }, null, { id: '2C', isOccupied: false }, { id: '2D', isOccupied: false },
+        { id: '3A', isOccupied: true }, { id: '3B', isOccupied: true }, null, { id: '3C', isOccupied: false }, { id: '3D', isOccupied: true },
+        { id: '4A', isOccupied: false }, { id: '4B', isOccupied: false }, null, { id: '4C', isOccupied: true }, { id: '4D', isOccupied: false },
+        { id: '5A', isOccupied: true }, { id: '5B', isOccupied: false }, null, { id: '5C', isOccupied: false }, { id: '5D', isOccupied: false },
+      ]
     },
     {
       id: 'bus-2',
@@ -54,8 +64,11 @@ const mockBusData = [
       finalDestination: { name: 'Mallam', fare: 12.00 },
       position: { top: '55%', left: '65%' },
       driverImage: PlaceHolderImages.find((p) => p.id === 'user-avatar')?.imageUrl,
+      seating: Array.from({ length: 25 }, (_, i) => ({ id: `${Math.floor(i/5)+1}${String.fromCharCode(65 + (i % 5 > 1 ? i%5-1 : i%5))}`, isOccupied: true }))
     },
 ];
+
+type BusData = typeof mockBusData[0];
 
 export default function HomePage() {
   const mapImage = PlaceHolderImages.find((p) => p.id === 'map-route');
@@ -65,22 +78,25 @@ export default function HomePage() {
   
   const [fromLocation, setFromLocation] = useState('');
   const [toLocation, setToLocation] = useState('');
-  const [selectedBus, setSelectedBus] = useState<typeof mockBusData[0] | null>(null);
+  const [selectedBus, setSelectedBus] = useState<BusData | null>(null);
   const [isBoarding, setIsBoarding] = useState(false);
   const [boardedStop, setBoardedStop] = useState<string | null>(null);
+  const [selectedSeat, setSelectedSeat] = useState<string | null>(null);
 
   const handleSearch = () => {
     router.push(`/search?from=${encodeURIComponent(fromLocation)}&to=${encodeURIComponent(toLocation)}`);
   };
 
-  const handleBusSelect = (bus: typeof mockBusData[0]) => {
+  const handleBusSelect = (bus: BusData) => {
     setSelectedBus(bus);
     setBoardedStop(null); // Reset boarded stop when a new bus is selected
+    setSelectedSeat(null); // Reset selected seat
   }
   
   const clearSelectedBus = () => {
     setSelectedBus(null);
     setBoardedStop(null);
+    setSelectedSeat(null);
   }
 
   const handleBoard = (stopName: string) => {
@@ -90,6 +106,15 @@ export default function HomePage() {
         setIsBoarding(false);
         setBoardedStop(stopName);
     }, 1500);
+  }
+  
+  const handleSeatSelect = (seatId: string) => {
+    if (selectedBus) {
+        const seat = selectedBus.seating.find(s => s?.id === seatId);
+        if (seat && !seat.isOccupied) {
+            setSelectedSeat(prevSeat => prevSeat === seatId ? null : seatId);
+        }
+    }
   }
 
 
@@ -156,6 +181,26 @@ export default function HomePage() {
                         <X className="h-5 w-5" />
                     </Button>
                 </div>
+
+                <Sheet>
+                    <SheetTrigger asChild>
+                        <Button variant="outline" className='w-full'>
+                            <Armchair className="mr-2 h-5 w-5" />
+                            View Seats
+                        </Button>
+                    </SheetTrigger>
+                    <SheetContent side="bottom" className="rounded-t-2xl">
+                        <SheetHeader>
+                            <SheetTitle>Select Your Seat</SheetTitle>
+                        </SheetHeader>
+                        <BusSeatingChart 
+                            seating={selectedBus.seating}
+                            selectedSeat={selectedSeat}
+                            onSeatSelect={handleSeatSelect}
+                        />
+                    </SheetContent>
+                </Sheet>
+
                  <Separator />
 
                  <div>
@@ -245,3 +290,5 @@ export default function HomePage() {
     </div>
   );
 }
+
+    
