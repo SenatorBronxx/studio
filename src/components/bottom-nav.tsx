@@ -1,7 +1,7 @@
 
 'use client';
 
-import { LayoutGrid, Music, Search, Wallet } from 'lucide-react';
+import { LayoutGrid, Music, Search, Utensils, Wallet } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -10,6 +10,7 @@ const navItems = [
   { href: '/home', icon: LayoutGrid, label: 'Home' },
   { href: '/eritas-pay', icon: Wallet, label: 'ERITAS Pay' },
   { href: '/search', icon: Search, label: 'Find A Bus' },
+  { href: '/food', icon: Utensils, label: 'Food' },
   { href: '/music', icon: Music, label: 'MUSIC' },
 ];
 
