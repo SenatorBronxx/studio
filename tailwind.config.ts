@@ -1,3 +1,4 @@
+
 import type {Config} from 'tailwindcss';
 
 export default {
@@ -100,7 +101,7 @@ export default {
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
-        'bus-move': 'bus-move 25s linear infinite 5s',
+        'bus-move': 'bus-move 25s linear infinite',
         'float': 'float 6s ease-in-out infinite',
       },
     },
