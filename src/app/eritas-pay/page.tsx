@@ -7,6 +7,7 @@ import {
   LayoutGrid,
   Search,
 } from 'lucide-react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -73,10 +74,12 @@ export default function EritasPayPage() {
 
           {/* Action Buttons */}
           <div className="grid grid-cols-2 gap-4">
-            <Button size="lg" className="flex-col h-20">
-              <ArrowUpRight className="h-6 w-6 mb-1" />
-              Top-up
-            </Button>
+            <Link href="/top-up" passHref>
+                <Button size="lg" className="flex-col h-20 w-full">
+                <ArrowUpRight className="h-6 w-6 mb-1" />
+                Top-up
+                </Button>
+            </Link>
             <Button size="lg" variant="secondary" className="flex-col h-20">
               <VisaIcon className="w-12 mb-2" />
               Synchronize with VISA
@@ -103,11 +106,11 @@ export default function EritasPayPage() {
                                 </AvatarFallback>
                             </Avatar>
                         <div className="flex-grow">
-                            <p className="font-semibold">Bus Ticket Payment</p>
+                            <p className="font-semibold">{tx.type === 'payment' ? 'Bus Ticket Payment' : 'Mobile Money Top-up'}</p>
                             <p className="text-sm text-muted-foreground font-mono">{tx.plate}</p>
                         </div>
-                        <div className={`font-semibold text-foreground`}>
-                            -GH₵{Math.abs(tx.amount).toFixed(2)}
+                        <div className={`font-semibold ${tx.amount > 0 ? 'text-green-600' : 'text-foreground'}`}>
+                           {tx.amount > 0 ? '+' : ''}GH₵{tx.amount.toFixed(2)}
                         </div>
                         </div>
                         {index < transactions.length - 1 && <Separator />}

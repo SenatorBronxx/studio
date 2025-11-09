@@ -14,7 +14,8 @@ type WalletContextType = {
   balance: number;
   transactions: Transaction[];
   deductBalance: (amount: number) => void;
-  addTransaction: (transaction: Transaction) => void;
+  addBalance: (amount: number) => void;
+  addTransaction: (transaction: Omit<Transaction, 'id' | 'amount'> & { amount: number }) => void;
 };
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
@@ -68,13 +69,18 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const deductBalance = (amount: number) => {
     setBalance((prevBalance) => prevBalance - amount);
   };
+  
+  const addBalance = (amount: number) => {
+    setBalance((prevBalance) => prevBalance + amount);
+  };
 
-  const addTransaction = (transaction: Transaction) => {
-    setTransactions((prevTransactions) => [transaction, ...prevTransactions]);
+  const addTransaction = (transaction: Omit<Transaction, 'id'>) => {
+    const newTransaction = { ...transaction, id: crypto.randomUUID() };
+    setTransactions((prevTransactions) => [newTransaction, ...prevTransactions]);
   };
 
   return (
-    <WalletContext.Provider value={{ balance, transactions, deductBalance, addTransaction }}>
+    <WalletContext.Provider value={{ balance, transactions, deductBalance, addBalance, addTransaction }}>
       {children}
     </WalletContext.Provider>
   );
