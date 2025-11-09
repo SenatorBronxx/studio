@@ -22,6 +22,7 @@ import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ProfileSidebar } from '@/components/profile-sidebar';
 import { Progress } from '@/components/ui/progress';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 const mockBusData = [
     {
@@ -43,7 +44,7 @@ const mockBusData = [
       driver: 'Ama Serwaa',
       plate: 'AS 1234-24',
       eta: 25,
-      capacity: { current: 15, max: 48 },
+      capacity: { current: 48, max: 48 },
       stops: [
         { name: 'Circle', fare: 6.00 },
         { name: 'Kaneshie', fare: 8.50 },
@@ -165,28 +166,34 @@ export default function HomePage() {
 
                  <div>
                     <h3 className="text-sm font-semibold text-foreground/80 mb-2">Bus Fares:</h3>
-                    <div className="flex flex-col gap-2">
-                        {selectedBus.stops.map((stop, index) => (
-                             <div key={index} className="flex items-center justify-between gap-3">
-                                <div className="flex items-center gap-3">
-                                    <div className="h-5 w-5 rounded-full bg-muted flex items-center justify-center">
-                                        <MapPin className="h-3 w-3 text-muted-foreground" />
+                     <Accordion type="single" collapsible className="w-full">
+                        {[...selectedBus.stops, { ...selectedBus.finalDestination, isFinal: true }].map((stop, index) => (
+                           <AccordionItem value={`item-${index}`} key={index} className="border-b-0">
+                             <AccordionTrigger className="py-2 rounded-lg hover:bg-muted/50 px-2 data-[state=open]:bg-muted">
+                                <div className="flex items-center justify-between gap-3 w-full">
+                                    <div className="flex items-center gap-3">
+                                         <div className={`h-5 w-5 rounded-full flex items-center justify-center ${stop.isFinal ? 'bg-primary/20' : 'bg-muted-foreground/20'}`}>
+                                            {stop.isFinal ? <Flag className="h-3 w-3 text-primary" /> : <MapPin className="h-3 w-3 text-muted-foreground" />}
+                                        </div>
+                                        <p className={`text-sm ${stop.isFinal ? 'font-semibold text-primary' : 'text-foreground'}`}>{stop.name} {stop.isFinal && '(Final)'}</p>
                                     </div>
-                                    <p className="text-muted-foreground">{stop.name}</p>
+                                    <p className={`font-mono text-sm ${stop.isFinal ? 'font-semibold text-primary' : 'text-foreground'}`}>GH₵{stop.fare.toFixed(2)}</p>
                                 </div>
-                                <p className="font-mono text-sm text-foreground">GH₵{stop.fare.toFixed(2)}</p>
-                            </div>
+                             </AccordionTrigger>
+                             <AccordionContent>
+                                <div className="px-3 pt-2 pb-2 text-center">
+                                {selectedBus.capacity.current < selectedBus.capacity.max ? (
+                                    <Button className='w-full'>
+                                        BOARD
+                                    </Button>
+                                ) : (
+                                    <p className="text-sm text-destructive font-medium p-2 bg-destructive/10 rounded-md">This bus is full.</p>
+                                )}
+                                </div>
+                             </AccordionContent>
+                           </AccordionItem>
                         ))}
-                         <div className="flex items-center justify-between gap-3 mt-2 pt-2 border-t border-dashed">
-                                <div className="flex items-center gap-3">
-                                    <div className="h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center">
-                                        <Flag className="h-3 w-3 text-primary" />
-                                    </div>
-                                    <p className="font-semibold text-primary">{selectedBus.finalDestination.name} (Final)</p>
-                                </div>
-                                <p className="font-mono text-sm font-semibold text-primary">GH₵{selectedBus.finalDestination.fare.toFixed(2)}</p>
-                            </div>
-                    </div>
+                    </Accordion>
                  </div>
               </div>
             ) : (
@@ -230,3 +237,5 @@ export default function HomePage() {
     </div>
   );
 }
+
+    
