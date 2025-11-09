@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils';
 const navItems = [
   { href: '/home', icon: LayoutGrid, label: 'Home' },
   { href: '/eritas-pay', icon: Wallet, label: 'ERITAS Pay' },
-  { href: '/search', icon: Search, label: 'Find A Bus', primary: true },
+  { href: '/search', icon: Search, label: 'Find A Bus' },
   { href: '/music', icon: Music, label: 'MUSIC' },
 ];
 
@@ -24,25 +24,21 @@ export function BottomNav() {
           const Icon = item.icon;
           const isActive = pathname.startsWith(item.href);
 
-          if (item.primary) {
-            return (
-              <Button key={item.label} className="flex-1 flex flex-col h-auto bg-primary text-primary-foreground rounded-lg py-2">
-                <Icon className="h-6 w-6" />
-                <span className="text-xs font-medium">{item.label}</span>
-              </Button>
-            );
-          }
-
           return (
             <Link href={item.href} key={item.label} className="flex-1">
               <div
                 className={cn(
-                  'flex flex-col items-center justify-center gap-1 text-gray-600 hover:text-primary transition-colors',
-                  isActive && 'text-primary'
+                  'flex flex-col items-center justify-center gap-1 h-full py-2',
+                   isActive
+                    ? 'bg-primary text-primary-foreground rounded-lg'
+                    : 'text-gray-600 hover:text-primary transition-colors'
                 )}
               >
                 <Icon className="h-6 w-6" />
-                <span className="text-xs">{item.label}</span>
+                <span className={cn(
+                    "text-xs",
+                    isActive && "font-medium"
+                )}>{item.label}</span>
               </div>
             </Link>
           );
