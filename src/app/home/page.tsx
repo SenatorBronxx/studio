@@ -10,15 +10,25 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { BottomNav } from '@/components/bottom-nav';
+import { useState } from 'react';
 
 export default function HomePage() {
   const mapImage = PlaceHolderImages.find((p) => p.id === 'map-route');
   const searchParams = useSearchParams();
+  const router = useRouter();
   const userName = searchParams.get('name') || 'there';
+  
+  const [fromLocation, setFromLocation] = useState('');
+  const [toLocation, setToLocation] = useState('');
+
+  const handleSearch = () => {
+    router.push(`/search?from=${encodeURIComponent(fromLocation)}&to=${encodeURIComponent(toLocation)}`);
+  };
+
 
   return (
     <div className="relative min-h-screen w-full bg-gray-100 font-sans">
@@ -75,17 +85,27 @@ export default function HomePage() {
             <div className='flex items-center gap-2'>
                 <div className='relative flex-1'>
                     <BusFront className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                    <Input placeholder='From' className='pl-10' />
+                    <Input 
+                      placeholder='From' 
+                      className='pl-10' 
+                      value={fromLocation}
+                      onChange={(e) => setFromLocation(e.target.value)}
+                    />
                 </div>
                 <div className="p-2 rounded-full bg-gray-100">
                     <ArrowRight className="h-5 w-5 text-gray-500" />
                 </div>
                 <div className='relative flex-1'>
                      <BusFront className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                    <Input placeholder='To' className='pl-10' />
+                    <Input 
+                      placeholder='To' 
+                      className='pl-10'
+                      value={toLocation}
+                      onChange={(e) => setToLocation(e.target.value)}
+                    />
                 </div>
             </div>
-            <Button>
+            <Button onClick={handleSearch}>
                 <Search className='mr-2 h-5 w-5' />
                 Search Buses
             </Button>
