@@ -48,11 +48,8 @@ export default function Home() {
           </div>
           <AuthForm onSignUpSuccess={handleSignUpSuccess} />
         </div>
-        <div className="mt-8 w-full max-w-md lg:hidden">
-          <UserPreferences />
-        </div>
       </div>
-      <div className="relative hidden bg-muted lg:block">
+      <div className="relative bg-muted">
         {busImage && (
             <Image
                 alt={busImage.description}
