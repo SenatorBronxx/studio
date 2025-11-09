@@ -111,7 +111,7 @@ export function AuthForm({ onSignUpSuccess }: AuthFormProps) {
                 <FormItem>
                   <FormLabel>Phone Number</FormLabel>
                   <FormControl>
-                    <Input placeholder="+1234567890" {...field} />
+                    <Input placeholder="+233 24 123 4567" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -140,7 +140,7 @@ export function AuthForm({ onSignUpSuccess }: AuthFormProps) {
       <TabsContent value="sign-up">
         <Form {...signUpForm}>
           <form onSubmit={signUpForm.handleSubmit(handleSignUp)} className="space-y-4 mt-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                 control={signUpForm.control}
                 name="firstName"
@@ -175,7 +175,7 @@ export function AuthForm({ onSignUpSuccess }: AuthFormProps) {
                 <FormItem>
                   <FormLabel>Phone Number</FormLabel>
                   <FormControl>
-                    <Input placeholder="+1234567890" {...field} />
+                    <Input placeholder="+233 24 123 4567" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

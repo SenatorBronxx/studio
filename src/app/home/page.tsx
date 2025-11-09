@@ -75,7 +75,7 @@ export default function HomePage() {
 
 
       {/* Bottom Sheet */}
-      <div className="absolute bottom-0 left-0 right-0 z-10 p-2">
+      <div className="absolute bottom-0 left-0 right-0 z-10 p-2 sm:p-4">
         <div className="bg-white/70 backdrop-blur-xl border border-white/30 rounded-2xl p-4 max-w-md mx-auto flex flex-col gap-4 shadow-lg">
           <div>
             <h1 className="text-2xl font-bold text-gray-800">Welcome, Jane!</h1>
