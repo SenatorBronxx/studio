@@ -78,7 +78,7 @@ export default function HomePage() {
       <div className="absolute bottom-0 left-0 right-0 z-10 p-2">
         <div className="bg-white/70 backdrop-blur-xl border border-white/30 rounded-2xl p-4 max-w-md mx-auto flex flex-col gap-4 shadow-lg">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">Welcome!</h1>
+            <h1 className="text-2xl font-bold text-gray-800">Welcome, Jane!</h1>
             <p className="text-gray-600">Where are you heading today?</p>
           </div>
 

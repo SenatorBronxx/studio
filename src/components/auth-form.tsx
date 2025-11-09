@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -22,13 +23,20 @@ import { Loader2 } from "lucide-react";
 
 // Schemas
 const signInSchema = z.object({
-  email: z.string().email({ message: "Invalid email address." }),
+  phone: z.string().min(10, { message: "Invalid phone number." }),
   password: z.string().min(1, { message: "Password is required." }),
 });
 
 const signUpSchema = z.object({
-  email: z.string().email({ message: "Invalid email address." }),
+  firstName: z.string().min(1, { message: "First name is required." }),
+  lastName: z.string().min(1, { message: "Last name is required." }),
+  email: z.string().email({ message: "Invalid email address." }).optional().or(z.literal('')),
+  phone: z.string().min(10, { message: "A valid phone number is required." }),
   password: z.string().min(8, { message: "Password must be at least 8 characters." }),
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
 });
 
 type AuthFormProps = {
@@ -41,12 +49,12 @@ export function AuthForm({ onSignUpSuccess }: AuthFormProps) {
 
   const signInForm = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
-    defaultValues: { email: "", password: "" },
+    defaultValues: { phone: "", password: "" },
   });
 
   const signUpForm = useForm<z.infer<typeof signUpSchema>>({
     resolver: zodResolver(signUpSchema),
-    defaultValues: { email: "", password: "" },
+    defaultValues: { firstName: "", lastName: "", email: "", phone: "", password: "", confirmPassword: "" },
   });
 
   const handleSignIn = async (values: z.infer<typeof signInSchema>) => {
@@ -98,12 +106,12 @@ export function AuthForm({ onSignUpSuccess }: AuthFormProps) {
           <form onSubmit={signInForm.handleSubmit(handleSignIn)} className="space-y-4 mt-4">
             <FormField
               control={signInForm.control}
-              name="email"
+              name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>Phone Number</FormLabel>
                   <FormControl>
-                    <Input placeholder="m@example.com" {...field} />
+                    <Input placeholder="+1234567890" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -132,12 +140,53 @@ export function AuthForm({ onSignUpSuccess }: AuthFormProps) {
       <TabsContent value="sign-up">
         <Form {...signUpForm}>
           <form onSubmit={signUpForm.handleSubmit(handleSignUp)} className="space-y-4 mt-4">
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={signUpForm.control}
+                name="firstName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>First Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Jane" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={signUpForm.control}
+                name="lastName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Last Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Doe" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+             <FormField
+              control={signUpForm.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Phone Number</FormLabel>
+                  <FormControl>
+                    <Input placeholder="+1234567890" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={signUpForm.control}
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>Email (Optional)</FormLabel>
                   <FormControl>
                     <Input placeholder="m@example.com" {...field} />
                   </FormControl>
@@ -151,6 +200,19 @@ export function AuthForm({ onSignUpSuccess }: AuthFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Password</FormLabel>
+                  <FormControl>
+                    <Input type="password" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+             <FormField
+              control={signUpForm.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Confirm Password</FormLabel>
                   <FormControl>
                     <Input type="password" {...field} />
                   </FormControl>
