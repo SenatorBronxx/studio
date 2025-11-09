@@ -49,27 +49,29 @@ export default function Home() {
           <AuthForm onSignUpSuccess={handleSignUpSuccess} />
         </div>
       </div>
-      <div className="relative bg-muted h-96 lg:h-auto">
-        {busImage && (
-            <Image
-                alt={busImage.description}
-                src={busImage.imageUrl}
-                data-ai-hint={busImage.imageHint}
-                fill
-                className="object-cover"
-            />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 p-8">
+      <div className="bg-muted lg:relative h-auto lg:h-auto">
+        <div className="relative h-96 lg:h-full">
+            {busImage && (
+                <Image
+                    alt={busImage.description}
+                    src={busImage.imageUrl}
+                    data-ai-hint={busImage.imageHint}
+                    fill
+                    className="object-cover"
+                />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+            <div className="absolute top-1/4 left-0 w-full overflow-hidden">
+                <Bus className="absolute animate-bus-move h-12 w-12 text-white/50" />
+            </div>
+            <div className="absolute top-1/3 right-1/4 animate-float">
+                <MapPin className="h-16 w-16 text-white/30" />
+            </div>
+        </div>
+        <div className="p-8 lg:absolute lg:bottom-0 lg:left-0 lg:right-0">
             <div className="flex h-full items-end justify-center">
                 <UserPreferences />
             </div>
-        </div>
-        <div className="absolute top-1/4 left-0 w-full overflow-hidden">
-            <Bus className="absolute animate-bus-move h-12 w-12 text-white/50" />
-        </div>
-         <div className="absolute top-1/3 right-1/4 animate-float">
-            <MapPin className="h-16 w-16 text-white/30" />
         </div>
       </div>
     </div>
