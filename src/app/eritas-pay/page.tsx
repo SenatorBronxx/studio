@@ -20,6 +20,7 @@ import { ProfileSidebar } from '@/components/profile-sidebar';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { BottomNav } from '@/components/bottom-nav';
 import { Progress } from '@/components/ui/progress';
+import { VisaIcon } from '@/components/icons/visa';
 
 const mockTransactions = [
   {
@@ -106,8 +107,8 @@ export default function EritasPayPage() {
               Top-up
             </Button>
             <Button size="lg" variant="secondary" className="flex-col h-20">
-              <QrCode className="h-6 w-6 mb-1" />
-              Pay with QR
+              <VisaIcon className="w-12 mb-2" />
+              Synchronize with VISA
             </Button>
           </div>
 
