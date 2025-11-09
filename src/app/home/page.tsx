@@ -44,7 +44,7 @@ export default function HomePage() {
       
       {/* ETA Popup */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 z-10">
-        <Card className="flex items-center shadow-lg">
+        <Card className="flex items-center shadow-lg bg-white/80 backdrop-blur-sm">
             <div className='bg-primary text-primary-foreground p-3 rounded-l-lg'>
                 <p className="text-2xl font-bold">15</p>
                 <p className="text-xs -mt-1">min</p>
