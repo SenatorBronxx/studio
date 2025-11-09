@@ -1,6 +1,7 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState } from "react";
+import { useFormStatus } from "react-dom";
 import { savePreferencesAction } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,7 +37,10 @@ function SubmitButton() {
 }
 
 export function UserPreferences() {
-  const [state, formAction] = useFormState(savePreferencesAction, initialState);
+  const [state, formAction] = useActionState(
+    savePreferencesAction,
+    initialState
+  );
   const { toast } = useToast();
 
   useEffect(() => {
@@ -107,7 +111,9 @@ export function UserPreferences() {
 
         {state.data && (
           <div className="mt-6 space-y-4">
-            <p className="text-sm text-white/80 lg:text-white/80">{state.data.confirmationMessage}</p>
+            <p className="text-sm text-white/80 lg:text-white/80">
+              {state.data.confirmationMessage}
+            </p>
           </div>
         )}
       </CardContent>
