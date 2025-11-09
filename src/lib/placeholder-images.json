@@ -47,6 +47,12 @@
       "description": "An avatar of a person.",
       "imageUrl": "https://images.unsplash.com/photo-1639149888905-fb39731f2e6c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8dXNlciUyMGF2YXRhcnxlbnwwfHx8fDE3NjI2MzIyNTZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "user avatar"
+    },
+    {
+      "id": "eritas-logo",
+      "description": "The Eritas company logo.",
+      "imageUrl": "/eritas-logo.png",
+      "imageHint": "company logo"
     }
   ]
 }
