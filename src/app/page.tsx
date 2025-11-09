@@ -49,8 +49,8 @@ export default function Home() {
           <AuthForm onSignUpSuccess={handleSignUpSuccess} />
         </div>
       </div>
-      <div className="bg-muted lg:relative h-auto lg:h-auto">
-        <div className="relative h-96 lg:h-full">
+      <div className="bg-muted relative">
+        <div className="relative h-full">
             {busImage && (
                 <Image
                     alt={busImage.description}
@@ -68,7 +68,7 @@ export default function Home() {
                 <MapPin className="h-16 w-16 text-white/30" />
             </div>
         </div>
-        <div className="p-8 lg:absolute lg:bottom-0 lg:left-0 lg:right-0">
+        <div className="absolute bottom-0 left-0 right-0 p-8">
             <div className="flex h-full items-end justify-center">
                 <UserPreferences />
             </div>
