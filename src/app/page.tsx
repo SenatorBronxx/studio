@@ -55,7 +55,7 @@ export default function Home() {
           <AuthForm onSignUpSuccess={handleSignUpSuccess} onSignInSuccess={handleSignInSuccess} />
         </div>
       </div>
-      <div className="bg-muted relative hidden lg:block h-full">
+      <div className="bg-muted relative flex flex-col justify-end lg:h-full">
         <div className="relative h-full">
             {busImage && (
                 <Image
