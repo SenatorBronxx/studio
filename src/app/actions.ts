@@ -1,37 +1,46 @@
 "use server";
 
 import { z } from "zod";
-import { personalizedAnimation } from "@/ai/flows/personalized-animation";
-import type { PersonalizedAnimationOutput } from "@/ai/flows/personalized-animation";
+import {
+  saveUserPreferences,
+  type UserPreferencesOutput,
+} from "@/ai/flows/save-user-preferences";
 
-const AnimationRequestSchema = z.object({
-  interests: z.string().min(3, "Please tell us a bit more about your interests."),
+const UserPreferencesSchema = z.object({
+  food: z.string().min(2, "Please enter a valid food."),
+  music: z.string().min(2, "Please enter a valid music genre."),
+  destination: z.string().min(2, "Please enter a valid destination."),
 });
 
 type State = {
   message?: string | null;
-  data?: PersonalizedAnimationOutput | null;
+  data?: UserPreferencesOutput | null;
 };
 
-export async function generatePersonalizedAnimation(
+export async function savePreferencesAction(
   prevState: State,
   formData: FormData
 ): Promise<State> {
-  const validatedFields = AnimationRequestSchema.safeParse({
-    interests: formData.get("interests"),
+  const validatedFields = UserPreferencesSchema.safeParse({
+    food: formData.get("food"),
+    music: formData.get("music"),
+    destination: formData.get("destination"),
   });
 
   if (!validatedFields.success) {
+    const fieldErrors = validatedFields.error.flatten().fieldErrors;
+    const message =
+      fieldErrors.food?.[0] ||
+      fieldErrors.music?.[0] ||
+      fieldErrors.destination?.[0];
     return {
-      message: validatedFields.error.flatten().fieldErrors.interests?.[0],
+      message: message,
     };
   }
 
   try {
-    const result = await personalizedAnimation({
-      interests: validatedFields.data.interests,
-    });
-    return { message: "success", data: result };
+    const result = await saveUserPreferences(validatedFields.data);
+    return { message: result.confirmationMessage, data: result };
   } catch (error) {
     console.error(error);
     return { message: "Something went wrong. Please try again." };

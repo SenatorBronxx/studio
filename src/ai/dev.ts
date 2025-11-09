@@ -1,4 +1,4 @@
 import { config } from 'dotenv';
 config();
 
-import '@/ai/flows/personalized-animation.ts';
+import '@/ai/flows/save-user-preferences.ts';

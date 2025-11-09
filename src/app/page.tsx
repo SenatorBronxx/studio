@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import { Bus, MapPin } from 'lucide-react';
 import { AuthForm } from '@/components/auth-form';
-import { AnimationTool } from '@/components/animation-tool';
+import { UserPreferences } from '@/components/user-preferences';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 export default function Home() {
@@ -36,7 +36,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 p-8">
             <div className="flex h-full items-end justify-center">
-                <AnimationTool />
+                <UserPreferences />
             </div>
         </div>
         <div className="absolute top-1/4 left-0 w-full overflow-hidden">
