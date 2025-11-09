@@ -1,4 +1,3 @@
-
 'use client';
 
 import Image from 'next/image';
@@ -34,7 +33,7 @@ import { BusSeatingChart } from '@/components/bus-seating-chart';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 
-const mockBusData = [
+const initialBusData = [
     {
       id: 'bus-1',
       driver: 'Kofi Mensah',
@@ -73,7 +72,7 @@ const mockBusData = [
     },
 ];
 
-type BusData = typeof mockBusData[0];
+type BusData = typeof initialBusData[0];
 type Notification = {
     id: number;
     title: string;
@@ -90,6 +89,7 @@ export default function HomePage() {
   
   const [fromLocation, setFromLocation] = useState('');
   const [toLocation, setToLocation] = useState('');
+  const [buses, setBuses] = useState(initialBusData);
   const [selectedBus, setSelectedBus] = useState<BusData | null>(null);
   const [isBoarding, setIsBoarding] = useState(false);
   const [boardedStop, setBoardedStop] = useState<string | null>(null);
@@ -134,6 +134,25 @@ export default function HomePage() {
     setTimeout(() => {
         setIsBoarding(false);
         setBoardedStop(stop.name);
+        
+        // Update bus data
+        setBuses(prevBuses => {
+            const newBuses = [...prevBuses];
+            const busIndex = newBuses.findIndex(b => b.id === selectedBus?.id);
+            if (busIndex !== -1 && selectedSeat) {
+                const seatIndex = newBuses[busIndex].seating.findIndex(s => s?.id === selectedSeat);
+                if(seatIndex !== -1) {
+                    const seatToUpdate = newBuses[busIndex].seating[seatIndex];
+                    if (seatToUpdate) {
+                       seatToUpdate.isOccupied = true;
+                    }
+                }
+                newBuses[busIndex].capacity.current += 1;
+                setSelectedBus(newBuses[busIndex]); // Update selectedBus with new data
+            }
+            return newBuses;
+        });
+
 
         // Generate QR code data
         const qrData = {
@@ -255,7 +274,7 @@ export default function HomePage() {
       </header>
       
        {/* Bus Icon Stickers */}
-        {mockBusData.map((bus, index) => (
+        {buses.map((bus, index) => (
             <div 
                 key={bus.id}
                 className="absolute z-10 animate-float cursor-pointer"
@@ -440,9 +459,3 @@ export default function HomePage() {
     </div>
   );
 }
-
-    
-
-    
-
-    
