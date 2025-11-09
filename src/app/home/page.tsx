@@ -6,7 +6,6 @@ import {
   ArrowRight,
   BusFront,
   MapPin,
-  Menu,
   Search,
   X,
 } from 'lucide-react';
@@ -19,6 +18,7 @@ import { BottomNav } from '@/components/bottom-nav';
 import { useState } from 'react';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ProfileSidebar } from '@/components/profile-sidebar';
 
 const mockBusData = [
     {
@@ -82,9 +82,7 @@ export default function HomePage() {
 
       {/* Header */}
       <header className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-20">
-        <Button variant="default" size="icon" className="bg-white/80 backdrop-blur-sm rounded-full shadow-md hover:bg-white text-gray-800">
-          <Menu className="h-5 w-5" />
-        </Button>
+        <ProfileSidebar />
       </header>
       
       {/* ETA Popup */}
