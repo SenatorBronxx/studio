@@ -9,6 +9,7 @@ import {
   Search,
   X,
   Flag,
+  Users,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
@@ -20,6 +21,7 @@ import { useState } from 'react';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ProfileSidebar } from '@/components/profile-sidebar';
+import { Progress } from '@/components/ui/progress';
 
 const mockBusData = [
     {
@@ -27,6 +29,7 @@ const mockBusData = [
       driver: 'Kofi Mensah',
       plate: 'GT 4589-23',
       eta: 15,
+      capacity: { current: 35, max: 52 },
       stops: [
         { name: 'Adenta', fare: 5.00 },
         { name: 'Madina', fare: 7.50 },
@@ -40,6 +43,7 @@ const mockBusData = [
       driver: 'Ama Serwaa',
       plate: 'AS 1234-24',
       eta: 25,
+      capacity: { current: 15, max: 48 },
       stops: [
         { name: 'Circle', fare: 6.00 },
         { name: 'Kaneshie', fare: 8.50 },
@@ -133,7 +137,7 @@ export default function HomePage() {
       <div className="absolute bottom-0 left-0 right-0 z-10 p-2 sm:p-4">
         <div className="bg-background/80 backdrop-blur-sm rounded-t-2xl p-4 max-w-md mx-auto flex flex-col gap-4 shadow-lg">
             {selectedBus ? (
-              <div>
+              <div className="space-y-3">
                 <div className="flex justify-between items-start">
                     <div className="flex items-center gap-3">
                         <Avatar>
@@ -149,7 +153,16 @@ export default function HomePage() {
                         <X className="h-5 w-5" />
                     </Button>
                 </div>
-                 <Separator className="my-3" />
+                 <Separator />
+
+                 <div>
+                    <div className="flex justify-between items-center mb-1">
+                        <h3 className="text-sm font-semibold text-foreground/80 flex items-center gap-2"><Users className="h-4 w-4" />Bus Capacity</h3>
+                        <p className="text-sm font-mono text-muted-foreground">{selectedBus.capacity.current} / {selectedBus.capacity.max} Seats</p>
+                    </div>
+                    <Progress value={(selectedBus.capacity.current / selectedBus.capacity.max) * 100} className="h-2" />
+                 </div>
+
                  <div>
                     <h3 className="text-sm font-semibold text-foreground/80 mb-2">Bus Fares:</h3>
                     <div className="flex flex-col gap-2">
