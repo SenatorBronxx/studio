@@ -21,6 +21,12 @@ export default function Home() {
     setShowSlideshow(true);
   };
   
+  const handleSignInSuccess = () => {
+    // For sign-in, we don't have the name immediately, so we'll pass a default.
+    // In a real app, you'd fetch the user's name from your backend.
+    router.push(`/home?name=${encodeURIComponent('Friend')}`);
+  };
+
   const handleSlideshowFinish = () => {
     router.push(`/home?name=${encodeURIComponent(userName)}`);
   };
@@ -46,10 +52,10 @@ export default function Home() {
               Your journey starts here. Access your account or create a new one.
             </p>
           </div>
-          <AuthForm onSignUpSuccess={handleSignUpSuccess} />
+          <AuthForm onSignUpSuccess={handleSignUpSuccess} onSignInSuccess={handleSignInSuccess} />
         </div>
       </div>
-      <div className="bg-muted relative h-[500px] lg:h-full">
+      <div className="bg-muted relative hidden lg:block h-full">
         <div className="relative h-full">
             {busImage && (
                 <Image

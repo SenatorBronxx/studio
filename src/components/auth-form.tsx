@@ -41,9 +41,10 @@ const signUpSchema = z.object({
 
 type AuthFormProps = {
   onSignUpSuccess?: (name: string) => void;
+  onSignInSuccess?: () => void;
 };
 
-export function AuthForm({ onSignUpSuccess }: AuthFormProps) {
+export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
@@ -67,6 +68,7 @@ export function AuthForm({ onSignUpSuccess }: AuthFormProps) {
       description: "Welcome back!",
     });
     setIsSubmitting(false);
+    onSignInSuccess?.();
   };
 
   const handleSignUp = async (values: z.infer<typeof signUpSchema>) => {
@@ -92,6 +94,7 @@ export function AuthForm({ onSignUpSuccess }: AuthFormProps) {
             description: `Welcome!`,
         });
         setIsSubmitting(false);
+        onSignInSuccess?.();
     }, 1000);
   }
 
