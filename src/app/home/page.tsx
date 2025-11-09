@@ -60,7 +60,7 @@ export default function HomePage() {
        {/* Bus Icon */}
         <div className="absolute bottom-[45%] left-1/4 z-10 animate-float">
             <svg width="40" height="40" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M24 44C24 44 32 36 32 26C32 17.1634 28.4183 10 24 10C19.5817 10 16 17.1634 16 26C16 36 24 44 24 44Z" fill="#16a34a" stroke="white" stroke-width="3" stroke-linejoin="round"/>
+                <path d="M24 44C24 44 32 36 32 26C32 17.1634 28.4183 10 24 10C19.5817 10 16 17.1634 16 26C16 36 24 44 24 44Z" fill="#16a34a" stroke="white" strokeWidth="3" strokeLinejoin="round"/>
                 <path d="M24 29C26.7614 29 29 26.7614 29 24C29 21.2386 26.7614 19 24 19C21.2386 19 19 21.2386 19 24C19 26.7614 21.2386 29 24 29Z" fill="white"/>
             </svg>
         </div>
