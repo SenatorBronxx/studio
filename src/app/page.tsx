@@ -9,7 +9,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen w-full lg:grid lg:grid-cols-2">
-      <div className="flex items-center justify-center p-6 sm:p-12">
+      <div className="flex flex-col items-center justify-center p-6 sm:p-12">
         <div className="mx-auto grid w-[380px] gap-6">
           <div className="grid gap-2 text-center">
             <div className="flex justify-center">
@@ -25,6 +25,9 @@ export default function Home() {
             </p>
           </div>
           <AuthForm />
+        </div>
+        <div className="mt-8 w-full max-w-md lg:hidden">
+          <UserPreferences />
         </div>
       </div>
       <div className="relative hidden bg-muted lg:block">

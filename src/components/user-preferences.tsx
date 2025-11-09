@@ -57,20 +57,20 @@ export function UserPreferences() {
   }, [state, toast]);
 
   return (
-    <Card className="w-full max-w-md bg-card/80 backdrop-blur-sm border-white/20 text-card-foreground">
+    <Card className="w-full max-w-md bg-card/80 backdrop-blur-sm border-white/20 text-card-foreground lg:bg-card/80 lg:text-card-foreground lg:border-white/20">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-white">
+        <CardTitle className="flex items-center gap-2 text-white lg:text-white">
           <Save />
           Tell Us More About You
         </CardTitle>
-        <CardDescription className="text-white/80">
+        <CardDescription className="text-white/80 lg:text-white/80">
           Help us personalize your experience by sharing your favorites.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form action={formAction} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="food" className="text-white/90">
+            <Label htmlFor="food" className="text-white/90 lg:text-white/90">
               Favourite Food
             </Label>
             <Input
@@ -81,7 +81,7 @@ export function UserPreferences() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="music" className="text-white/90">
+            <Label htmlFor="music" className="text-white/90 lg:text-white/90">
               Favourite Music
             </Label>
             <Input
@@ -92,7 +92,7 @@ export function UserPreferences() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="destination" className="text-white/90">
+            <Label htmlFor="destination" className="text-white/90 lg:text-white/90">
               Favourite Ghanaian Destination
             </Label>
             <Input
@@ -107,7 +107,7 @@ export function UserPreferences() {
 
         {state.data && (
           <div className="mt-6 space-y-4">
-            <p className="text-sm text-white/80">{state.data.confirmationMessage}</p>
+            <p className="text-sm text-white/80 lg:text-white/80">{state.data.confirmationMessage}</p>
           </div>
         )}
       </CardContent>
