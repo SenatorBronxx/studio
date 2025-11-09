@@ -66,7 +66,7 @@ export default function HomePage() {
 
       {/* Bottom Sheet - Search */}
       <div className="absolute bottom-0 left-0 right-0 z-10 p-2 sm:p-4">
-        <div className="bg-white rounded-t-2xl p-4 max-w-md mx-auto flex flex-col gap-4 shadow-lg">
+        <div className="bg-white/80 backdrop-blur-sm rounded-t-2xl p-4 max-w-md mx-auto flex flex-col gap-4 shadow-lg">
             <div className='text-center'>
                 <h2 className="text-xl font-bold text-gray-800">Hi {userName}, ready for your next trip?</h2>
                 <p className="text-sm text-gray-500">Find the perfect bus for your journey</p>
