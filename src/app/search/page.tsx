@@ -2,12 +2,12 @@
 'use client';
 
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Bus, ArrowRight, Search, BusFront } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { ArrowRight, Search, BusFront } from 'lucide-react';
 import { BottomNav } from '@/components/bottom-nav';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
@@ -19,15 +19,9 @@ export default function SearchPage() {
   const [fromLocation, setFromLocation] = useState(fromQuery);
   const [toLocation, setToLocation] = useState(toQuery);
 
-  useEffect(() => {
-    setFromLocation(fromQuery);
-    setToLocation(toQuery);
-  }, [fromQuery, toQuery]);
-
-
   const handleSearch = () => {
-    // In a real app, this would trigger a search and update the results below.
-    // For now, it will just update the URL query params.
+    // This will trigger a navigation to the same page but with new query params,
+    // which will cause the component to re-render with the new search terms.
     router.push(`/search?from=${encodeURIComponent(fromLocation)}&to=${encodeURIComponent(toLocation)}`);
   };
 
