@@ -87,7 +87,7 @@ export default function TopUpPage() {
                             {mobileMoneyNetworks.map((net) => (
                                 <Label key={net.id} htmlFor={net.id} className="flex items-center justify-between p-4 border rounded-lg cursor-pointer has-[:checked]:bg-primary/10 has-[:checked]:border-primary">
                                     <div className="flex items-center gap-4">
-                                        <Image src={net.logo} alt={net.name} width={40} height={40} className="rounded-md"/>
+                                        <Image src={net.logo} alt={net.name} width={net.id === 'mtn' ? 80 : 40} height={40} className="object-contain"/>
                                         <span className="font-medium">{net.name}</span>
                                     </div>
                                     <RadioGroupItem value={net.id} id={net.id} />
@@ -143,3 +143,5 @@ export default function TopUpPage() {
     </div>
   );
 }
+
+    
