@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -13,6 +13,8 @@ import { useToast } from '@/hooks/use-toast';
 import { BottomNav } from '@/components/bottom-nav';
 import { Separator } from '@/components/ui/separator';
 import { NowPlayingIcon } from '@/components/icons/now-playing-icon';
+import { Progress } from '@/components/ui/progress';
+
 
 const musicArtworks = PlaceHolderImages.filter(p => p.id.startsWith('music-art-'));
 
@@ -49,7 +51,30 @@ const initialPlaylist: PlaylistItem[] = [
 export default function MusicPage() {
     const [playlist, setPlaylist] = useState<PlaylistItem[]>(initialPlaylist);
     const [nowPlaying, setNowPlaying] = useState<PlaylistItem | null>(initialPlaylist[0] || null);
+    const [songProgress, setSongProgress] = useState(0);
     const { toast } = useToast();
+
+     useEffect(() => {
+        if (nowPlaying) {
+            setSongProgress(0); // Reset progress when song changes
+            const durationInSeconds = 180; // Mock duration of 3 minutes
+            const interval = setInterval(() => {
+                setSongProgress(prev => {
+                    const nextProgress = prev + 100 / durationInSeconds;
+                    if (nextProgress >= 100) {
+                        // Move to next song
+                        const currentIndex = playlist.findIndex(p => p.id === nowPlaying.id);
+                        const nextIndex = (currentIndex + 1) % playlist.length;
+                        setNowPlaying(playlist[nextIndex] || null);
+                        return 0;
+                    }
+                    return nextProgress;
+                });
+            }, 1000);
+
+            return () => clearInterval(interval);
+        }
+    }, [nowPlaying, playlist]);
 
     const addToPlaylist = (track: Track) => {
         if (playlist.find(t => t.id === track.id)) {
@@ -84,18 +109,26 @@ export default function MusicPage() {
             });
             return;
         }
+        
+        let newPlaylist = playlist.filter(t => t.id !== trackId);
 
-        setPlaylist(prev => prev.filter(t => t.id !== trackId));
+        // If the removed song was the one playing, play the next one
+        if (nowPlaying?.id === trackId) {
+            const currentIndex = playlist.findIndex(p => p.id === trackId);
+            const nextSong = playlist[currentIndex + 1] || playlist[0] || null;
+            if (nextSong && nextSong.id === trackId) { // if it's the only song
+                setNowPlaying(null);
+            } else {
+                setNowPlaying(nextSong);
+            }
+        }
+        
+        setPlaylist(newPlaylist);
+
         toast({
             title: 'Song Removed',
             description: 'The song has been removed from the playlist.',
         });
-
-        // If the removed song was the one playing, play the next one
-        if (nowPlaying?.id === trackId) {
-            const nextSong = playlist.find(p => p.id !== trackId);
-            setNowPlaying(nextSong || null);
-        }
     };
 
   return (
@@ -124,17 +157,20 @@ export default function MusicPage() {
                     <div className="py-4 flex flex-col h-full">
                        {nowPlaying ? (
                             <>
-                                <div className='mb-4'>
-                                    <p className="text-sm font-medium text-muted-foreground mb-2">Now Playing</p>
+                                <div className='mb-4 space-y-3'>
+                                    <p className="text-sm font-medium text-muted-foreground">Now Playing</p>
                                     <div className="flex items-center gap-4 p-3 bg-primary/10 rounded-lg">
                                         <Image src={nowPlaying.image} alt={nowPlaying.title} width={48} height={48} className="rounded-md" />
-                                        <div className="flex-grow">
-                                            <p className="font-semibold">{nowPlaying.title}</p>
-                                            <div className="flex text-sm text-muted-foreground">
-                                                <span>{nowPlaying.artist}</span>
-                                                <span className="mx-2">•</span>
-                                                <span>{nowPlaying.duration}</span>
+                                        <div className="flex-grow space-y-2">
+                                            <div>
+                                                <p className="font-semibold">{nowPlaying.title}</p>
+                                                <div className="flex text-sm text-muted-foreground">
+                                                    <span>{nowPlaying.artist}</span>
+                                                    <span className="mx-2">•</span>
+                                                    <span>{nowPlaying.duration}</span>
+                                                </div>
                                             </div>
+                                             <Progress value={songProgress} className="h-1" />
                                         </div>
                                         <NowPlayingIcon />
                                     </div>
@@ -249,3 +285,5 @@ export default function MusicPage() {
     </div>
   );
 }
+
+    
