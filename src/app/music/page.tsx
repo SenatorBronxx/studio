@@ -286,6 +286,7 @@ export default function MusicPage() {
                                         <span className="mx-2">•</span>
                                         <span>{track.duration}</span>
                                     </div>
+
                                 </div>
                                 <Button size="icon" variant="ghost" onClick={() => addToPlaylist(track)}>
                                     <Plus className="h-5 w-5"/>
@@ -306,3 +307,5 @@ export default function MusicPage() {
     </div>
   );
 }
+
+    
