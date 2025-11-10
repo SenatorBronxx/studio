@@ -11,6 +11,8 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useToast } from '@/hooks/use-toast';
 import { BottomNav } from '@/components/bottom-nav';
+import { Separator } from '@/components/ui/separator';
+import { NowPlayingIcon } from '@/components/icons/now-playing-icon';
 
 const musicArtworks = PlaceHolderImages.filter(p => p.id.startsWith('music-art-'));
 
@@ -45,6 +47,7 @@ const initialPlaylist: PlaylistItem[] = [
 
 export default function MusicPage() {
     const [playlist, setPlaylist] = useState<PlaylistItem[]>(initialPlaylist);
+    const [nowPlaying, setNowPlaying] = useState<PlaylistItem | null>(initialPlaylist[0] || null);
     const { toast } = useToast();
 
     const addToPlaylist = (track: Track) => {
@@ -56,7 +59,14 @@ export default function MusicPage() {
             });
             return;
         }
-        setPlaylist(prev => [...prev, { ...track, addedByUser: true }]);
+        const newTrack = { ...track, addedByUser: true };
+        setPlaylist(prev => [...prev, newTrack]);
+
+        // If nothing is playing, make this the new song
+        if (!nowPlaying) {
+            setNowPlaying(newTrack);
+        }
+
         toast({
             title: 'Added to Playlist',
             description: `${track.title} by ${track.artist} has been added to the bus playlist.`,
@@ -69,6 +79,11 @@ export default function MusicPage() {
             title: 'Song Removed',
             description: 'The song has been removed from the playlist.',
         });
+
+        // If the removed song was the one playing, play the next one
+        if (nowPlaying?.id === trackId) {
+            setNowPlaying(playlist[1] || null);
+        }
     };
 
   return (
@@ -94,29 +109,53 @@ export default function MusicPage() {
                     <SheetHeader>
                         <SheetTitle>Bus Playlist</SheetTitle>
                     </SheetHeader>
-                    <div className="py-4 space-y-4">
-                        {playlist.length > 0 ? (
-                            playlist.map(track => (
-                                <div key={track.id} className="flex items-center gap-4 group">
-                                    <Image src={track.image} alt={track.title} width={48} height={48} className="rounded-md" />
-                                    <div className="flex-grow">
-                                        <p className="font-semibold">{track.title}</p>
-                                        <p className="text-sm text-muted-foreground">{track.artist}</p>
+                    <div className="py-4 flex flex-col h-full">
+                       {nowPlaying ? (
+                            <>
+                                <div className='mb-4'>
+                                    <p className="text-sm font-medium text-muted-foreground mb-2">Now Playing</p>
+                                    <div className="flex items-center gap-4 p-3 bg-primary/10 rounded-lg">
+                                        <Image src={nowPlaying.image} alt={nowPlaying.title} width={48} height={48} className="rounded-md" />
+                                        <div className="flex-grow">
+                                            <p className="font-semibold">{nowPlaying.title}</p>
+                                            <p className="text-sm text-muted-foreground">{nowPlaying.artist}</p>
+                                        </div>
+                                        <NowPlayingIcon />
                                     </div>
-                                    {track.addedByUser && (
-                                        <Button size="icon" variant="ghost" className="opacity-0 group-hover:opacity-100" onClick={() => removeFromPlaylist(track.id)}>
-                                            <X className="h-5 w-5 text-muted-foreground" />
-                                        </Button>
-                                    )}
                                 </div>
-                            ))
-                        ) : (
-                            <div className="text-center text-muted-foreground py-12">
+                                <Separator />
+                            </>
+                       ) : null}
+
+                       <div className="flex-grow overflow-y-auto mt-4">
+                        {playlist.filter(p => p.id !== nowPlaying?.id).length > 0 ? (
+                             <>
+                                <p className="text-sm font-medium text-muted-foreground mb-2">Up next</p>
+                                <div className="space-y-3">
+                                {playlist.filter(p => p.id !== nowPlaying?.id).map(track => (
+                                    <div key={track.id} className="flex items-center gap-4 group">
+                                        <Image src={track.image} alt={track.title} width={48} height={48} className="rounded-md" />
+                                        <div className="flex-grow">
+                                            <p className="font-semibold">{track.title}</p>
+                                            <p className="text-sm text-muted-foreground">{track.artist}</p>
+                                        </div>
+                                        {track.addedByUser && (
+                                            <Button size="icon" variant="ghost" className="opacity-0 group-hover:opacity-100" onClick={() => removeFromPlaylist(track.id)}>
+                                                <X className="h-5 w-5 text-muted-foreground" />
+                                            </Button>
+                                        )}
+                                    </div>
+                                ))}
+                                </div>
+                            </>
+                        ) : !nowPlaying ? (
+                            <div className="text-center text-muted-foreground py-12 flex flex-col items-center justify-center h-full">
                                 <ListMusic className="h-12 w-12 mx-auto mb-4" />
                                 <p>No songs added yet.</p>
                                 <p className="text-xs">Browse and add songs to the playlist.</p>
                             </div>
-                        )}
+                        ) : null}
+                       </div>
                     </div>
                 </SheetContent>
             </Sheet>

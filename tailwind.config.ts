@@ -105,6 +105,10 @@ export default {
             '0%, 100%': { boxShadow: '0 0 5px -2px hsl(var(--primary))' },
             '50%': { boxShadow: '0 0 10px 2px hsl(var(--primary))' },
         },
+        'sound-wave': {
+          '0%, 100%': { height: '0.5rem' },
+          '50%': { height: '1.25rem' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
@@ -113,6 +117,7 @@ export default {
         'float': 'float 4s ease-in-out infinite',
         'pop-in': 'pop-in 0.5s ease-out forwards',
         'glow': 'glow 2.5s ease-in-out infinite',
+        'sound-wave': 'sound-wave 2s ease-in-out infinite',
       },
     },
   },
