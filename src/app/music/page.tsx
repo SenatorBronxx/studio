@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ListMusic, ListVideo, Mic2, Plus, SlidersHorizontal } from 'lucide-react';
+import { ListMusic, ListVideo, Mic2, Plus, SlidersHorizontal, Trash2, X } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useToast } from '@/hooks/use-toast';
@@ -28,10 +28,15 @@ const newTracks = [
   { id: 4, title: 'Starlight Echo', artist: 'Astro Beats', image: musicArtworks[2]?.imageUrl || '' },
 ];
 
+const initialPlaylist = [
+    { id: 101, title: 'Accra Night', artist: 'E.L', image: musicArtworks[1]?.imageUrl || '' },
+    { id: 102, title: 'Adonai', artist: 'Sarkodie', image: musicArtworks[3]?.imageUrl || '' },
+];
+
 type Track = typeof newTracks[0];
 
 export default function MusicPage() {
-    const [playlist, setPlaylist] = useState<Track[]>([]);
+    const [playlist, setPlaylist] = useState<Track[]>(initialPlaylist);
     const { toast } = useToast();
 
     const addToPlaylist = (track: Track) => {
@@ -47,6 +52,14 @@ export default function MusicPage() {
         toast({
             title: 'Added to Playlist',
             description: `${track.title} by ${track.artist} has been added to the bus playlist.`,
+        });
+    };
+    
+    const removeFromPlaylist = (trackId: number) => {
+        setPlaylist(prev => prev.filter(t => t.id !== trackId));
+        toast({
+            title: 'Song Removed',
+            description: 'The song has been removed from the playlist.',
         });
     };
 
@@ -76,12 +89,15 @@ export default function MusicPage() {
                     <div className="py-4 space-y-4">
                         {playlist.length > 0 ? (
                             playlist.map(track => (
-                                <div key={track.id} className="flex items-center gap-4">
+                                <div key={track.id} className="flex items-center gap-4 group">
                                     <Image src={track.image} alt={track.title} width={48} height={48} className="rounded-md" />
                                     <div className="flex-grow">
                                         <p className="font-semibold">{track.title}</p>
                                         <p className="text-sm text-muted-foreground">{track.artist}</p>
                                     </div>
+                                    <Button size="icon" variant="ghost" className="opacity-0 group-hover:opacity-100" onClick={() => removeFromPlaylist(track.id)}>
+                                        <X className="h-5 w-5 text-muted-foreground" />
+                                    </Button>
                                 </div>
                             ))
                         ) : (
