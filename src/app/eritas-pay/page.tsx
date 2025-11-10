@@ -4,8 +4,10 @@
 import {
   ArrowUpRight,
   Bus,
-  LayoutGrid,
   Search,
+  Bell,
+  Trash2,
+  QrCode,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -18,11 +20,29 @@ import { Progress } from '@/components/ui/progress';
 import { VisaIcon } from '@/components/icons/visa';
 import { useWallet } from '@/context/wallet-context';
 import { DeletableItem } from '@/components/deletable-item';
+import { useState } from 'react';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import Image from 'next/image';
+import { Loader2 } from 'lucide-react';
+
+type Notification = {
+    id: number;
+    title: string;
+    description: string;
+    action?: React.ReactNode;
+};
 
 export default function EritasPayPage() {
   const { balance, transactions, removeTransaction } = useWallet();
   const maxBalance = 400.00;
   const progressPercentage = (balance / maxBalance) * 100;
+  
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [isQrSheetOpen, setIsQrSheetOpen] = useState(false);
+  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
+  const [selectedBus, setSelectedBus] = useState<{ plate: string } | null>(null);
+  const [selectedSeat, setSelectedSeat] = useState<string | null>(null);
+
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -30,14 +50,56 @@ export default function EritasPayPage() {
       <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm p-4">
         <div className="max-w-md mx-auto flex justify-between items-center">
             <ProfileSidebar />
-            <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon">
-                    <LayoutGrid className="h-5 w-5" />
-                </Button>
-                 <Button variant="ghost" size="icon">
-                    <Search className="h-5 w-5" />
-                </Button>
-            </div>
+            <Sheet>
+                <SheetTrigger asChild>
+                    <Button
+                        variant="default"
+                        size="icon"
+                        className="bg-background/80 backdrop-blur-sm rounded-full shadow-md hover:bg-card text-foreground relative"
+                    >
+                        <Bell className="h-5 w-5" />
+                        {notifications.length > 0 && (
+                            <span className="absolute -top-1 -right-1 flex h-4 w-4">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-4 w-4 bg-primary text-primary-foreground text-xs items-center justify-center">
+                                    {notifications.length}
+                                </span>
+                            </span>
+                        )}
+                    </Button>
+                </SheetTrigger>
+                <SheetContent>
+                    <SheetHeader>
+                        <SheetTitle>Notifications</SheetTitle>
+                    </SheetHeader>
+                    <div className="py-4 h-full flex flex-col">
+                        {notifications.length > 0 ? (
+                            <>
+                                <div className="flex-grow space-y-4 overflow-y-auto">
+                                    {notifications.map(notification => (
+                                        <Card key={notification.id}>
+                                            <CardContent className='p-4 space-y-2'>
+                                                <h3 className="font-semibold">{notification.title}</h3>
+                                                <p className="text-sm text-muted-foreground">{notification.description}</p>
+                                                {notification.action && <div className='pt-2'>{notification.action}</div>}
+                                            </CardContent>
+                                        </Card>
+                                    ))}
+                                </div>
+                                <Button variant="outline" className="mt-4" onClick={() => setNotifications([])}>
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Clear All
+                                </Button>
+                            </>
+                        ) : (
+                            <div className="flex flex-col items-center justify-center text-center h-full text-muted-foreground">
+                                <Bell className="h-12 w-12 mb-4" />
+                                <p>You have no new notifications.</p>
+                            </div>
+                        )}
+                    </div>
+                </SheetContent>
+            </Sheet>
         </div>
       </header>
 
@@ -126,6 +188,32 @@ export default function EritasPayPage() {
       <div className="sticky bottom-0">
         <BottomNav />
       </div>
+
+       <Sheet open={isQrSheetOpen} onOpenChange={setIsQrSheetOpen}>
+            <SheetContent side="bottom" className="rounded-t-2xl">
+                <SheetHeader>
+                    <SheetTitle>Your Boarding Pass</SheetTitle>
+                </SheetHeader>
+                <div className="p-4 flex flex-col items-center justify-center space-y-4">
+                    {qrCodeUrl ? (
+                        <Image src={qrCodeUrl} alt="Boarding QR Code" width={200} height={200} />
+                    ) : (
+                        <div className="h-[200px] w-[200px] flex items-center justify-center bg-muted rounded-md">
+                            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                        </div>
+                    )}
+                    <div className="text-center space-y-1">
+                        <p className="text-sm text-muted-foreground">Show this QR code to the driver for verification.</p>
+                        <div className="flex items-center gap-4 justify-center">
+                            <Badge variant="outline">{selectedBus?.plate}</Badge>
+                            <Badge>Seat {selectedSeat}</Badge>
+                        </div>
+                    </div>
+                </div>
+            </SheetContent>
+        </Sheet>
     </div>
   );
 }
+
+    
