@@ -223,35 +223,6 @@ export default function SearchPage() {
   return (
     <div className="flex flex-col min-h-screen bg-background">
         <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-sm p-4 shadow-sm">
-             <div className="max-w-md mx-auto">
-                <div className='flex items-center gap-2 mb-4'>
-                    <div className='relative flex-1'>
-                        <BusFront className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                        <Input 
-                            placeholder='From' 
-                            className='pl-10 bg-card' 
-                            value={fromLocation}
-                            onChange={(e) => setFromLocation(e.target.value)}
-                        />
-                    </div>
-                    <div className="p-2 rounded-full bg-muted">
-                        <ArrowRight className="h-5 w-5 text-muted-foreground" />
-                    </div>
-                    <div className='relative flex-1'>
-                        <BusFront className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                        <Input 
-                            placeholder='To' 
-                            className='pl-10 bg-card'
-                            value={toLocation}
-                            onChange={(e) => setToLocation(e.target.value)}
-                        />
-                    </div>
-                </div>
-                <Button onClick={handleSearch} className='w-full'>
-                    <Search className='mr-2 h-5 w-5' />
-                    Search For Buses
-                </Button>
-            </div>
         </header>
 
         <main className="flex-grow p-4">
@@ -414,3 +385,5 @@ export default function SearchPage() {
     </div>
   );
 }
+
+    
