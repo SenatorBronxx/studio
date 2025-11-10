@@ -9,12 +9,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ListMusic, ListVideo, Plus, X, Search } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { useToast } from '@/hooks/use-toast';
 import { BottomNav } from '@/components/bottom-nav';
 import { Separator } from '@/components/ui/separator';
 import { NowPlayingIcon } from '@/components/icons/now-playing-icon';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
+import { useMusic, type Track } from '@/context/music-context';
 
 
 const musicArtworks = PlaceHolderImages.filter(p => p.id.startsWith('music-art-'));
@@ -26,59 +26,27 @@ const genres = [
   { name: 'Gospel', image: musicArtworks[3]?.imageUrl || '' },
 ];
 
-const newTracks = [
+const newTracks: Track[] = [
   { id: 1, title: 'Morning Rise', artist: 'Synth Weaver', image: musicArtworks[4]?.imageUrl || '', duration: '3:45' },
   { id: 2, title: 'Coastal Drive', artist: 'Groove Rider', image: musicArtworks[0]?.imageUrl || '', duration: '2:55' },
   { id: 3, title: 'City Lights', artist: 'Digital Nomad', image: musicArtworks[1]?.imageUrl || '', duration: '4:10' },
   { id: 4, title: 'Starlight Echo', artist: 'Astro Beats', image: musicArtworks[2]?.imageUrl || '', duration: '3:20' },
 ];
 
-type Track = {
-    id: number;
-    title: string;
-    artist: string;
-    image: string;
-    duration: string;
-};
-
-type PlaylistItem = Track & { addedByUser: boolean };
-
-const initialPlaylist: PlaylistItem[] = [
-    { id: 101, title: 'Accra Night', artist: 'E.L', image: musicArtworks[1]?.imageUrl || '', duration: '3:15', addedByUser: false },
-    { id: 102, title: 'Adonai', artist: 'Sarkodie', image: musicArtworks[3]?.imageUrl || '', duration: '4:02', addedByUser: false },
-];
-
 
 export default function MusicPage() {
-    const [playlist, setPlaylist] = useState<PlaylistItem[]>(initialPlaylist);
-    const [nowPlaying, setNowPlaying] = useState<PlaylistItem | null>(initialPlaylist[0] || null);
-    const [songProgress, setSongProgress] = useState(0);
-    const [isPlaylistOpen, setIsPlaylistOpen] = useState(false);
-    const { toast } = useToast();
+    const { 
+        playlist,
+        nowPlaying,
+        songProgress,
+        isPlaylistOpen,
+        setIsPlaylistOpen,
+        addToPlaylist,
+        removeFromPlaylist,
+    } = useMusic();
+
     const [searchQuery, setSearchQuery] = useState('');
     const [filteredTracks, setFilteredTracks] = useState(newTracks);
-
-     useEffect(() => {
-        if (nowPlaying) {
-            setSongProgress(0); // Reset progress when song changes
-            const durationInSeconds = 180; // Mock duration of 3 minutes
-            const interval = setInterval(() => {
-                setSongProgress(prev => {
-                    const nextProgress = prev + 100 / durationInSeconds;
-                    if (nextProgress >= 100) {
-                        // Move to next song
-                        const currentIndex = playlist.findIndex(p => p.id === nowPlaying.id);
-                        const nextIndex = (currentIndex + 1) % playlist.length;
-                        setNowPlaying(playlist[nextIndex] || null);
-                        return 0;
-                    }
-                    return nextProgress;
-                });
-            }, 1000);
-
-            return () => clearInterval(interval);
-        }
-    }, [nowPlaying, playlist]);
 
     useEffect(() => {
         if (searchQuery.trim() === '') {
@@ -93,61 +61,6 @@ export default function MusicPage() {
         }
     }, [searchQuery]);
 
-
-    const addToPlaylist = (track: Track) => {
-        if (playlist.find(t => t.id === track.id)) {
-             toast({
-                variant: 'destructive',
-                title: 'Already in Playlist',
-                description: `${track.title} is already in the bus playlist.`,
-            });
-            return;
-        }
-        const newTrack = { ...track, addedByUser: true };
-        setPlaylist(prev => [...prev, newTrack]);
-
-        // If nothing is playing, make this the new song
-        if (!nowPlaying) {
-            setNowPlaying(newTrack);
-        }
-
-        toast({
-            title: 'Added to Playlist',
-            description: `${track.title} by ${track.artist} has been added to the bus playlist.`,
-        });
-    };
-    
-    const removeFromPlaylist = (trackId: number) => {
-        const songToRemove = playlist.find(t => t.id === trackId);
-        if (!songToRemove || !songToRemove.addedByUser) {
-            toast({
-                variant: "destructive",
-                title: "Cannot Remove",
-                description: "You can only remove songs you have added.",
-            });
-            return;
-        }
-        
-        let newPlaylist = playlist.filter(t => t.id !== trackId);
-
-        // If the removed song was the one playing, play the next one
-        if (nowPlaying?.id === trackId) {
-            const currentIndex = playlist.findIndex(p => p.id === trackId);
-            const nextSong = playlist[currentIndex + 1] || playlist[0] || null;
-            if (nextSong && nextSong.id === trackId) { // if it's the only song
-                setNowPlaying(null);
-            } else {
-                setNowPlaying(nextSong);
-            }
-        }
-        
-        setPlaylist(newPlaylist);
-
-        toast({
-            title: 'Song Removed',
-            description: 'The song has been removed from the playlist.',
-        });
-    };
 
     const NowPlayingBar = () => {
         if (!nowPlaying) return null;

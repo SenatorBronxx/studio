@@ -3,7 +3,7 @@
 
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowRight, Search, BusFront, X, Flag, Users, Loader2, Clock, Armchair, QrCode, Bell, Trash2, MapPin } from 'lucide-react';
+import { ArrowRight, Search, BusFront, X, Flag, Users, Loader2, Clock, Armchair, QrCode, Bell, Trash2, MapPin, ListVideo } from 'lucide-react';
 import { BottomNav } from '@/components/bottom-nav';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -20,6 +20,9 @@ import { Badge } from '@/components/ui/badge';
 import { useWallet } from '@/context/wallet-context';
 import Image from 'next/image';
 import { v4 as uuidv4 } from 'uuid';
+import { useMusic } from '@/context/music-context';
+import { NowPlayingIcon } from '@/components/icons/now-playing-icon';
+import { ListMusic } from 'lucide-react';
 
 const initialBusData = [
     {
@@ -81,6 +84,14 @@ export default function SearchPage() {
 
   const { toast } = useToast();
   const { balance, deductBalance, addTransaction } = useWallet();
+  const { 
+    playlist,
+    nowPlaying,
+    songProgress,
+    isPlaylistOpen,
+    setIsPlaylistOpen,
+    removeFromPlaylist,
+  } = useMusic();
   
   const [buses, setBuses] = useState(initialBusData);
   const [filteredBuses, setFilteredBuses] = useState<BusData[]>([]);
@@ -211,6 +222,23 @@ export default function SearchPage() {
   const handleConfirmSeat = () => {
     setIsSeatSheetOpen(false);
   }
+
+  const NowPlayingBar = () => {
+    if (!nowPlaying) return null;
+
+    return (
+        <div className="bg-background/80 backdrop-blur-sm p-2 max-w-md mx-auto" onClick={() => setIsPlaylistOpen(true)}>
+             <div className="p-2 bg-secondary rounded-lg flex items-center gap-4 cursor-pointer">
+                <Image src={nowPlaying.image} alt={nowPlaying.title} width={40} height={40} className="rounded-md" />
+                <div className="flex-grow">
+                    <p className="font-semibold text-sm">{nowPlaying.title}</p>
+                    <p className="text-xs text-muted-foreground">{nowPlaying.artist}</p>
+                </div>
+                <NowPlayingIcon />
+            </div>
+        </div>
+    )
+  }
   
   if (!isHydrated) {
     return (
@@ -224,28 +252,108 @@ export default function SearchPage() {
     <div className="flex flex-col min-h-screen bg-background">
         <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-sm p-4 shadow-sm">
             <div className="max-w-md mx-auto space-y-2">
-                <div className='flex items-center gap-2'>
-                    <div className='relative flex-1'>
-                        <BusFront className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                        <Input 
-                        placeholder='From' 
-                        className='pl-10' 
-                        value={fromLocation}
-                        onChange={(e) => setFromLocation(e.target.value)}
-                        />
+                <div className='flex items-center justify-between'>
+                    <div className='flex items-center gap-2 flex-grow'>
+                        <div className='relative flex-1'>
+                            <BusFront className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                            <Input 
+                            placeholder='From' 
+                            className='pl-10' 
+                            value={fromLocation}
+                            onChange={(e) => setFromLocation(e.target.value)}
+                            />
+                        </div>
+                        <div className="p-2 rounded-full bg-muted">
+                            <ArrowRight className="h-5 w-5 text-muted-foreground" />
+                        </div>
+                        <div className='relative flex-1'>
+                            <BusFront className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                            <Input 
+                            placeholder='To' 
+                            className='pl-10'
+                            value={toLocation}
+                            onChange={(e) => setToLocation(e.target.value)}
+                            />
+                        </div>
                     </div>
-                    <div className="p-2 rounded-full bg-muted">
-                        <ArrowRight className="h-5 w-5 text-muted-foreground" />
-                    </div>
-                    <div className='relative flex-1'>
-                        <BusFront className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                        <Input 
-                        placeholder='To' 
-                        className='pl-10'
-                        value={toLocation}
-                        onChange={(e) => setToLocation(e.target.value)}
-                        />
-                    </div>
+                     <Sheet open={isPlaylistOpen} onOpenChange={setIsPlaylistOpen}>
+                        <SheetTrigger asChild>
+                            <Button variant="ghost" size="icon" className='ml-2'>
+                                <ListVideo className="h-6 w-6" />
+                                {playlist.length > 0 && (
+                                    <span className="absolute -top-1 -right-1 flex h-4 w-4">
+                                        <span className="relative inline-flex rounded-full h-4 w-4 bg-primary text-primary-foreground text-xs items-center justify-center">
+                                            {playlist.length}
+                                        </span>
+                                    </span>
+                                )}
+                            </Button>
+                        </SheetTrigger>
+                        <SheetContent>
+                            <SheetHeader>
+                                <SheetTitle>Bus Playlist</SheetTitle>
+                            </SheetHeader>
+                            <div className="py-4 flex flex-col h-full">
+                            {nowPlaying ? (
+                                    <>
+                                        <div className='mb-4 space-y-3'>
+                                            <p className="text-sm font-medium text-muted-foreground">Now Playing</p>
+                                            <div className="flex items-center gap-4 p-3 bg-primary/10 rounded-lg">
+                                                <Image src={nowPlaying.image} alt={nowPlaying.title} width={48} height={48} className="rounded-md" />
+                                                <div className="flex-grow space-y-2">
+                                                    <div>
+                                                        <p className="font-semibold">{nowPlaying.title}</p>
+                                                        <div className="flex text-sm text-muted-foreground">
+                                                            <span>{nowPlaying.artist}</span>
+                                                            <span className="mx-2">•</span>
+                                                            <span>{nowPlaying.duration}</span>
+                                                        </div>
+                                                    </div>
+                                                    <Progress value={songProgress} className="h-1" />
+                                                </div>
+                                                <NowPlayingIcon />
+                                            </div>
+                                        </div>
+                                        <Separator />
+                                    </>
+                            ) : null}
+
+                            <div className="flex-grow overflow-y-auto mt-4">
+                                {playlist.filter(p => p.id !== nowPlaying?.id).length > 0 ? (
+                                    <>
+                                        <p className="text-sm font-medium text-muted-foreground mb-2">Up next</p>
+                                        <div className="space-y-3">
+                                        {playlist.filter(p => p.id !== nowPlaying?.id).map(track => (
+                                            <div key={track.id} className="flex items-center gap-4 group">
+                                                <Image src={track.image} alt={track.title} width={48} height={48} className="rounded-md" />
+                                                <div className="flex-grow">
+                                                    <p className="font-semibold">{track.title}</p>
+                                                    <div className="flex text-sm text-muted-foreground">
+                                                        <span>{track.artist}</span>
+                                                        <span className="mx-2">•</span>
+                                                        <span>{track.duration}</span>
+                                                    </div>
+                                                </div>
+                                                {track.addedByUser && (
+                                                    <Button size="icon" variant="ghost" className="opacity-0 group-hover:opacity-100" onClick={() => removeFromPlaylist(track.id)}>
+                                                        <X className="h-5 w-5 text-muted-foreground" />
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        ))}
+                                        </div>
+                                    </>
+                                ) : !nowPlaying ? (
+                                    <div className="text-center text-muted-foreground py-12 flex flex-col items-center justify-center h-full">
+                                        <ListMusic className="h-12 w-12 mx-auto mb-4" />
+                                        <p>No songs added yet.</p>
+                                        <p className="text-xs">Browse and add songs to the playlist.</p>
+                                    </div>
+                                ) : null}
+                            </div>
+                            </div>
+                        </SheetContent>
+                    </Sheet>
                 </div>
                 <Button onClick={handleSearch} className="w-full">
                     <Search className='mr-2 h-5 w-5' />
@@ -254,7 +362,7 @@ export default function SearchPage() {
             </div>
         </header>
 
-        <main className="flex-grow p-4">
+        <main className="flex-grow p-4 pb-24">
             <div className="max-w-md mx-auto">
                 {selectedBus ? (
                     <div className="space-y-3">
@@ -387,6 +495,7 @@ export default function SearchPage() {
         </main>
 
         <div className="sticky bottom-0 z-20">
+            {nowPlaying && <NowPlayingBar />}
             <BottomNav />
         </div>
 
