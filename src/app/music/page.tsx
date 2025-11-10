@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ListMusic, ListVideo, Plus, X } from 'lucide-react';
+import { ListMusic, ListVideo, Plus, X, Search } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useToast } from '@/hooks/use-toast';
@@ -14,6 +14,7 @@ import { BottomNav } from '@/components/bottom-nav';
 import { Separator } from '@/components/ui/separator';
 import { NowPlayingIcon } from '@/components/icons/now-playing-icon';
 import { Progress } from '@/components/ui/progress';
+import { Input } from '@/components/ui/input';
 
 
 const musicArtworks = PlaceHolderImages.filter(p => p.id.startsWith('music-art-'));
@@ -54,6 +55,8 @@ export default function MusicPage() {
     const [songProgress, setSongProgress] = useState(0);
     const [isPlaylistOpen, setIsPlaylistOpen] = useState(false);
     const { toast } = useToast();
+    const [searchQuery, setSearchQuery] = useState('');
+    const [filteredTracks, setFilteredTracks] = useState(newTracks);
 
      useEffect(() => {
         if (nowPlaying) {
@@ -76,6 +79,20 @@ export default function MusicPage() {
             return () => clearInterval(interval);
         }
     }, [nowPlaying, playlist]);
+
+    useEffect(() => {
+        if (searchQuery.trim() === '') {
+            setFilteredTracks(newTracks);
+        } else {
+            const lowercasedQuery = searchQuery.toLowerCase();
+            const results = newTracks.filter(track =>
+                track.title.toLowerCase().includes(lowercasedQuery) ||
+                track.artist.toLowerCase().includes(lowercasedQuery)
+            );
+            setFilteredTracks(results);
+        }
+    }, [searchQuery]);
+
 
     const addToPlaylist = (track: Track) => {
         if (playlist.find(t => t.id === track.id)) {
@@ -152,7 +169,7 @@ export default function MusicPage() {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm p-4">
+      <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm p-4 space-y-4">
         <div className="max-w-md mx-auto flex justify-between items-center">
             <h1 className="text-2xl font-bold">Browse</h1>
             <Sheet open={isPlaylistOpen} onOpenChange={setIsPlaylistOpen}>
@@ -234,64 +251,81 @@ export default function MusicPage() {
                 </SheetContent>
             </Sheet>
         </div>
+        <div className="max-w-md mx-auto relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <Input 
+            placeholder="Search for songs or artists" 
+            className="pl-10"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
       </header>
       
       {/* Main Content */}
       <main className="flex-grow p-4 pb-24">
         <div className="max-w-md mx-auto space-y-6">
-            <Tabs defaultValue="genres">
-                <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="moods">Moods</TabsTrigger>
-                    <TabsTrigger value="genres">Genres</TabsTrigger>
-                    <TabsTrigger value="artists">Artists</TabsTrigger>
-                </TabsList>
-                <TabsContent value="genres" className="mt-6">
-                    <div className="grid grid-cols-2 gap-4">
-                        {genres.map(genre => (
-                            <Card key={genre.name} className="overflow-hidden relative aspect-square group">
-                                <Image src={genre.image} alt={genre.name} fill className="object-cover transition-transform group-hover:scale-110"/>
-                                <div className="absolute inset-0 bg-black/40"></div>
-                                <CardContent className="relative flex h-full items-end justify-center p-4">
-                                    <h3 className="text-lg font-bold text-white text-center">{genre.name}</h3>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
-                </TabsContent>
-                <TabsContent value="moods">
-                     <div className="text-center text-muted-foreground py-12">
-                        <p>Moods feature coming soon!</p>
-                    </div>
-                </TabsContent>
-                <TabsContent value="artists">
-                     <div className="text-center text-muted-foreground py-12">
-                        <p>Artists feature coming soon!</p>
-                    </div>
-                </TabsContent>
-            </Tabs>
+            {searchQuery.trim() === '' ? (
+                <Tabs defaultValue="genres">
+                    <TabsList className="grid w-full grid-cols-3">
+                        <TabsTrigger value="moods">Moods</TabsTrigger>
+                        <TabsTrigger value="genres">Genres</TabsTrigger>
+                        <TabsTrigger value="artists">Artists</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="genres" className="mt-6">
+                        <div className="grid grid-cols-2 gap-4">
+                            {genres.map(genre => (
+                                <Card key={genre.name} className="overflow-hidden relative aspect-square group">
+                                    <Image src={genre.image} alt={genre.name} fill className="object-cover transition-transform group-hover:scale-110"/>
+                                    <div className="absolute inset-0 bg-black/40"></div>
+                                    <CardContent className="relative flex h-full items-end justify-center p-4">
+                                        <h3 className="text-lg font-bold text-white text-center">{genre.name}</h3>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </div>
+                    </TabsContent>
+                    <TabsContent value="moods">
+                         <div className="text-center text-muted-foreground py-12">
+                            <p>Moods feature coming soon!</p>
+                        </div>
+                    </TabsContent>
+                    <TabsContent value="artists">
+                         <div className="text-center text-muted-foreground py-12">
+                            <p>Artists feature coming soon!</p>
+                        </div>
+                    </TabsContent>
+                </Tabs>
+            ) : null }
 
             <div>
-                <h2 className="text-lg font-semibold mb-2">New Tracks</h2>
+                <h2 className="text-lg font-semibold mb-2">{searchQuery.trim() === '' ? 'New Tracks' : `Results for "${searchQuery}"`}</h2>
                 <div className="space-y-2">
-                    {newTracks.map(track => (
-                        <Card key={track.id}>
-                            <CardContent className="p-2 flex items-center gap-4">
-                                <Image src={track.image} alt={track.title} width={48} height={48} className="rounded-md" />
-                                <div className="flex-grow">
-                                    <p className="font-semibold">{track.title}</p>
-                                    <div className="flex text-sm text-muted-foreground">
-                                        <span>{track.artist}</span>
-                                        <span className="mx-2">•</span>
-                                        <span>{track.duration}</span>
-                                    </div>
+                    {filteredTracks.length > 0 ? (
+                        filteredTracks.map(track => (
+                            <Card key={track.id}>
+                                <CardContent className="p-2 flex items-center gap-4">
+                                    <Image src={track.image} alt={track.title} width={48} height={48} className="rounded-md" />
+                                    <div className="flex-grow">
+                                        <p className="font-semibold">{track.title}</p>
+                                        <div className="flex text-sm text-muted-foreground">
+                                            <span>{track.artist}</span>
+                                            <span className="mx-2">•</span>
+                                            <span>{track.duration}</span>
+                                        </div>
 
-                                </div>
-                                <Button size="icon" variant="ghost" onClick={() => addToPlaylist(track)}>
-                                    <Plus className="h-5 w-5"/>
-                                </Button>
-                            </CardContent>
-                        </Card>
-                    ))}
+                                    </div>
+                                    <Button size="icon" variant="ghost" onClick={() => addToPlaylist(track)}>
+                                        <Plus className="h-5 w-5"/>
+                                    </Button>
+                                </CardContent>
+                            </Card>
+                        ))
+                    ) : (
+                        <div className="text-center text-muted-foreground py-12">
+                            <p>No tracks found.</p>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
@@ -304,6 +338,5 @@ export default function MusicPage() {
       </div>
     </div>
   );
-}
 
     
