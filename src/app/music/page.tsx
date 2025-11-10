@@ -15,10 +15,10 @@ import { BottomNav } from '@/components/bottom-nav';
 const musicArtworks = PlaceHolderImages.filter(p => p.id.startsWith('music-art-'));
 
 const genres = [
-  { name: 'Deep House', image: musicArtworks[0]?.imageUrl || '' },
-  { name: 'Techno', image: musicArtworks[1]?.imageUrl || '' },
-  { name: 'Afrobeats', image: musicArtworks[2]?.imageUrl || '' },
-  { name: 'Highlife', image: musicArtworks[3]?.imageUrl || '' },
+  { name: 'Highlife', image: musicArtworks[0]?.imageUrl || '' },
+  { name: 'Hiphop', image: musicArtworks[1]?.imageUrl || '' },
+  { name: 'Afrobeat', image: musicArtworks[2]?.imageUrl || '' },
+  { name: 'Gospel', image: musicArtworks[3]?.imageUrl || '' },
 ];
 
 const newTracks = [
