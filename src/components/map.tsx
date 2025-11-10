@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { APIProvider, Map as GoogleMap, Marker } from '@vis.gl/react-google-maps';
+import { APIProvider, Map as GoogleMap, Marker, useMapsLibrary } from '@vis.gl/react-google-maps';
 import { Loader2 } from 'lucide-react';
 
 type Position = {
@@ -10,10 +10,19 @@ type Position = {
   lng: number;
 };
 
-export function Map() {
+function MapComponent() {
   const [position, setPosition] = useState<Position | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as string;
+  const [mapError, setMapError] = useState<string | null>(null);
+
+  // Check if the maps library loaded correctly
+  const coreLib = useMapsLibrary('core');
+  useEffect(() => {
+    if (!coreLib) {
+      setMapError("Google Maps failed to load. This might be due to a missing API key, or billing not being enabled on your Google Cloud project. Please check the browser console for a `BillingNotEnabledMapError` or other specific errors.");
+    } else {
+      setMapError(null);
+    }
+  }, [coreLib]);
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -24,33 +33,26 @@ export function Map() {
             lng: pos.coords.longitude,
           });
         },
-        (err) => {
-          setError(err.message);
+        () => {
           // Default to a location in Accra if permission is denied
           setPosition({ lat: 5.6037, lng: -0.1870 });
         }
       );
     } else {
-      setError('Geolocation is not supported by this browser.');
       // Default to a location in Accra if geolocation is not supported
       setPosition({ lat: 5.6037, lng: -0.1870 });
     }
   }, []);
 
-  if (!API_KEY) {
+  if (mapError) {
     return (
-      <div className="w-full h-full bg-muted flex items-center justify-center">
-        <p className="text-destructive-foreground p-4 text-center bg-destructive rounded-md">
-          Google Maps API Key is missing.
-        </p>
+       <div className="w-full h-full bg-muted flex items-center justify-center">
+        <div className="text-destructive-foreground p-4 text-center bg-destructive rounded-md max-w-sm">
+            <h3 className="font-bold mb-2">Map Error</h3>
+            <p className="text-sm">{mapError}</p>
+        </div>
       </div>
     );
-  }
-
-  if (error) {
-    // You could show an error message, but for a better user experience,
-    // we'll just show the map centered on Accra.
-    console.error(error);
   }
 
   if (!position) {
@@ -63,7 +65,6 @@ export function Map() {
   }
 
   return (
-    <APIProvider apiKey={API_KEY}>
       <GoogleMap
         defaultCenter={position}
         defaultZoom={15}
@@ -74,6 +75,27 @@ export function Map() {
       >
         <Marker position={position} />
       </GoogleMap>
+  );
+}
+
+
+export function Map() {
+  const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as string;
+
+  if (!API_KEY) {
+    return (
+      <div className="w-full h-full bg-muted flex items-center justify-center">
+        <div className="text-destructive-foreground p-4 text-center bg-destructive rounded-md">
+            <h3 className="font-bold mb-2">Configuration Error</h3>
+            <p className="text-sm">Google Maps API Key is missing from your environment variables.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <APIProvider apiKey={API_KEY}>
+        <MapComponent />
     </APIProvider>
   );
 }
