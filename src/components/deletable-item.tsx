@@ -18,35 +18,54 @@ export function DeletableItem({ children, onDelete }: DeletableItemProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const itemRef = useRef<HTMLDivElement>(null);
   const startX = useRef(0);
+  const isDragging = useRef(false);
 
   const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
     startX.current = e.touches[0].clientX;
+    isDragging.current = true;
+    if (itemRef.current) {
+        // Remove transition during drag for immediate feedback
+        itemRef.current.style.transition = 'none';
+    }
   };
 
   const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!isDragging.current) return;
     const currentX = e.touches[0].clientX;
     const deltaX = currentX - startX.current;
     
-    // Only allow swiping left, and not past the threshold
+    // Only allow swiping left
     if (deltaX < 0) {
       setDragX(Math.max(deltaX, SWIPE_THRESHOLD - 20));
     }
   };
 
   const handleTouchEnd = () => {
-    if (dragX < SWIPE_THRESHOLD) {
-      // Keep it open
+    if (!isDragging.current) return;
+    isDragging.current = false;
+    
+    if (itemRef.current) {
+        // Re-apply transition for snap animation
+        itemRef.current.style.transition = 'transform 0.2s ease-out';
+    }
+
+    if (dragX < SWIPE_THRESHOLD / 2) {
+      // Snap to open
       setDragX(SWIPE_THRESHOLD);
     } else {
-      // Snap back
+      // Snap back to closed
       setDragX(0);
     }
-    startX.current = 0;
   };
 
   const handleDelete = () => {
     setIsDeleting(true);
-    // Animate out
+    // Animate out and then delete
+    if (itemRef.current) {
+        itemRef.current.style.transition = 'all 0.3s ease-out';
+        itemRef.current.style.transform = 'translateX(-100%)';
+        itemRef.current.style.opacity = '0';
+    }
     setTimeout(() => {
         onDelete();
         // Reset state in case component is re-used
@@ -54,15 +73,16 @@ export function DeletableItem({ children, onDelete }: DeletableItemProps) {
         setDragX(0);
     }, 300);
   };
+  
+  const handleCancel = () => {
+    setDragX(0);
+  }
 
   return (
     <div 
-        className={cn(
-            "relative w-full overflow-hidden transition-all duration-300",
-            isDeleting ? "h-0 opacity-0" : "h-auto opacity-100"
-        )}
+        className="relative w-full overflow-hidden"
     >
-      <div className="absolute top-0 right-0 h-full flex items-center">
+      <div className="absolute top-0 right-0 h-full flex items-center bg-destructive">
         <Button
           variant="destructive"
           size="icon"
@@ -74,11 +94,12 @@ export function DeletableItem({ children, onDelete }: DeletableItemProps) {
       </div>
       <div
         ref={itemRef}
-        className="relative w-full transition-transform duration-200 ease-out"
+        className="relative w-full bg-background transition-transform duration-200 ease-out"
         style={{ transform: `translateX(${dragX}px)` }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
+        onClick={dragX < 0 ? handleCancel : undefined}
       >
         {children}
       </div>
