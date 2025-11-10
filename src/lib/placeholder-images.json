@@ -53,6 +53,36 @@
       "description": "The Eritas company logo.",
       "imageUrl": "/eritas-logo.png",
       "imageHint": "company logo"
+    },
+    {
+      "id": "music-art-1",
+      "description": "Abstract colorful waveform for music cover.",
+      "imageUrl": "https://images.unsplash.com/photo-1762503634762-c62f68160aed?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxhYnN0cmFjdCUyMG11c2ljfGVufDB8fHx8MTc2MjY4MzQyNXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "abstract music"
+    },
+    {
+      "id": "music-art-2",
+      "description": "Abstract colorful gradient for music cover.",
+      "imageUrl": "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxhYnN0cmFjdCUyMGdyYWRpZW50fGVufDB8fHx8MTc2MjY1NDU5Nnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "abstract gradient"
+    },
+    {
+      "id": "music-art-3",
+      "description": "Abstract liquid colors for music cover.",
+      "imageUrl": "https://images.unsplash.com/photo-1681548142719-9ff1eb1dfac6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxhYnN0cmFjdCUyMGxpcXVpZHxlbnwwfHx8fDE3NjI3MzQ2OTV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "abstract liquid"
+    },
+    {
+      "id": "music-art-4",
+      "description": "Geometric pattern for music cover.",
+      "imageUrl": "https://images.unsplash.com/photo-1454117096348-e4abbeba002c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxnZW9tZXRyaWMlMjBwYXR0ZXJufGVufDB8fHx8MTc2MjY0NjYwM3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "geometric pattern"
+    },
+    {
+      "id": "music-art-5",
+      "description": "Vibrant synthwave style artwork.",
+      "imageUrl": "https://images.unsplash.com/photo-1658232190602-be6cd5b976f1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHx2aWJyYW50JTIwc3ludGh3YXZlfGVufDB8fHx8MTc2MjczNDY5Nnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "vibrant synthwave"
     }
   ]
 }
