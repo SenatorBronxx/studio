@@ -28,15 +28,23 @@ const newTracks = [
   { id: 4, title: 'Starlight Echo', artist: 'Astro Beats', image: musicArtworks[2]?.imageUrl || '' },
 ];
 
-const initialPlaylist = [
-    { id: 101, title: 'Accra Night', artist: 'E.L', image: musicArtworks[1]?.imageUrl || '' },
-    { id: 102, title: 'Adonai', artist: 'Sarkodie', image: musicArtworks[3]?.imageUrl || '' },
+type Track = {
+    id: number;
+    title: string;
+    artist: string;
+    image: string;
+};
+
+type PlaylistItem = Track & { addedByUser: boolean };
+
+const initialPlaylist: PlaylistItem[] = [
+    { id: 101, title: 'Accra Night', artist: 'E.L', image: musicArtworks[1]?.imageUrl || '', addedByUser: false },
+    { id: 102, title: 'Adonai', artist: 'Sarkodie', image: musicArtworks[3]?.imageUrl || '', addedByUser: false },
 ];
 
-type Track = typeof newTracks[0];
 
 export default function MusicPage() {
-    const [playlist, setPlaylist] = useState<Track[]>(initialPlaylist);
+    const [playlist, setPlaylist] = useState<PlaylistItem[]>(initialPlaylist);
     const { toast } = useToast();
 
     const addToPlaylist = (track: Track) => {
@@ -48,7 +56,7 @@ export default function MusicPage() {
             });
             return;
         }
-        setPlaylist(prev => [...prev, track]);
+        setPlaylist(prev => [...prev, { ...track, addedByUser: true }]);
         toast({
             title: 'Added to Playlist',
             description: `${track.title} by ${track.artist} has been added to the bus playlist.`,
@@ -95,9 +103,11 @@ export default function MusicPage() {
                                         <p className="font-semibold">{track.title}</p>
                                         <p className="text-sm text-muted-foreground">{track.artist}</p>
                                     </div>
-                                    <Button size="icon" variant="ghost" className="opacity-0 group-hover:opacity-100" onClick={() => removeFromPlaylist(track.id)}>
-                                        <X className="h-5 w-5 text-muted-foreground" />
-                                    </Button>
+                                    {track.addedByUser && (
+                                        <Button size="icon" variant="ghost" className="opacity-0 group-hover:opacity-100" onClick={() => removeFromPlaylist(track.id)}>
+                                            <X className="h-5 w-5 text-muted-foreground" />
+                                        </Button>
+                                    )}
                                 </div>
                             ))
                         ) : (
