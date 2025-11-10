@@ -52,6 +52,7 @@ export default function MusicPage() {
     const [playlist, setPlaylist] = useState<PlaylistItem[]>(initialPlaylist);
     const [nowPlaying, setNowPlaying] = useState<PlaylistItem | null>(initialPlaylist[0] || null);
     const [songProgress, setSongProgress] = useState(0);
+    const [isPlaylistOpen, setIsPlaylistOpen] = useState(false);
     const { toast } = useToast();
 
      useEffect(() => {
@@ -131,13 +132,32 @@ export default function MusicPage() {
         });
     };
 
+    const NowPlayingBar = () => {
+        if (!nowPlaying) return null;
+
+        return (
+            <div className="sticky bottom-0 z-20" onClick={() => setIsPlaylistOpen(true)}>
+                <div className="bg-background/80 backdrop-blur-sm p-2 max-w-md mx-auto">
+                     <div className="p-2 bg-secondary rounded-lg flex items-center gap-4">
+                        <Image src={nowPlaying.image} alt={nowPlaying.title} width={40} height={40} className="rounded-md" />
+                        <div className="flex-grow">
+                            <p className="font-semibold text-sm">{nowPlaying.title}</p>
+                            <p className="text-xs text-muted-foreground">{nowPlaying.artist}</p>
+                        </div>
+                        <NowPlayingIcon />
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm p-4">
         <div className="max-w-md mx-auto flex justify-between items-center">
             <h1 className="text-2xl font-bold">Browse</h1>
-            <Sheet>
+            <Sheet open={isPlaylistOpen} onOpenChange={setIsPlaylistOpen}>
                 <SheetTrigger asChild>
                     <Button variant="ghost" size="icon">
                         <ListVideo className="h-6 w-6" />
@@ -219,7 +239,7 @@ export default function MusicPage() {
       </header>
       
       {/* Main Content */}
-      <main className="flex-grow p-4">
+      <main className="flex-grow p-4 pb-24">
         <div className="max-w-md mx-auto space-y-6">
             <Tabs defaultValue="genres">
                 <TabsList className="grid w-full grid-cols-3">
@@ -278,8 +298,9 @@ export default function MusicPage() {
         </div>
       </main>
 
-      {/* Bottom Nav */}
-      <div className="sticky bottom-0">
+      {/* Now Playing Bar and Bottom Nav */}
+      <div className="fixed bottom-0 left-0 right-0 z-10">
+        {nowPlaying && <NowPlayingBar />}
         <BottomNav />
       </div>
     </div>
