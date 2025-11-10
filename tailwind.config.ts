@@ -101,6 +101,10 @@ export default {
           '0%': { transform: 'scale(0.9)', opacity: '0' },
           '100%': { transform: 'scale(1)', opacity: '1' },
         },
+        'glow': {
+            '0%, 100%': { boxShadow: '0 0 5px -2px hsl(var(--primary))' },
+            '50%': { boxShadow: '0 0 10px 2px hsl(var(--primary))' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
@@ -108,6 +112,7 @@ export default {
         'bus-move': 'bus-move 25s linear infinite',
         'float': 'float 4s ease-in-out infinite',
         'pop-in': 'pop-in 0.5s ease-out forwards',
+        'glow': 'glow 2.5s ease-in-out infinite',
       },
     },
   },
