@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ListMusic, ListVideo, Mic2, Plus, SlidersHorizontal, Trash2, X } from 'lucide-react';
+import { ListMusic, ListVideo, Plus, X } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useToast } from '@/hooks/use-toast';
@@ -136,16 +136,14 @@ export default function MusicPage() {
         if (!nowPlaying) return null;
 
         return (
-            <div className="sticky bottom-0 z-20" onClick={() => setIsPlaylistOpen(true)}>
-                <div className="bg-background/80 backdrop-blur-sm p-2 max-w-md mx-auto">
-                     <div className="p-2 bg-secondary rounded-lg flex items-center gap-4">
-                        <Image src={nowPlaying.image} alt={nowPlaying.title} width={40} height={40} className="rounded-md" />
-                        <div className="flex-grow">
-                            <p className="font-semibold text-sm">{nowPlaying.title}</p>
-                            <p className="text-xs text-muted-foreground">{nowPlaying.artist}</p>
-                        </div>
-                        <NowPlayingIcon />
+            <div className="bg-background/80 backdrop-blur-sm p-2 max-w-md mx-auto" onClick={() => setIsPlaylistOpen(true)}>
+                 <div className="p-2 bg-secondary rounded-lg flex items-center gap-4 cursor-pointer">
+                    <Image src={nowPlaying.image} alt={nowPlaying.title} width={40} height={40} className="rounded-md" />
+                    <div className="flex-grow">
+                        <p className="font-semibold text-sm">{nowPlaying.title}</p>
+                        <p className="text-xs text-muted-foreground">{nowPlaying.artist}</p>
                     </div>
+                    <NowPlayingIcon />
                 </div>
             </div>
         )
