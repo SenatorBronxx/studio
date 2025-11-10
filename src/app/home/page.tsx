@@ -35,6 +35,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { useWallet } from '@/context/wallet-context';
 import { v4 as uuidv4 } from 'uuid';
+import { Map } from '@/components/map';
 
 const initialBusData = [
     {
@@ -84,7 +85,6 @@ type Notification = {
 };
 
 export default function HomePage() {
-  const mapImage = PlaceHolderImages.find((p) => p.id === 'map-route');
   const searchParams = useSearchParams();
   const router = useRouter();
   const { toast } = useToast();
@@ -234,16 +234,8 @@ export default function HomePage() {
     <div className="relative min-h-screen w-full bg-background font-sans">
       {/* Map Background */}
       <div className="absolute inset-0 h-full w-full">
-        {mapImage && (
-          <Image
-            alt={mapImage.description}
-            src={mapImage.imageUrl}
-            data-ai-hint={mapImage.imageHint}
-            fill
-            className="object-cover"
-          />
-        )}
-        <div className="absolute inset-0 bg-background/20" />
+        <Map />
+        <div className="absolute inset-0 bg-background/20 pointer-events-none" />
       </div>
 
       {/* Header */}
