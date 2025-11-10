@@ -24,10 +24,10 @@ const genres = [
 ];
 
 const newTracks = [
-  { id: 1, title: 'Morning Rise', artist: 'Synth Weaver', image: musicArtworks[4]?.imageUrl || '' },
-  { id: 2, title: 'Coastal Drive', artist: 'Groove Rider', image: musicArtworks[0]?.imageUrl || '' },
-  { id: 3, title: 'City Lights', artist: 'Digital Nomad', image: musicArtworks[1]?.imageUrl || '' },
-  { id: 4, title: 'Starlight Echo', artist: 'Astro Beats', image: musicArtworks[2]?.imageUrl || '' },
+  { id: 1, title: 'Morning Rise', artist: 'Synth Weaver', image: musicArtworks[4]?.imageUrl || '', duration: '3:45' },
+  { id: 2, title: 'Coastal Drive', artist: 'Groove Rider', image: musicArtworks[0]?.imageUrl || '', duration: '2:55' },
+  { id: 3, title: 'City Lights', artist: 'Digital Nomad', image: musicArtworks[1]?.imageUrl || '', duration: '4:10' },
+  { id: 4, title: 'Starlight Echo', artist: 'Astro Beats', image: musicArtworks[2]?.imageUrl || '', duration: '3:20' },
 ];
 
 type Track = {
@@ -35,13 +35,14 @@ type Track = {
     title: string;
     artist: string;
     image: string;
+    duration: string;
 };
 
 type PlaylistItem = Track & { addedByUser: boolean };
 
 const initialPlaylist: PlaylistItem[] = [
-    { id: 101, title: 'Accra Night', artist: 'E.L', image: musicArtworks[1]?.imageUrl || '', addedByUser: false },
-    { id: 102, title: 'Adonai', artist: 'Sarkodie', image: musicArtworks[3]?.imageUrl || '', addedByUser: false },
+    { id: 101, title: 'Accra Night', artist: 'E.L', image: musicArtworks[1]?.imageUrl || '', duration: '3:15', addedByUser: false },
+    { id: 102, title: 'Adonai', artist: 'Sarkodie', image: musicArtworks[3]?.imageUrl || '', duration: '4:02', addedByUser: false },
 ];
 
 
@@ -74,6 +75,16 @@ export default function MusicPage() {
     };
     
     const removeFromPlaylist = (trackId: number) => {
+        const songToRemove = playlist.find(t => t.id === trackId);
+        if (!songToRemove || !songToRemove.addedByUser) {
+            toast({
+                variant: "destructive",
+                title: "Cannot Remove",
+                description: "You can only remove songs you have added.",
+            });
+            return;
+        }
+
         setPlaylist(prev => prev.filter(t => t.id !== trackId));
         toast({
             title: 'Song Removed',
@@ -82,7 +93,8 @@ export default function MusicPage() {
 
         // If the removed song was the one playing, play the next one
         if (nowPlaying?.id === trackId) {
-            setNowPlaying(playlist[1] || null);
+            const nextSong = playlist.find(p => p.id !== trackId);
+            setNowPlaying(nextSong || null);
         }
     };
 
@@ -118,7 +130,11 @@ export default function MusicPage() {
                                         <Image src={nowPlaying.image} alt={nowPlaying.title} width={48} height={48} className="rounded-md" />
                                         <div className="flex-grow">
                                             <p className="font-semibold">{nowPlaying.title}</p>
-                                            <p className="text-sm text-muted-foreground">{nowPlaying.artist}</p>
+                                            <div className="flex text-sm text-muted-foreground">
+                                                <span>{nowPlaying.artist}</span>
+                                                <span className="mx-2">•</span>
+                                                <span>{nowPlaying.duration}</span>
+                                            </div>
                                         </div>
                                         <NowPlayingIcon />
                                     </div>
@@ -137,7 +153,11 @@ export default function MusicPage() {
                                         <Image src={track.image} alt={track.title} width={48} height={48} className="rounded-md" />
                                         <div className="flex-grow">
                                             <p className="font-semibold">{track.title}</p>
-                                            <p className="text-sm text-muted-foreground">{track.artist}</p>
+                                            <div className="flex text-sm text-muted-foreground">
+                                                <span>{track.artist}</span>
+                                                <span className="mx-2">•</span>
+                                                <span>{track.duration}</span>
+                                            </div>
                                         </div>
                                         {track.addedByUser && (
                                             <Button size="icon" variant="ghost" className="opacity-0 group-hover:opacity-100" onClick={() => removeFromPlaylist(track.id)}>
@@ -205,7 +225,11 @@ export default function MusicPage() {
                                 <Image src={track.image} alt={track.title} width={48} height={48} className="rounded-md" />
                                 <div className="flex-grow">
                                     <p className="font-semibold">{track.title}</p>
-                                    <p className="text-sm text-muted-foreground">{track.artist}</p>
+                                    <div className="flex text-sm text-muted-foreground">
+                                        <span>{track.artist}</span>
+                                        <span className="mx-2">•</span>
+                                        <span>{track.duration}</span>
+                                    </div>
                                 </div>
                                 <Button size="icon" variant="ghost" onClick={() => addToPlaylist(track)}>
                                     <Plus className="h-5 w-5"/>
