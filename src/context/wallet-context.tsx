@@ -51,28 +51,39 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
-    const storedBalance = localStorage.getItem('eritas-wallet-balance');
-    if (storedBalance) {
-      setBalance(parseFloat(storedBalance));
-    }
+    try {
+      const storedBalance = localStorage.getItem('eritas-wallet-balance');
+      if (storedBalance) {
+        setBalance(parseFloat(storedBalance));
+      }
 
-    const storedTransactions = localStorage.getItem('eritas-wallet-transactions');
-    if (storedTransactions) {
-      setTransactions(JSON.parse(storedTransactions));
+      const storedTransactions = localStorage.getItem('eritas-wallet-transactions');
+      if (storedTransactions) {
+        setTransactions(JSON.parse(storedTransactions));
+      }
+    } catch (error) {
+      console.error("Failed to read from localStorage", error);
     }
-    
     setIsHydrated(true);
   }, []);
 
   useEffect(() => {
     if (isHydrated) {
+      try {
         localStorage.setItem('eritas-wallet-balance', balance.toString());
+      } catch (error) {
+        console.error("Failed to write balance to localStorage", error);
+      }
     }
   }, [balance, isHydrated]);
 
   useEffect(() => {
     if (isHydrated) {
+      try {
         localStorage.setItem('eritas-wallet-transactions', JSON.stringify(transactions));
+      } catch (error) {
+        console.error("Failed to write transactions to localStorage", error);
+      }
     }
   }, [transactions, isHydrated]);
 
@@ -95,8 +106,6 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   };
   
   if (!isHydrated) {
-    // Render a loading state or null until the client has hydrated
-    // This ensures the server-rendered output and initial client render match
     return null; 
   }
 
