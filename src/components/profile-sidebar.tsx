@@ -27,6 +27,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useState, useEffect } from 'react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { useRouter } from 'next/navigation';
 
 const menuItems = [
     { icon: Settings, label: 'Profile Settings' },
@@ -39,6 +40,7 @@ const menuItems = [
 export function ProfileSidebar() {
     const userImage = PlaceHolderImages.find((p) => p.id === 'user-avatar')?.imageUrl;
     const [theme, setTheme] = useState('light');
+    const router = useRouter();
 
     useEffect(() => {
         const localTheme = localStorage.getItem('theme');
@@ -56,6 +58,11 @@ export function ProfileSidebar() {
         setTheme(newTheme);
         localStorage.setItem('theme', newTheme);
         document.documentElement.classList.toggle('dark', isDark);
+    };
+
+    const handleLogout = () => {
+        // In a real app with authentication, you would clear tokens/session here.
+        router.push('/');
     };
 
     return (
@@ -120,7 +127,7 @@ export function ProfileSidebar() {
                     </div>
 
                     {/* Logout Button */}
-                    <Button variant="destructive" className="w-full">
+                    <Button variant="destructive" className="w-full" onClick={handleLogout}>
                         <LogOut className="mr-2 h-5 w-5" />
                         Logout
                     </Button>
