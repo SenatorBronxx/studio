@@ -16,6 +16,7 @@ import {
   QrCode,
   Bell,
   Trash2,
+  Ticket,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
@@ -38,6 +39,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Map } from '@/components/map';
 import { useMusic } from '@/context/music-context';
 import { useNotificationSettings } from '@/context/notification-settings-context';
+import { useDiscount } from '@/context/discount-context';
 
 const initialBusData = [
     {
@@ -93,6 +95,7 @@ export default function HomePage() {
   const { balance, deductBalance, addTransaction } = useWallet();
   const { setIsOnBus } = useMusic();
   const { bookingAlerts } = useNotificationSettings();
+  const { activeDiscount, isDiscountBannerDismissed, dismissDiscountBanner } = useDiscount();
   const userName = searchParams.get('name') || 'there';
   
   const [fromLocation, setFromLocation] = useState('');
@@ -107,6 +110,16 @@ export default function HomePage() {
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [dynamicEta, setDynamicEta] = useState<number | null>(null);
+  const [showDiscountBanner, setShowDiscountBanner] = useState(false);
+  
+  useEffect(() => {
+    if (activeDiscount && !isDiscountBannerDismissed) {
+      setShowDiscountBanner(true);
+    } else {
+      setShowDiscountBanner(false);
+    }
+  }, [activeDiscount, isDiscountBannerDismissed]);
+
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -145,7 +158,12 @@ export default function HomePage() {
   }
 
   const handleBoard = (stop: {name: string, fare: number}) => {
-    if (balance < stop.fare) {
+    let finalFare = stop.fare;
+    if (activeDiscount) {
+        finalFare = finalFare * (1 - activeDiscount.percentage / 100);
+    }
+
+    if (balance < finalFare) {
       toast({
         variant: "destructive",
         title: "Insufficient Balance",
@@ -160,13 +178,13 @@ export default function HomePage() {
         setIsBoarding(false);
         setBoardedStop(stop.name);
         
-        deductBalance(stop.fare);
+        deductBalance(finalFare);
 
         const newTransaction = {
             id: uuidv4(),
             type: 'payment',
             plate: selectedBus?.plate || 'N/A',
-            amount: -stop.fare,
+            amount: -finalFare,
         };
         addTransaction(newTransaction);
         
@@ -200,7 +218,7 @@ export default function HomePage() {
           seat: selectedSeat,
           from: stop.name,
           to: selectedBus?.finalDestination.name,
-          fare: stop.fare,
+          fare: finalFare,
           timestamp: new Date().toISOString(),
         };
         const encodedQrData = encodeURIComponent(JSON.stringify(qrData));
@@ -221,9 +239,14 @@ export default function HomePage() {
             
             setNotifications(prev => [newNotification, ...prev]);
 
+            let toastDescription = `The fare of GH₵${finalFare.toFixed(2)} has been deducted.`;
+            if (activeDiscount) {
+                toastDescription += ` (${activeDiscount.percentage}% discount applied!)`
+            }
+
             toast({
                 title: "Seat Booked Successfully!",
-                description: `A notification has been added to your inbox. The fare of GH₵${stop.fare.toFixed(2)} has been deducted.`,
+                description: toastDescription,
             });
         }
 
@@ -241,6 +264,11 @@ export default function HomePage() {
   
   const handleConfirmSeat = () => {
     setIsSeatSheetOpen(false);
+  }
+
+  const handleDismissBanner = () => {
+    dismissDiscountBanner();
+    setShowDiscountBanner(false);
   }
 
 
@@ -332,6 +360,20 @@ export default function HomePage() {
       {/* Bottom Sheet - Search and Nav */}
       <div className="absolute bottom-0 left-0 right-0 z-10 p-2 sm:p-4">
         <div className="bg-background/80 backdrop-blur-sm rounded-t-2xl p-4 max-w-md mx-auto flex flex-col gap-4 shadow-lg">
+            {showDiscountBanner && activeDiscount && (
+                 <div className="relative bg-primary/10 border-l-4 border-primary text-primary-foreground p-4 rounded-lg animate-in fade-in-50 slide-in-from-bottom-5">
+                    <Button variant="ghost" size="icon" className="absolute top-1 right-1 h-6 w-6 text-primary hover:bg-primary/20" onClick={handleDismissBanner}>
+                        <X className="h-4 w-4" />
+                    </Button>
+                    <div className="flex items-center gap-3">
+                        <Ticket className="h-8 w-8 text-primary" />
+                        <div>
+                            <h3 className="font-bold text-primary">{activeDiscount.percentage}% Discount Activated!</h3>
+                            <p className="text-sm text-primary/80">{activeDiscount.description}</p>
+                        </div>
+                    </div>
+                </div>
+            )}
             {selectedBus ? (
               <div className="space-y-3">
                 <div className="flex justify-between items-start">
@@ -384,51 +426,61 @@ export default function HomePage() {
                  <div>
                     <h3 className="text-sm font-semibold text-foreground/80 mb-2">Bus Fares:</h3>
                      <Accordion type="single" collapsible className="w-full">
-                        {[...selectedBus.stops, { ...selectedBus.finalDestination, isFinal: true }].map((stop, index) => (
-                           <AccordionItem value={`item-${index}`} key={index} className="border-b-0">
-                             <AccordionTrigger className="py-2 rounded-lg hover:bg-muted/50 px-2 data-[state=open]:bg-muted">
-                                <div className="flex items-center justify-between gap-3 w-full">
-                                    <div className="flex items-center gap-3">
-                                         <div className={`h-5 w-5 rounded-full flex items-center justify-center ${stop.isFinal ? 'bg-primary/20' : 'bg-muted-foreground/20'}`}>
-                                            {stop.isFinal ? <Flag className="h-3 w-3 text-primary" /> : <MapPin className="h-3 w-3 text-muted-foreground" />}
+                        {[...selectedBus.stops, { ...selectedBus.finalDestination, isFinal: true }].map((stop, index) => {
+                             let fare = stop.fare;
+                             if (activeDiscount) {
+                                fare = fare * (1 - activeDiscount.percentage / 100);
+                             }
+
+                            return (
+                               <AccordionItem value={`item-${index}`} key={index} className="border-b-0">
+                                 <AccordionTrigger className="py-2 rounded-lg hover:bg-muted/50 px-2 data-[state=open]:bg-muted">
+                                    <div className="flex items-center justify-between gap-3 w-full">
+                                        <div className="flex items-center gap-3">
+                                             <div className={`h-5 w-5 rounded-full flex items-center justify-center ${stop.isFinal ? 'bg-primary/20' : 'bg-muted-foreground/20'}`}>
+                                                {stop.isFinal ? <Flag className="h-3 w-3 text-primary" /> : <MapPin className="h-3 w-3 text-muted-foreground" />}
+                                            </div>
+                                            <p className={`text-sm ${stop.isFinal ? 'font-semibold text-primary' : 'text-foreground'}`}>{stop.name} {stop.isFinal && '(Final)'}</p>
                                         </div>
-                                        <p className={`text-sm ${stop.isFinal ? 'font-semibold text-primary' : 'text-foreground'}`}>{stop.name} {stop.isFinal && '(Final)'}</p>
+                                        <div className='flex items-center gap-2'>
+                                        {activeDiscount && <Badge variant="destructive">-{activeDiscount.percentage}%</Badge>}
+                                            <p className={`font-mono text-sm ${stop.isFinal ? 'font-semibold text-primary' : 'text-foreground'}`}>GH₵{fare.toFixed(2)}</p>
+                                        </div>
                                     </div>
-                                    <p className={`font-mono text-sm ${stop.isFinal ? 'font-semibold text-primary' : 'text-foreground'}`}>GH₵{stop.fare.toFixed(2)}</p>
-                                </div>
-                             </AccordionTrigger>
-                             <AccordionContent>
-                                <div className="px-3 pt-2 pb-2 text-center">
-                                {boardedStop === stop.name ? (
-                                    <div className="flex items-center justify-center gap-2 text-primary font-semibold p-2 bg-primary/10 rounded-md">
-                                        <Clock className="h-5 w-5" />
-                                        {dynamicEta !== null && dynamicEta > 0 ? (
-                                            <span>Arriving in <strong>{dynamicEta} min</strong></span>
-                                        ) : (
-                                            <span>You are on the bus!</span>
-                                        )}
+                                 </AccordionTrigger>
+                                 <AccordionContent>
+                                    <div className="px-3 pt-2 pb-2 text-center">
+                                    {boardedStop === stop.name ? (
+                                        <div className="flex items-center justify-center gap-2 text-primary font-semibold p-2 bg-primary/10 rounded-md">
+                                            <Clock className="h-5 w-5" />
+                                            {dynamicEta !== null && dynamicEta > 0 ? (
+                                                <span>Arriving in <strong>{dynamicEta} min</strong></span>
+                                            ) : (
+                                                <span>You are on the bus!</span>
+                                            )}
+                                        </div>
+                                    ) : selectedBus.capacity.current < selectedBus.capacity.max ? (
+                                        <Button 
+                                            className='w-full' 
+                                            onClick={() => handleBoard(stop)} 
+                                            disabled={isBoarding || !selectedSeat}
+                                        >
+                                            {isBoarding ? (
+                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                            ) : !selectedSeat ? (
+                                                'Select bus seat first'
+                                            ) : (
+                                                'BOARD'
+                                            )}
+                                        </Button>
+                                    ) : (
+                                        <p className="text-sm text-destructive font-medium p-2 bg-destructive/10 rounded-md">This bus is full.</p>
+                                    )}
                                     </div>
-                                ) : selectedBus.capacity.current < selectedBus.capacity.max ? (
-                                    <Button 
-                                        className='w-full' 
-                                        onClick={() => handleBoard(stop)} 
-                                        disabled={isBoarding || !selectedSeat}
-                                    >
-                                        {isBoarding ? (
-                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        ) : !selectedSeat ? (
-                                            'Select bus seat first'
-                                        ) : (
-                                            'BOARD'
-                                        )}
-                                    </Button>
-                                ) : (
-                                    <p className="text-sm text-destructive font-medium p-2 bg-destructive/10 rounded-md">This bus is full.</p>
-                                )}
-                                </div>
-                             </AccordionContent>
-                           </AccordionItem>
-                        ))}
+                                 </AccordionContent>
+                               </AccordionItem>
+                            )
+                        })}
                     </Accordion>
                  </div>
               </div>

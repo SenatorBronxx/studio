@@ -5,6 +5,7 @@ import { WalletProvider } from "@/context/wallet-context";
 import { MusicProvider } from "@/context/music-context";
 import { UserProvider } from "@/context/user-context";
 import { NotificationSettingsProvider } from "@/context/notification-settings-context";
+import { DiscountProvider } from "@/context/discount-context";
 import { ReactNode } from "react";
 
 export function ClientProviders({ children }: { children: ReactNode }) {
@@ -13,7 +14,9 @@ export function ClientProviders({ children }: { children: ReactNode }) {
             <WalletProvider>
                 <MusicProvider>
                     <NotificationSettingsProvider>
-                        {children}
+                        <DiscountProvider>
+                            {children}
+                        </DiscountProvider>
                     </NotificationSettingsProvider>
                 </MusicProvider>
             </WalletProvider>
