@@ -20,6 +20,10 @@ import {
     Sun,
     Moon,
     QrCode,
+    MapPin,
+    Home,
+    Briefcase,
+    Plus,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
@@ -28,11 +32,26 @@ import { Switch } from '@/components/ui/switch';
 import { useState, useEffect } from 'react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useRouter } from 'next/navigation';
+import {
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from '@/components/ui/accordion';
 
 const menuItems = [
     { icon: Settings, label: 'Profile Settings' },
     { icon: History, label: 'Recent Trips' },
     { icon: QrCode, label: 'Trip QR Codes' },
+    {
+        icon: MapPin,
+        label: 'Saved Places',
+        subItems: [
+            { icon: Home, label: 'Add home address' },
+            { icon: Briefcase, label: 'Add work address' },
+            { icon: Plus, label: 'Add place' },
+        ],
+    },
     { icon: Percent, label: 'User Discounts' },
     { icon: Award, label: 'Loyalty Points' },
 ];
@@ -98,20 +117,54 @@ export function ProfileSidebar() {
                     <Separator className="my-6" />
 
                     {/* Menu Items */}
-                    <div className="flex flex-col gap-4 flex-grow">
-                        {menuItems.map((item, index) => {
-                            const Icon = item.icon;
-                            return (
-                                <Button
-                                    key={index}
-                                    variant="ghost"
-                                    className="justify-start gap-3 text-md"
-                                >
-                                    <Icon className="h-5 w-5 text-muted-foreground" />
-                                    {item.label}
-                                </Button>
-                            );
-                        })}
+                    <div className="flex flex-col gap-1 flex-grow">
+                         <Accordion type="single" collapsible className="w-full -mt-2">
+                            {menuItems.map((item, index) => {
+                                const Icon = item.icon;
+                                return item.subItems ? (
+                                    <AccordionItem value={`item-${index}`} key={index} className="border-b-0">
+                                        <AccordionTrigger className="hover:no-underline hover:bg-transparent p-0">
+                                             <Button
+                                                variant="ghost"
+                                                className="justify-start gap-3 text-md w-full"
+                                                asChild
+                                            >
+                                                <div>
+                                                    <Icon className="h-5 w-5 text-muted-foreground" />
+                                                    {item.label}
+                                                </div>
+                                            </Button>
+                                        </AccordionTrigger>
+                                        <AccordionContent className="pb-2">
+                                            <div className="flex flex-col gap-1 ml-8 mt-1">
+                                                {item.subItems.map((subItem, subIndex) => {
+                                                    const SubIcon = subItem.icon;
+                                                    return (
+                                                        <Button
+                                                            key={subIndex}
+                                                            variant="ghost"
+                                                            className="justify-start gap-3 text-md"
+                                                        >
+                                                            <SubIcon className="h-5 w-5 text-muted-foreground" />
+                                                            {subItem.label}
+                                                        </Button>
+                                                    );
+                                                })}
+                                            </div>
+                                        </AccordionContent>
+                                    </AccordionItem>
+                                ) : (
+                                    <Button
+                                        key={index}
+                                        variant="ghost"
+                                        className="justify-start gap-3 text-md"
+                                    >
+                                        <Icon className="h-5 w-5 text-muted-foreground" />
+                                        {item.label}
+                                    </Button>
+                                );
+                            })}
+                         </Accordion>
                     </div>
 
                     {/* Theme Switcher */}
