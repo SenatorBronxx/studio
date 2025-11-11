@@ -10,7 +10,6 @@ import {
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import {
-    Menu,
     User,
     History,
     Percent,
@@ -23,6 +22,7 @@ import {
     Briefcase,
     Plus,
     Trash2,
+    Ticket,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
@@ -47,6 +47,7 @@ import {
     AlertDialogTrigger,
   } from '@/components/ui/alert-dialog';
 import { ThemeSwitcher } from './theme-switcher';
+import { useToast } from '@/hooks/use-toast';
 
 const menuItems = [
     { id: 'settings', icon: Settings, label: 'Profile Settings', href: '/settings' },
@@ -70,6 +71,7 @@ export function ProfileSidebar() {
     const { user, setUser } = useUser();
     const userImage = PlaceHolderImages.find((p) => p.id === 'user-avatar')?.imageUrl;
     const router = useRouter();
+    const { toast } = useToast();
 
     const handleLogout = () => {
         setUser(null); // Clear user from context
@@ -88,6 +90,13 @@ export function ProfileSidebar() {
             router.push(href);
         }
     };
+
+    const handleActivateDiscount = () => {
+        toast({
+            title: 'Discount Activated!',
+            description: 'Your 15% discount has been applied to your account.',
+        });
+    }
 
     return (
         <Sheet>
@@ -161,11 +170,20 @@ export function ProfileSidebar() {
                                                 <AlertDialogHeader>
                                                     <AlertDialogTitle>Discount Eligibility</AlertDialogTitle>
                                                     <AlertDialogDescription>
-                                                        Congratulations! You are currently eligible for a 15% discount on your next 3 trips. Keep an eye on your notifications for more exclusive offers.
+                                                        Congratulations! You are eligible for a 15% discount on your next 3 trips. Activate the code below to apply it to your account.
                                                     </AlertDialogDescription>
                                                 </AlertDialogHeader>
+                                                <div className="py-4">
+                                                    <div className="relative rounded-lg bg-muted p-4 flex items-center justify-center">
+                                                        <Ticket className="absolute left-4 top-1/2 -translate-y-1/2 h-8 w-8 text-primary/30" />
+                                                        <p className="font-mono text-2xl font-bold tracking-widest text-primary">
+                                                            ERITAS15
+                                                        </p>
+                                                    </div>
+                                                </div>
                                                 <AlertDialogFooter>
-                                                    <AlertDialogAction>Got it!</AlertDialogAction>
+                                                    <AlertDialogCancel>Close</AlertDialogCancel>
+                                                    <AlertDialogAction onClick={handleActivateDiscount}>Activate</AlertDialogAction>
                                                 </AlertDialogFooter>
                                             </AlertDialogContent>
                                         </AlertDialog>
