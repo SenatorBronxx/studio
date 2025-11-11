@@ -109,6 +109,15 @@ export default {
           '0%, 100%': { height: '0.5rem' },
           '50%': { height: '1.25rem' },
         },
+        'satellite-orbit-outer': {
+          '0%': { transform: 'rotate(0deg)' },
+          '100%': { transform: 'rotate(360deg)' },
+        },
+        'satellite-orbit-inner': {
+          '0%': { transform: 'rotate(0deg) translateY(-8px) rotate(0deg)' },
+          '50%': { transform: 'rotate(180deg) translateY(8px) rotate(-180deg)' },
+          '100%': { transform: 'rotate(360deg) translateY(-8px) rotate(-360deg)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
@@ -118,6 +127,8 @@ export default {
         'pop-in': 'pop-in 0.5s ease-out forwards',
         'glow': 'glow 2.5s ease-in-out infinite',
         'sound-wave': 'sound-wave 2s ease-in-out infinite',
+        'satellite-orbit-outer': 'satellite-orbit-outer 15s linear infinite',
+        'satellite-orbit-inner': 'satellite-orbit-inner 15s ease-in-out infinite',
       },
     },
   },
