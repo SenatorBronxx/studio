@@ -96,7 +96,7 @@ export function ProfileSidebar() {
                     size="icon"
                     className="bg-background/80 backdrop-blur-sm rounded-full shadow-md hover:bg-card text-foreground"
                 >
-                    <Menu className="h-5 w-5" />
+                    <User className="h-5 w-5" />
                 </Button>
             </SheetTrigger>
             <SheetContent>
