@@ -67,7 +67,6 @@ export default function EditProfilePage() {
 
   const onSubmit = (data: ProfileFormValues) => {
     setIsSubmitting(true);
-    // Simulate API call
     setTimeout(() => {
       setUser({
         name: data.name,
@@ -99,7 +98,6 @@ export default function EditProfilePage() {
   }
   
   if (!user) {
-    // This can happen if the user tries to access this page directly without being "logged in"
     return (
         <div className="flex flex-col min-h-screen bg-background items-center justify-center text-center p-4">
             <h1 className="text-xl font-bold">You're not logged in</h1>

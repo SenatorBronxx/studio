@@ -64,10 +64,8 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
     setIsSubmitting(true);
     console.log("Sign in with:", values);
     
-    // In a real app, you'd fetch the user's data from your backend upon successful login.
-    // For this mock, we'll set some user data to populate the context.
     const mockUserData = {
-        name: 'John Doe', // Mock name for sign-in user
+        name: 'John Doe',
         email: 'john.d@email.com',
         phone: values.phone
     };
@@ -86,7 +84,6 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
     setIsSubmitting(true);
     console.log("Sign up with:", values);
     
-    // Set the user context with the new user's data
     const newUser = {
         name: `${values.firstName} ${values.lastName}`,
         email: values.email || '',
@@ -107,7 +104,6 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
     setIsSubmitting(true);
     console.log(`Signing in with ${provider}`);
 
-    // Mock user data for social login
      const mockSocialUser = {
         name: 'Jane Smith',
         email: 'jane.s@email.com',

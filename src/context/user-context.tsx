@@ -45,10 +45,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
       console.error("Failed to write user to localStorage", error);
     }
   }, []);
-  
-  if (!isHydrated) {
-    return null; // Or a loading spinner
-  }
 
   return (
     <UserContext.Provider value={{ user, setUser, isHydrated }}>
