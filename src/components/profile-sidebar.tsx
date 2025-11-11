@@ -41,7 +41,7 @@ import {
 } from '@/components/ui/accordion';
 
 const menuItems = [
-    { icon: Settings, label: 'Profile Settings' },
+    { icon: Settings, label: 'Profile Settings', href: '/settings' },
     { icon: History, label: 'Recent Trips' },
     { icon: QrCode, label: 'Trip QR Codes' },
     {
@@ -83,6 +83,12 @@ export function ProfileSidebar() {
     const handleLogout = () => {
         // In a real app with authentication, you would clear tokens/session here.
         router.push('/');
+    };
+    
+    const handleNavigate = (href?: string) => {
+        if (href) {
+            router.push(href);
+        }
     };
 
     return (
@@ -159,6 +165,7 @@ export function ProfileSidebar() {
                                         key={index}
                                         variant="ghost"
                                         className="justify-start gap-3 text-md"
+                                        onClick={() => handleNavigate(item.href)}
                                     >
                                         <Icon className="h-5 w-5 text-muted-foreground" />
                                         {item.label}
