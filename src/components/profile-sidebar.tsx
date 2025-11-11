@@ -40,6 +40,17 @@ import {
     AccordionTrigger,
 } from '@/components/ui/accordion';
 import { useUser } from '@/context/user-context';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+  } from '@/components/ui/alert-dialog';
 
 const menuItems = [
     { icon: Settings, label: 'Profile Settings', href: '/settings' },
@@ -84,6 +95,13 @@ export function ProfileSidebar() {
 
     const handleLogout = () => {
         setUser(null); // Clear user from context
+        router.push('/');
+    };
+
+    const handleDeleteAccount = () => {
+        // In a real app, this would trigger a backend process to delete the user.
+        console.log('Deleting user account...');
+        setUser(null);
         router.push('/');
     };
     
@@ -185,7 +203,7 @@ export function ProfileSidebar() {
                                         variant="ghost"
                                         className="justify-start gap-3 text-md"
                                         onClick={() => handleNavigate(item.href)}
-                                        disabled={!user && item.href}
+                                        disabled={!user && !!item.href}
                                     >
                                         <Icon className="h-5 w-5 text-muted-foreground" />
                                         {item.label}
@@ -215,10 +233,27 @@ export function ProfileSidebar() {
                         </Button>
 
                          {/* Delete Account Button */}
-                        <Button variant="destructive" className="w-full" disabled={!user}>
-                            <Trash2 className="mr-2 h-5 w-5" />
-                            Delete Account
-                        </Button>
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="destructive" className="w-full" disabled={!user}>
+                                    <Trash2 className="mr-2 h-5 w-5" />
+                                    Delete Account
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This action cannot be undone. This will permanently delete your
+                                    account and remove your data from our servers.
+                                </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={handleDeleteAccount}>Continue</AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
                     </div>
                 </div>
             </SheetContent>
