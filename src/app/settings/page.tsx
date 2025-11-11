@@ -86,15 +86,29 @@ export default function SettingsPage() {
             <CardContent className="p-0">
               <div className="divide-y divide-border">
                 {settingsOptions.map((item) => {
-                  const Icon = item.icon;
-                  const Wrapper = item.href ? Link : 'div';
+                  if (item.href) {
+                    return (
+                      <Link href={item.href} key={item.title}>
+                        <div className="flex items-center gap-4 p-4 cursor-pointer hover:bg-muted/50">
+                          <div className="p-2 bg-muted rounded-full">
+                            <item.icon className="h-5 w-5 text-muted-foreground" />
+                          </div>
+                          <div className="flex-grow">
+                            <p className="font-semibold">{item.title}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {item.description}
+                            </p>
+                          </div>
+                          <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                        </div>
+                      </Link>
+                    );
+                  }
+                  
                   return (
-                    <Wrapper href={item.href || ''} key={item.title}>
-                        <div
-                        className="flex items-center gap-4 p-4 cursor-pointer hover:bg-muted/50"
-                        >
+                    <div key={item.title} className="flex items-center gap-4 p-4 cursor-pointer hover:bg-muted/50">
                         <div className="p-2 bg-muted rounded-full">
-                            <Icon className="h-5 w-5 text-muted-foreground" />
+                            <item.icon className="h-5 w-5 text-muted-foreground" />
                         </div>
                         <div className="flex-grow">
                             <p className="font-semibold">{item.title}</p>
@@ -103,8 +117,7 @@ export default function SettingsPage() {
                             </p>
                         </div>
                         <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                        </div>
-                    </Wrapper>
+                    </div>
                   );
                 })}
               </div>
