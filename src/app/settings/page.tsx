@@ -8,7 +8,6 @@ import {
   Smartphone,
   CreditCard,
   Bell,
-  Palette,
   Lock,
   ChevronRight,
 } from 'lucide-react';
@@ -18,6 +17,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import Link from 'next/link';
 import { ThemeSwitcher } from '@/components/theme-switcher';
+import { Palette } from 'lucide-react';
 
 const settingsOptions = [
   {
@@ -30,6 +30,7 @@ const settingsOptions = [
     icon: Smartphone,
     title: 'Linked Devices',
     description: 'See other phones using this account',
+    href: '/settings/linked-devices',
   },
   {
     icon: CreditCard,
