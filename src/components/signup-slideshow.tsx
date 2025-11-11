@@ -38,6 +38,11 @@ const slideContent = [
         title: 'Real-time Availability',
         description: 'Check seat availability and book your ticket instantly. No more waiting or uncertainty.',
     },
+    {
+        id: 'frosted-glass-ui',
+        title: 'Frosted Glass UI',
+        description: "Experience ERITAS' unique frosted glass UI on another level.",
+    },
 ];
 
 export function SignupSlideshow({ onFinish }: SignupSlideshowProps) {
