@@ -40,6 +40,7 @@ const settingsOptions = [
     icon: Bell,
     title: 'Notifications',
     description: 'Enable/disable route or booking alerts',
+    href: '/settings/notifications',
   },
   {
     icon: Lock,
