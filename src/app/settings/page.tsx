@@ -14,7 +14,8 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const settingsOptions = [
   {
@@ -51,6 +52,7 @@ const settingsOptions = [
 
 export default function SettingsPage() {
   const router = useRouter();
+  const userImage = PlaceHolderImages.find((p) => p.id === 'user-avatar')?.imageUrl;
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -70,6 +72,14 @@ export default function SettingsPage() {
 
       <main className="flex-grow p-4">
         <div className="max-w-md mx-auto">
+          <div className="flex flex-col items-center justify-center -mt-2 mb-6">
+            <Avatar className="h-24 w-24 border-4 border-background shadow-md">
+                {userImage && <AvatarImage src={userImage} alt="User Name" />}
+                <AvatarFallback>
+                    <User className="h-10 w-10"/>
+                </AvatarFallback>
+            </Avatar>
+          </div>
           <Card>
             <CardContent className="p-0">
               <div className="divide-y divide-border">
