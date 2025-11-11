@@ -143,10 +143,12 @@ export default function EritasPayPage() {
                 Top-up
                 </Button>
             </Link>
-            <Button size="lg" variant="secondary" className="flex-col h-20">
-              <VisaIcon className="w-12 mb-2" />
-              Synchronize with VISA
-            </Button>
+            <Link href="/link-card" passHref>
+                <Button size="lg" variant="secondary" className="flex-col h-20 w-full">
+                    <VisaIcon className="w-12 mb-2" />
+                    Synchronize with VISA
+                </Button>
+            </Link>
           </div>
 
           {/* Recent Activity */}
