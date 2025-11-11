@@ -24,6 +24,7 @@ import {
     Home,
     Briefcase,
     Plus,
+    Trash2,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
@@ -179,11 +180,19 @@ export function ProfileSidebar() {
                         />
                     </div>
 
-                    {/* Logout Button */}
-                    <Button variant="destructive" className="w-full" onClick={handleLogout}>
-                        <LogOut className="mr-2 h-5 w-5" />
-                        Logout
-                    </Button>
+                    <div className="space-y-2">
+                        {/* Logout Button */}
+                        <Button variant="outline" className="w-full" onClick={handleLogout}>
+                            <LogOut className="mr-2 h-5 w-5" />
+                            Logout
+                        </Button>
+
+                         {/* Delete Account Button */}
+                        <Button variant="destructive" className="w-full">
+                            <Trash2 className="mr-2 h-5 w-5" />
+                            Delete Account
+                        </Button>
+                    </div>
                 </div>
             </SheetContent>
         </Sheet>
