@@ -16,12 +16,14 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import Link from 'next/link';
 
 const settingsOptions = [
   {
     icon: User,
     title: 'Edit Profile',
     description: 'Change name, photo, contact',
+    href: '/settings/edit-profile',
   },
   {
     icon: Smartphone,
@@ -83,24 +85,26 @@ export default function SettingsPage() {
           <Card>
             <CardContent className="p-0">
               <div className="divide-y divide-border">
-                {settingsOptions.map((item, index) => {
+                {settingsOptions.map((item) => {
                   const Icon = item.icon;
+                  const Wrapper = item.href ? Link : 'div';
                   return (
-                    <div
-                      key={item.title}
-                      className="flex items-center gap-4 p-4 cursor-pointer hover:bg-muted/50"
-                    >
-                      <div className="p-2 bg-muted rounded-full">
-                         <Icon className="h-5 w-5 text-muted-foreground" />
-                      </div>
-                      <div className="flex-grow">
-                        <p className="font-semibold">{item.title}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {item.description}
-                        </p>
-                      </div>
-                      <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                    </div>
+                    <Wrapper href={item.href || ''} key={item.title}>
+                        <div
+                        className="flex items-center gap-4 p-4 cursor-pointer hover:bg-muted/50"
+                        >
+                        <div className="p-2 bg-muted rounded-full">
+                            <Icon className="h-5 w-5 text-muted-foreground" />
+                        </div>
+                        <div className="flex-grow">
+                            <p className="font-semibold">{item.title}</p>
+                            <p className="text-sm text-muted-foreground">
+                            {item.description}
+                            </p>
+                        </div>
+                        <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                        </div>
+                    </Wrapper>
                   );
                 })}
               </div>

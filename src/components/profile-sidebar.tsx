@@ -39,6 +39,7 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from '@/components/ui/accordion';
+import { useUser } from '@/context/user-context';
 
 const menuItems = [
     { icon: Settings, label: 'Profile Settings', href: '/settings' },
@@ -58,6 +59,7 @@ const menuItems = [
 ];
 
 export function ProfileSidebar() {
+    const { user } = useUser();
     const userImage = PlaceHolderImages.find((p) => p.id === 'user-avatar')?.imageUrl;
     const [theme, setTheme] = useState('light');
     const router = useRouter();
@@ -116,8 +118,8 @@ export function ProfileSidebar() {
                             </AvatarFallback>
                         </Avatar>
                         <div>
-                            <p className="text-lg font-semibold">Ama Serwaa</p>
-                            <p className="text-sm text-muted-foreground">ama.s@email.com</p>
+                            <p className="text-lg font-semibold">{user.name}</p>
+                            <p className="text-sm text-muted-foreground">{user.email}</p>
                         </div>
                     </div>
 
