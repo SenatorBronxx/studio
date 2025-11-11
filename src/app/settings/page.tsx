@@ -21,17 +21,17 @@ const settingsOptions = [
   {
     icon: User,
     title: 'Edit Profile',
-    description: 'Change name, photo, contact 📱',
+    description: 'Change name, photo, contact',
   },
   {
     icon: Smartphone,
     title: 'Linked Devices',
-    description: 'See other phones using this account 🧩',
+    description: 'See other phones using this account',
   },
   {
     icon: CreditCard,
     title: 'Payment Methods',
-    description: 'Add/remove MoMo, cards, Eritas Pay wallet 🔔',
+    description: 'Add/remove MoMo, cards, Eritas Pay wallet',
   },
   {
     icon: Bell,
@@ -41,12 +41,12 @@ const settingsOptions = [
   {
     icon: Palette,
     title: 'App Theme',
-    description: 'Light / Dark / Auto 🌙',
+    description: 'Light / Dark / Auto',
   },
   {
     icon: Lock,
     title: 'Security Settings',
-    description: 'PIN, biometric login, 2FA toggle 🔒',
+    description: 'PIN, biometric login, 2FA toggle',
   },
 ];
 
