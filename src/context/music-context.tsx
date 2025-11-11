@@ -90,7 +90,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    if (nowPlaying) {
+    if (nowPlaying && isOnBus) {
       setSongProgress(0); // Reset progress when song changes
       const durationInSeconds = 180; // Mock duration of 3 minutes
       interval = setInterval(() => {
@@ -108,7 +108,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [nowPlaying, playlist]);
+  }, [nowPlaying, playlist, isOnBus]);
 
   const addToPlaylist = (track: Track) => {
     if (!isOnBus) {

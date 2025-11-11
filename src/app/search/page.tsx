@@ -3,7 +3,7 @@
 
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowRight, Search, BusFront, X, Flag, Users, Loader2, Clock, Armchair, QrCode, Bell, Trash2, MapPin } from 'lucide-react';
+import { ArrowRight, Search, BusFront, X, Flag, Users, Loader2, Clock, Armchair, QrCode, Bell, Trash2, MapPin, Bus } from 'lucide-react';
 import { BottomNav } from '@/components/bottom-nav';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -92,6 +92,7 @@ export default function SearchPage() {
     setIsPlaylistOpen,
     removeFromPlaylist,
     setIsOnBus,
+    isOnBus,
   } = useMusic();
   
   const [buses, setBuses] = useState(initialBusData);
@@ -428,7 +429,7 @@ export default function SearchPage() {
         </main>
 
         <div className="sticky bottom-0 z-20">
-            {nowPlaying && <NowPlayingBar />}
+            {isOnBus && nowPlaying && <NowPlayingBar />}
             <BottomNav />
         </div>
 
@@ -459,63 +460,73 @@ export default function SearchPage() {
                     <SheetTitle>Bus Playlist</SheetTitle>
                 </SheetHeader>
                 <div className="py-4 flex flex-col h-full">
-                {nowPlaying ? (
-                        <>
-                            <div className='mb-4 space-y-3'>
-                                <p className="text-sm font-medium text-muted-foreground">Now Playing</p>
-                                <div className="flex items-center gap-4 p-3 bg-primary/10 rounded-lg">
-                                    <Image src={nowPlaying.image} alt={nowPlaying.title} width={48} height={48} className="rounded-md" />
-                                    <div className="flex-grow space-y-2">
-                                        <div>
-                                            <p className="font-semibold">{nowPlaying.title}</p>
-                                            <div className="flex text-sm text-muted-foreground">
-                                                <span>{nowPlaying.artist}</span>
-                                                <span className="mx-2">•</span>
-                                                <span>{nowPlaying.duration}</span>
+                {isOnBus ? (
+                    <>
+                        {nowPlaying ? (
+                                <>
+                                    <div className='mb-4 space-y-3'>
+                                        <p className="text-sm font-medium text-muted-foreground">Now Playing</p>
+                                        <div className="flex items-center gap-4 p-3 bg-primary/10 rounded-lg">
+                                            <Image src={nowPlaying.image} alt={nowPlaying.title} width={48} height={48} className="rounded-md" />
+                                            <div className="flex-grow space-y-2">
+                                                <div>
+                                                    <p className="font-semibold">{nowPlaying.title}</p>
+                                                    <div className="flex text-sm text-muted-foreground">
+                                                        <span>{nowPlaying.artist}</span>
+                                                        <span className="mx-2">•</span>
+                                                        <span>{nowPlaying.duration}</span>
+                                                    </div>
+                                                </div>
+                                                <Progress value={songProgress} className="h-1" />
                                             </div>
+                                            <NowPlayingIcon />
                                         </div>
-                                        <Progress value={songProgress} className="h-1" />
                                     </div>
-                                    <NowPlayingIcon />
-                                </div>
-                            </div>
-                            <Separator />
-                        </>
-                ) : null}
+                                    <Separator />
+                                </>
+                        ) : null}
 
-                <div className="flex-grow overflow-y-auto mt-4">
-                    {playlist.filter(p => p.id !== nowPlaying?.id).length > 0 ? (
-                        <>
-                            <p className="text-sm font-medium text-muted-foreground mb-2">Up next</p>
-                            <div className="space-y-3">
-                            {playlist.filter(p => p.id !== nowPlaying?.id).map(track => (
-                                <div key={track.id} className="flex items-center gap-4 group">
-                                    <Image src={track.image} alt={track.title} width={48} height={48} className="rounded-md" />
-                                    <div className="flex-grow">
-                                        <p className="font-semibold">{track.title}</p>
-                                        <div className="flex text-sm text-muted-foreground">
-                                            <span>{track.artist}</span>
-                                            <span className="mx-2">•</span>
-                                            <span>{track.duration}</span>
+                        <div className="flex-grow overflow-y-auto mt-4">
+                            {playlist.filter(p => p.id !== nowPlaying?.id).length > 0 ? (
+                                <>
+                                    <p className="text-sm font-medium text-muted-foreground mb-2">Up next</p>
+                                    <div className="space-y-3">
+                                    {playlist.filter(p => p.id !== nowPlaying?.id).map(track => (
+                                        <div key={track.id} className="flex items-center gap-4 group">
+                                            <Image src={track.image} alt={track.title} width={48} height={48} className="rounded-md" />
+                                            <div className="flex-grow">
+                                                <p className="font-semibold">{track.title}</p>
+                                                <div className="flex text-sm text-muted-foreground">
+                                                    <span>{track.artist}</span>
+                                                    <span className="mx-2">•</span>
+                                                    <span>{track.duration}</span>
+                                                </div>
+                                            </div>
+                                            {track.addedByUser && (
+                                                <Button size="icon" variant="ghost" className="opacity-0 group-hover:opacity-100" onClick={() => removeFromPlaylist(track.id)}>
+                                                    <X className="h-5 w-5 text-muted-foreground" />
+                                                </Button>
+                                            )}
                                         </div>
+                                    ))}
                                     </div>
-                                    {track.addedByUser && (
-                                        <Button size="icon" variant="ghost" className="opacity-0 group-hover:opacity-100" onClick={() => removeFromPlaylist(track.id)}>
-                                            <X className="h-5 w-5 text-muted-foreground" />
-                                        </Button>
-                                    )}
+                                </>
+                            ) : !nowPlaying ? (
+                                <div className="text-center text-muted-foreground py-12 flex flex-col items-center justify-center h-full">
+                                    <ListMusic className="h-12 w-12 mx-auto mb-4" />
+                                    <p>No songs added yet.</p>
+                                    <p className="text-xs">Browse and add songs to the playlist.</p>
                                 </div>
-                            ))}
-                            </div>
-                        </>
-                    ) : !nowPlaying ? (
-                        <div className="text-center text-muted-foreground py-12 flex flex-col items-center justify-center h-full">
-                            <ListMusic className="h-12 w-12 mx-auto mb-4" />
-                            <p>No songs added yet.</p>
-                            <p className="text-xs">Browse and add songs to the playlist.</p>
+                            ) : null}
                         </div>
-                    ) : null}
-                </div>
+                    </>
+                ) : (
+                    <div className="flex flex-col items-center justify-center text-center h-full text-muted-foreground">
+                        <Bus className="h-12 w-12 mb-4" />
+                        <h3 className="font-semibold">Board a bus to see the playlist</h3>
+                        <p className="text-sm mt-1">The bus playlist is only available during your trip.</p>
+                    </div>
+                )}
                 </div>
             </SheetContent>
         </Sheet>

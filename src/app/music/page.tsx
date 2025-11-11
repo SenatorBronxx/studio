@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ListMusic, ListVideo, Plus, X, Search } from 'lucide-react';
+import { ListMusic, ListVideo, Plus, X, Search, Bus } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { BottomNav } from '@/components/bottom-nav';
@@ -43,6 +43,7 @@ export default function MusicPage() {
         setIsPlaylistOpen,
         addToPlaylist,
         removeFromPlaylist,
+        isOnBus,
     } = useMusic();
 
     const [searchQuery, setSearchQuery] = useState('');
@@ -89,7 +90,7 @@ export default function MusicPage() {
                 <SheetTrigger asChild>
                     <Button variant="ghost" size="icon">
                         <ListVideo className="h-6 w-6" />
-                         {playlist.length > 0 && (
+                         {isOnBus && playlist.length > 0 && (
                             <span className="absolute -top-1 -right-1 flex h-4 w-4">
                                 <span className="relative inline-flex rounded-full h-4 w-4 bg-primary text-primary-foreground text-xs items-center justify-center">
                                     {playlist.length}
@@ -103,63 +104,73 @@ export default function MusicPage() {
                         <SheetTitle>Bus Playlist</SheetTitle>
                     </SheetHeader>
                     <div className="py-4 flex flex-col h-full">
-                       {nowPlaying ? (
-                            <>
-                                <div className='mb-4 space-y-3'>
-                                    <p className="text-sm font-medium text-muted-foreground">Now Playing</p>
-                                    <div className="flex items-center gap-4 p-3 bg-primary/10 rounded-lg">
-                                        <Image src={nowPlaying.image} alt={nowPlaying.title} width={48} height={48} className="rounded-md" />
-                                        <div className="flex-grow space-y-2">
-                                            <div>
-                                                <p className="font-semibold">{nowPlaying.title}</p>
+                       {isOnBus ? (
+                        <>
+                            {nowPlaying ? (
+                                <>
+                                    <div className='mb-4 space-y-3'>
+                                        <p className="text-sm font-medium text-muted-foreground">Now Playing</p>
+                                        <div className="flex items-center gap-4 p-3 bg-primary/10 rounded-lg">
+                                            <Image src={nowPlaying.image} alt={nowPlaying.title} width={48} height={48} className="rounded-md" />
+                                            <div className="flex-grow space-y-2">
+                                                <div>
+                                                    <p className="font-semibold">{nowPlaying.title}</p>
+                                                    <div className="flex text-sm text-muted-foreground">
+                                                        <span>{nowPlaying.artist}</span>
+                                                        <span className="mx-2">•</span>
+                                                        <span>{nowPlaying.duration}</span>
+                                                    </div>
+                                                </div>
+                                                 <Progress value={songProgress} className="h-1" />
+                                            </div>
+                                            <NowPlayingIcon />
+                                        </div>
+                                    </div>
+                                    <Separator />
+                                </>
+                           ) : null}
+
+                           <div className="flex-grow overflow-y-auto mt-4">
+                            {playlist.filter(p => p.id !== nowPlaying?.id).length > 0 ? (
+                                 <>
+                                    <p className="text-sm font-medium text-muted-foreground mb-2">Up next</p>
+                                    <div className="space-y-3">
+                                    {playlist.filter(p => p.id !== nowPlaying?.id).map(track => (
+                                        <div key={track.id} className="flex items-center gap-4 group">
+                                            <Image src={track.image} alt={track.title} width={48} height={48} className="rounded-md" />
+                                            <div className="flex-grow">
+                                                <p className="font-semibold">{track.title}</p>
                                                 <div className="flex text-sm text-muted-foreground">
-                                                    <span>{nowPlaying.artist}</span>
+                                                    <span>{track.artist}</span>
                                                     <span className="mx-2">•</span>
-                                                    <span>{nowPlaying.duration}</span>
+                                                    <span>{track.duration}</span>
                                                 </div>
                                             </div>
-                                             <Progress value={songProgress} className="h-1" />
+                                            {track.addedByUser && (
+                                                <Button size="icon" variant="ghost" className="opacity-0 group-hover:opacity-100" onClick={() => removeFromPlaylist(track.id)}>
+                                                    <X className="h-5 w-5 text-muted-foreground" />
+                                                </Button>
+                                            )}
                                         </div>
-                                        <NowPlayingIcon />
+                                    ))}
                                     </div>
+                                </>
+                            ) : !nowPlaying ? (
+                                <div className="text-center text-muted-foreground py-12 flex flex-col items-center justify-center h-full">
+                                    <ListMusic className="h-12 w-12 mx-auto mb-4" />
+                                    <p>No songs added yet.</p>
+                                    <p className="text-xs">Browse and add songs to the playlist.</p>
                                 </div>
-                                <Separator />
-                            </>
-                       ) : null}
-
-                       <div className="flex-grow overflow-y-auto mt-4">
-                        {playlist.filter(p => p.id !== nowPlaying?.id).length > 0 ? (
-                             <>
-                                <p className="text-sm font-medium text-muted-foreground mb-2">Up next</p>
-                                <div className="space-y-3">
-                                {playlist.filter(p => p.id !== nowPlaying?.id).map(track => (
-                                    <div key={track.id} className="flex items-center gap-4 group">
-                                        <Image src={track.image} alt={track.title} width={48} height={48} className="rounded-md" />
-                                        <div className="flex-grow">
-                                            <p className="font-semibold">{track.title}</p>
-                                            <div className="flex text-sm text-muted-foreground">
-                                                <span>{track.artist}</span>
-                                                <span className="mx-2">•</span>
-                                                <span>{track.duration}</span>
-                                            </div>
-                                        </div>
-                                        {track.addedByUser && (
-                                            <Button size="icon" variant="ghost" className="opacity-0 group-hover:opacity-100" onClick={() => removeFromPlaylist(track.id)}>
-                                                <X className="h-5 w-5 text-muted-foreground" />
-                                            </Button>
-                                        )}
-                                    </div>
-                                ))}
-                                </div>
-                            </>
-                        ) : !nowPlaying ? (
-                            <div className="text-center text-muted-foreground py-12 flex flex-col items-center justify-center h-full">
-                                <ListMusic className="h-12 w-12 mx-auto mb-4" />
-                                <p>No songs added yet.</p>
-                                <p className="text-xs">Browse and add songs to the playlist.</p>
-                            </div>
-                        ) : null}
-                       </div>
+                            ) : null}
+                           </div>
+                        </>
+                       ) : (
+                         <div className="flex flex-col items-center justify-center text-center h-full text-muted-foreground">
+                            <Bus className="h-12 w-12 mb-4" />
+                            <h3 className="font-semibold">Board a bus to see the playlist</h3>
+                            <p className="text-sm mt-1">The bus playlist is only available during your trip.</p>
+                        </div>
+                       )}
                     </div>
                 </SheetContent>
             </Sheet>
@@ -246,11 +257,12 @@ export default function MusicPage() {
 
       {/* Now Playing Bar and Bottom Nav */}
       <div className="fixed bottom-0 left-0 right-0 z-10">
-        {nowPlaying && <NowPlayingBar />}
+        {isOnBus && nowPlaying && <NowPlayingBar />}
         <BottomNav />
       </div>
     </div>
   );
 
     
+
 
