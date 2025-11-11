@@ -49,10 +49,11 @@ import {
 import { ThemeSwitcher } from './theme-switcher';
 
 const menuItems = [
-    { icon: Settings, label: 'Profile Settings', href: '/settings' },
-    { icon: History, label: 'Recent Trips' },
-    { icon: QrCode, label: 'Trip QR Codes' },
+    { id: 'settings', icon: Settings, label: 'Profile Settings', href: '/settings' },
+    { id: 'trips', icon: History, label: 'Recent Trips' },
+    { id: 'qr', icon: QrCode, label: 'Trip QR Codes' },
     {
+        id: 'places',
         icon: MapPin,
         label: 'Saved Places',
         subItems: [
@@ -61,8 +62,8 @@ const menuItems = [
             { icon: Plus, label: 'Add place' },
         ],
     },
-    { icon: Percent, label: 'User Discounts' },
-    { icon: Award, label: 'Loyalty Points' },
+    { id: 'discounts', icon: Percent, label: 'User Discounts' },
+    { id: 'loyalty', icon: Award, label: 'Loyalty Points' },
 ];
 
 export function ProfileSidebar() {
@@ -142,8 +143,37 @@ export function ProfileSidebar() {
                          <Accordion type="single" collapsible className="w-full -mt-2">
                             {menuItems.map((item, index) => {
                                 const Icon = item.icon;
+
+                                if (item.id === 'discounts') {
+                                    return (
+                                        <AlertDialog key={item.id}>
+                                            <AlertDialogTrigger asChild>
+                                                <Button
+                                                    variant="ghost"
+                                                    className="justify-start gap-3 text-md w-full"
+                                                    disabled={!user}
+                                                >
+                                                    <Icon className="h-5 w-5 text-muted-foreground" />
+                                                    {item.label}
+                                                </Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>Discount Eligibility</AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        Congratulations! You are currently eligible for a 15% discount on your next 3 trips. Keep an eye on your notifications for more exclusive offers.
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogAction>Got it!</AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
+                                    )
+                                }
+
                                 return item.subItems ? (
-                                    <AccordionItem value={`item-${index}`} key={index} className="border-b-0">
+                                    <AccordionItem value={`item-${index}`} key={item.id} className="border-b-0">
                                         <AccordionTrigger className="hover:no-underline hover:bg-transparent p-0">
                                              <Button
                                                 variant="ghost"
@@ -176,7 +206,7 @@ export function ProfileSidebar() {
                                     </AccordionItem>
                                 ) : (
                                     <Button
-                                        key={index}
+                                        key={item.id}
                                         variant="ghost"
                                         className="justify-start gap-3 text-md"
                                         onClick={() => handleNavigate(item.href)}
