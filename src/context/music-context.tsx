@@ -27,6 +27,8 @@ type MusicContextType = {
   nowPlaying: PlaylistItem | null;
   songProgress: number;
   isPlaylistOpen: boolean;
+  isOnBus: boolean;
+  setIsOnBus: (isOnBus: boolean) => void;
   setIsPlaylistOpen: (isOpen: boolean) => void;
   addToPlaylist: (track: Track) => void;
   removeFromPlaylist: (trackId: number) => void;
@@ -40,6 +42,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
   const [nowPlaying, setNowPlaying] = useState<PlaylistItem | null>(initialPlaylist[0] || null);
   const [songProgress, setSongProgress] = useState(0);
   const [isPlaylistOpen, setIsPlaylistOpen] = useState(false);
+  const [isOnBus, setIsOnBus] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
   const { toast } = useToast();
 
@@ -58,6 +61,10 @@ export function MusicProvider({ children }: { children: ReactNode }) {
             setPlaylist(prev => [track, ...prev]);
         }
       }
+      const storedIsOnBus = localStorage.getItem('eritas-music-isonbus');
+      if (storedIsOnBus) {
+        setIsOnBus(JSON.parse(storedIsOnBus));
+      }
     } catch (error) {
         console.error("Failed to read music state from localStorage", error);
     }
@@ -68,6 +75,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     if(isHydrated) {
         try {
             localStorage.setItem('eritas-music-playlist', JSON.stringify(playlist));
+            localStorage.setItem('eritas-music-isonbus', JSON.stringify(isOnBus));
             if (nowPlaying) {
                 localStorage.setItem('eritas-music-nowplaying', JSON.stringify(nowPlaying));
             } else {
@@ -77,7 +85,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
             console.error("Failed to write music state to localStorage", error);
         }
     }
-  }, [playlist, nowPlaying, isHydrated]);
+  }, [playlist, nowPlaying, isHydrated, isOnBus]);
 
 
   useEffect(() => {
@@ -103,6 +111,15 @@ export function MusicProvider({ children }: { children: ReactNode }) {
   }, [nowPlaying, playlist]);
 
   const addToPlaylist = (track: Track) => {
+    if (!isOnBus) {
+        toast({
+            variant: 'destructive',
+            title: 'Not on Bus',
+            description: 'You must be on a bus to add songs to the playlist.',
+        });
+        return;
+    }
+
     if (playlist.find(t => t.id === track.id)) {
       toast({
         variant: 'destructive',
@@ -155,7 +172,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
   if (!isHydrated) return null;
 
   return (
-    <MusicContext.Provider value={{ playlist, nowPlaying, songProgress, isPlaylistOpen, setIsPlaylistOpen, addToPlaylist, removeFromPlaylist, setNowPlaying }}>
+    <MusicContext.Provider value={{ playlist, nowPlaying, songProgress, isPlaylistOpen, setIsPlaylistOpen, addToPlaylist, removeFromPlaylist, setNowPlaying, isOnBus, setIsOnBus }}>
       {children}
     </MusicContext.Provider>
   );

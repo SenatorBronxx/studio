@@ -36,13 +36,14 @@ import { Badge } from '@/components/ui/badge';
 import { useWallet } from '@/context/wallet-context';
 import { v4 as uuidv4 } from 'uuid';
 import { Map } from '@/components/map';
+import { useMusic } from '@/context/music-context';
 
 const initialBusData = [
     {
       id: 'bus-1',
       driver: 'Kofi Mensah',
       plate: 'GT 4589-23',
-      eta: 15,
+      eta: 1,
       capacity: { current: 35, max: 52 },
       stops: [
         { name: 'Adenta', fare: 5.00 },
@@ -89,6 +90,7 @@ export default function HomePage() {
   const router = useRouter();
   const { toast } = useToast();
   const { balance, deductBalance, addTransaction } = useWallet();
+  const { setIsOnBus } = useMusic();
   const userName = searchParams.get('name') || 'there';
   
   const [fromLocation, setFromLocation] = useState('');
@@ -110,9 +112,15 @@ export default function HomePage() {
       interval = setInterval(() => {
         setDynamicEta(prevEta => (prevEta ? prevEta - 1 : 0));
       }, 60 * 1000); // Decrease every minute
+    } else if (dynamicEta === 0) {
+        setIsOnBus(true);
+        toast({
+            title: "You're on the bus!",
+            description: "You can now add songs to the bus playlist.",
+        });
     }
     return () => clearInterval(interval);
-  }, [boardedStop, dynamicEta]);
+  }, [boardedStop, dynamicEta, setIsOnBus, toast]);
 
   const handleSearch = () => {
     router.push(`/search?from=${encodeURIComponent(fromLocation)}&to=${encodeURIComponent(toLocation)}`);
@@ -123,6 +131,7 @@ export default function HomePage() {
     setBoardedStop(null); // Reset boarded stop when a new bus is selected
     setSelectedSeat(null); // Reset selected seat
     setDynamicEta(bus.eta); // Initialize dynamic ETA
+    setIsOnBus(false); // Reset on bus status
   }
   
   const clearSelectedBus = () => {
@@ -130,6 +139,7 @@ export default function HomePage() {
     setBoardedStop(null);
     setSelectedSeat(null);
     setDynamicEta(null);
+    setIsOnBus(false); // Reset on bus status
   }
 
   const handleBoard = (stop: {name: string, fare: number}) => {
@@ -388,7 +398,11 @@ export default function HomePage() {
                                 {boardedStop === stop.name ? (
                                     <div className="flex items-center justify-center gap-2 text-primary font-semibold p-2 bg-primary/10 rounded-md">
                                         <Clock className="h-5 w-5" />
-                                        <span>Arriving in <strong>{dynamicEta} min</strong></span>
+                                        {dynamicEta !== null && dynamicEta > 0 ? (
+                                            <span>Arriving in <strong>{dynamicEta} min</strong></span>
+                                        ) : (
+                                            <span>You are on the bus!</span>
+                                        )}
                                     </div>
                                 ) : selectedBus.capacity.current < selectedBus.capacity.max ? (
                                     <Button 

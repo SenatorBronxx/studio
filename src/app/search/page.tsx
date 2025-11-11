@@ -29,7 +29,7 @@ const initialBusData = [
       id: 'bus-1',
       driver: 'Kofi Mensah',
       plate: 'GT 4589-23',
-      eta: 15,
+      eta: 1,
       capacity: { current: 35, max: 52 },
       stops: [
         { name: 'Adenta', fare: 5.00 },
@@ -91,6 +91,7 @@ export default function SearchPage() {
     isPlaylistOpen,
     setIsPlaylistOpen,
     removeFromPlaylist,
+    setIsOnBus,
   } = useMusic();
   
   const [buses, setBuses] = useState(initialBusData);
@@ -131,9 +132,15 @@ export default function SearchPage() {
       interval = setInterval(() => {
         setDynamicEta(prevEta => (prevEta ? prevEta - 1 : 0));
       }, 60 * 1000); // Decrease every minute
+    } else if (dynamicEta === 0) {
+        setIsOnBus(true);
+        toast({
+            title: "You're on the bus!",
+            description: "You can now add songs to the bus playlist.",
+        });
     }
     return () => clearInterval(interval);
-  }, [boardedStop, dynamicEta]);
+  }, [boardedStop, dynamicEta, setIsOnBus, toast]);
 
   const handleSearch = () => {
     router.push(`/search?from=${encodeURIComponent(fromLocation)}&to=${encodeURIComponent(toLocation)}`);
@@ -144,6 +151,7 @@ export default function SearchPage() {
     setBoardedStop(null);
     setSelectedSeat(null);
     setDynamicEta(bus.eta);
+    setIsOnBus(false);
   }
   
   const clearSelectedBus = () => {
@@ -151,6 +159,7 @@ export default function SearchPage() {
     setBoardedStop(null);
     setSelectedSeat(null);
     setDynamicEta(null);
+    setIsOnBus(false);
   }
 
   const handleBoard = (stop: {name: string, fare: number}) => {
@@ -354,7 +363,11 @@ export default function SearchPage() {
                                                 {boardedStop === stop.name ? (
                                                     <div className="flex items-center justify-center gap-2 text-primary font-semibold p-2 bg-primary/10 rounded-md">
                                                         <Clock className="h-5 w-5" />
-                                                        <span>Arriving in <strong>{dynamicEta} min</strong></span>
+                                                         {dynamicEta !== null && dynamicEta > 0 ? (
+                                                            <span>Arriving in <strong>{dynamicEta} min</strong></span>
+                                                        ) : (
+                                                            <span>You are on the bus!</span>
+                                                        )}
                                                     </div>
                                                 ) : selectedBus.capacity.current < selectedBus.capacity.max ? (
                                                     <Button className='w-full' onClick={() => handleBoard(stop)} disabled={isBoarding || !selectedSeat}>
