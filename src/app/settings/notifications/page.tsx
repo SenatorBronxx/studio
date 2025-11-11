@@ -1,22 +1,25 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Bell, Bus, FileText, Settings } from 'lucide-react';
+import { ArrowLeft, Bus, FileText, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { useNotificationSettings } from '@/context/notification-settings-context';
 
 export default function NotificationsPage() {
   const router = useRouter();
+  const {
+    routeAlerts,
+    setRouteAlerts,
+    bookingAlerts,
+    setBookingAlerts,
+    systemAlerts,
+    setSystemAlerts
+  } = useNotificationSettings();
   
-  // In a real app, this state would come from a context or a backend
-  const [routeAlerts, setRouteAlerts] = useState(true);
-  const [bookingAlerts, setBookingAlerts] = useState(true);
-  const [systemAlerts, setSystemAlerts] = useState(false);
-
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm p-4">

@@ -37,6 +37,7 @@ import { useWallet } from '@/context/wallet-context';
 import { v4 as uuidv4 } from 'uuid';
 import { Map } from '@/components/map';
 import { useMusic } from '@/context/music-context';
+import { useNotificationSettings } from '@/context/notification-settings-context';
 
 const initialBusData = [
     {
@@ -91,6 +92,7 @@ export default function HomePage() {
   const { toast } = useToast();
   const { balance, deductBalance, addTransaction } = useWallet();
   const { setIsOnBus } = useMusic();
+  const { bookingAlerts } = useNotificationSettings();
   const userName = searchParams.get('name') || 'there';
   
   const [fromLocation, setFromLocation] = useState('');
@@ -204,24 +206,26 @@ export default function HomePage() {
         const encodedQrData = encodeURIComponent(JSON.stringify(qrData));
         setQrCodeUrl(`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodedQrData}`);
         
-        const newNotification: Notification = {
-            id: Date.now(),
-            title: 'Seat Booked Successfully!',
-            description: `Your seat ${selectedSeat} on bus ${selectedBus?.plate} is confirmed.`,
-            action: (
-                 <Button variant="outline" size="sm" onClick={() => setIsQrSheetOpen(true)}>
-                    <QrCode className="mr-2 h-4 w-4" />
-                    View QR Code
-                </Button>
-            )
-        }
-        
-        setNotifications(prev => [newNotification, ...prev]);
+        if (bookingAlerts) {
+            const newNotification: Notification = {
+                id: Date.now(),
+                title: 'Seat Booked Successfully!',
+                description: `Your seat ${selectedSeat} on bus ${selectedBus?.plate} is confirmed.`,
+                action: (
+                     <Button variant="outline" size="sm" onClick={() => setIsQrSheetOpen(true)}>
+                        <QrCode className="mr-2 h-4 w-4" />
+                        View QR Code
+                    </Button>
+                )
+            }
+            
+            setNotifications(prev => [newNotification, ...prev]);
 
-        toast({
-            title: "Seat Booked Successfully!",
-            description: `A notification has been added to your inbox. The fare of GH₵${stop.fare.toFixed(2)} has been deducted.`,
-        });
+            toast({
+                title: "Seat Booked Successfully!",
+                description: `A notification has been added to your inbox. The fare of GH₵${stop.fare.toFixed(2)} has been deducted.`,
+            });
+        }
 
     }, 1500);
   }
