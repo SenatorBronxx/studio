@@ -6,6 +6,7 @@ import { createContext, useContext, useState, ReactNode, useEffect } from 'react
 type User = {
   name: string;
   email: string;
+  phone: string;
 };
 
 type UserContextType = {
@@ -18,6 +19,7 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 const INITIAL_USER: User = {
   name: 'Ama Serwaa',
   email: 'ama.s@email.com',
+  phone: '+233 24 123 4567',
 };
 
 export function UserProvider({ children }: { children: ReactNode }) {

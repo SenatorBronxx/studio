@@ -19,6 +19,17 @@ import { useState } from 'react';
 const profileSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
   email: z.string().email('Please enter a valid email address.'),
+  phone: z.string().min(10, 'Please enter a valid phone number.'),
+  password: z.string().min(8, 'Password must be at least 8 characters.').optional().or(z.literal('')),
+  confirmPassword: z.string().optional().or(z.literal('')),
+}).refine((data) => {
+    if (data.password && data.password !== data.confirmPassword) {
+        return false;
+    }
+    return true;
+}, {
+    message: "Passwords don't match",
+    path: ['confirmPassword'],
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -36,6 +47,9 @@ export default function EditProfilePage() {
     defaultValues: {
       name: user.name,
       email: user.email,
+      phone: user.phone,
+      password: '',
+      confirmPassword: '',
     },
   });
 
@@ -43,10 +57,21 @@ export default function EditProfilePage() {
     setIsSubmitting(true);
     // Simulate API call
     setTimeout(() => {
-      setUser(data);
+      setUser({
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+      });
+
+      let description = 'Your profile changes have been saved successfully.';
+      if (data.password) {
+        console.log("Password change requested. In a real app, this would be a secure backend call.");
+        description += ' Your password has also been updated.';
+      }
+      
       toast({
         title: 'Profile Updated',
-        description: 'Your changes have been saved successfully.',
+        description: description,
       });
       setIsSubmitting(false);
       router.back();
@@ -110,6 +135,45 @@ export default function EditProfilePage() {
                         <FormLabel>Email Address</FormLabel>
                         <FormControl>
                           <Input type="email" placeholder="e.g., jane.doe@example.com" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                   <FormField
+                    control={form.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Phone Number</FormLabel>
+                        <FormControl>
+                          <Input type="tel" placeholder="+233 24 123 4567" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                   <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>New Password</FormLabel>
+                        <FormControl>
+                          <Input type="password" placeholder='Enter new password' {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                   <FormField
+                    control={form.control}
+                    name="confirmPassword"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Confirm New Password</FormLabel>
+                        <FormControl>
+                          <Input type="password" placeholder='Confirm new password' {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
