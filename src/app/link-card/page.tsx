@@ -20,6 +20,7 @@ export default function LinkCardPage() {
     const [cardNumber, setCardNumber] = useState('');
     const [expiryDate, setExpiryDate] = useState('');
     const [cvv, setCvv] = useState('');
+    const [isCardLinked, setIsCardLinked] = useState(false);
 
     const handleLinkCard = (e: React.FormEvent) => {
         e.preventDefault();
@@ -27,11 +28,12 @@ export default function LinkCardPage() {
         // Simulate API call to link card
         setTimeout(() => {
             setIsProcessing(false);
+            setIsCardLinked(true);
             toast({
                 title: 'Card Linked Successfully',
                 description: 'Your VISA card has been synchronized with your ERITAS Pay account.',
             });
-            router.push('/eritas-pay');
+             setTimeout(() => router.push('/eritas-pay'), 2000);
         }, 1500);
     };
 
@@ -57,7 +59,11 @@ export default function LinkCardPage() {
                                <div className="flex justify-between items-start mb-8">
                                     <div className='space-y-1'>
                                         <p className="text-xs text-foreground/70">Card Balance</p>
-                                        <p className="text-2xl font-bold text-foreground">GH₵ 5,840.12</p>
+                                        {isCardLinked ? (
+                                            <p className="text-2xl font-bold text-foreground animate-in fade-in">GH₵ 5,840.12</p>
+                                        ) : (
+                                            <p className="text-2xl font-bold text-foreground">GH₵ ****.**</p>
+                                        )}
                                     </div>
                                     <VisaIcon className="w-20" />
                                 </div>
@@ -83,6 +89,7 @@ export default function LinkCardPage() {
                                         onChange={(e) => setCardNumber(e.target.value)}
                                         maxLength={16}
                                         required
+                                        disabled={isCardLinked}
                                     />
                                 </div>
                                  <div className="space-y-2">
@@ -93,6 +100,7 @@ export default function LinkCardPage() {
                                         value={cardHolder}
                                         onChange={(e) => setCardHolder(e.target.value)}
                                         required
+                                        disabled={isCardLinked}
                                     />
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
@@ -105,6 +113,7 @@ export default function LinkCardPage() {
                                             onChange={(e) => setExpiryDate(e.target.value)}
                                             maxLength={5}
                                             required
+                                            disabled={isCardLinked}
                                         />
                                     </div>
                                      <div className="space-y-2">
@@ -117,19 +126,20 @@ export default function LinkCardPage() {
                                             onChange={(e) => setCvv(e.target.value)}
                                             maxLength={3}
                                             required
+                                            disabled={isCardLinked}
                                         />
                                     </div>
                                 </div>
                             </CardContent>
                         </Card>
 
-                        <Button type="submit" size="lg" className="w-full mt-6" disabled={isProcessing}>
+                        <Button type="submit" size="lg" className="w-full mt-6" disabled={isProcessing || isCardLinked}>
                             {isProcessing ? (
                                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                             ) : (
                                 <CreditCard className="mr-2 h-5 w-5" />
                             )}
-                            Link Card
+                            {isCardLinked ? 'Card Linked Successfully' : 'Link Card'}
                         </Button>
                     </form>
                 </div>
