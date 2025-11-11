@@ -14,11 +14,11 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { useUser } from '@/context/user-context';
 import { useToast } from '@/hooks/use-toast';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const profileSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
-  email: z.string().email('Please enter a valid email address.'),
+  email: z.string().email('Please enter a valid email address.').optional().or(z.literal('')),
   phone: z.string().min(10, 'Please enter a valid phone number.'),
   password: z.string().min(8, 'Password must be at least 8 characters.').optional().or(z.literal('')),
   confirmPassword: z.string().optional().or(z.literal('')),
@@ -36,7 +36,7 @@ type ProfileFormValues = z.infer<typeof profileSchema>;
 
 export default function EditProfilePage() {
   const router = useRouter();
-  const { user, setUser } = useUser();
+  const { user, setUser, isHydrated } = useUser();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -45,13 +45,25 @@ export default function EditProfilePage() {
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
+      name: '',
+      email: '',
+      phone: '',
       password: '',
       confirmPassword: '',
     },
   });
+  
+  useEffect(() => {
+    if (isHydrated && user) {
+        form.reset({
+            name: user.name,
+            email: user.email,
+            phone: user.phone,
+            password: '',
+            confirmPassword: '',
+        });
+    }
+  }, [isHydrated, user, form]);
 
   const onSubmit = (data: ProfileFormValues) => {
     setIsSubmitting(true);
@@ -59,7 +71,7 @@ export default function EditProfilePage() {
     setTimeout(() => {
       setUser({
         name: data.name,
-        email: data.email,
+        email: data.email || '',
         phone: data.phone,
       });
 
@@ -77,6 +89,25 @@ export default function EditProfilePage() {
       router.back();
     }, 1000);
   };
+  
+  if (!isHydrated) {
+    return (
+        <div className="flex flex-col min-h-screen bg-background items-center justify-center">
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        </div>
+    );
+  }
+  
+  if (!user) {
+    // This can happen if the user tries to access this page directly without being "logged in"
+    return (
+        <div className="flex flex-col min-h-screen bg-background items-center justify-center text-center p-4">
+            <h1 className="text-xl font-bold">You're not logged in</h1>
+            <p className='text-muted-foreground'>Please sign in to edit your profile.</p>
+            <Button onClick={() => router.push('/')} className="mt-4">Go to Sign In</Button>
+        </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-background">

@@ -20,6 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 import { AppleIcon } from "@/components/icons/apple";
 import { GoogleIcon } from "@/components/icons/google";
 import { Loader2 } from "lucide-react";
+import { useUser } from "@/context/user-context";
 
 // Schemas
 const signInSchema = z.object({
@@ -47,6 +48,7 @@ type AuthFormProps = {
 export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const { setUser } = useUser();
 
   const signInForm = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
@@ -61,7 +63,16 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
   const handleSignIn = async (values: z.infer<typeof signInSchema>) => {
     setIsSubmitting(true);
     console.log("Sign in with:", values);
-    // Mock API call
+    
+    // In a real app, you'd fetch the user's data from your backend upon successful login.
+    // For this mock, we'll set some user data to populate the context.
+    const mockUserData = {
+        name: 'John Doe', // Mock name for sign-in user
+        email: 'john.d@email.com',
+        phone: values.phone
+    };
+    setUser(mockUserData);
+
     await new Promise((resolve) => setTimeout(resolve, 1000));
     toast({
       title: "Sign In Successful",
@@ -74,7 +85,15 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
   const handleSignUp = async (values: z.infer<typeof signUpSchema>) => {
     setIsSubmitting(true);
     console.log("Sign up with:", values);
-    // Mock API call
+    
+    // Set the user context with the new user's data
+    const newUser = {
+        name: `${values.firstName} ${values.lastName}`,
+        email: values.email || '',
+        phone: values.phone
+    };
+    setUser(newUser);
+
     await new Promise((resolve) => setTimeout(resolve, 1000));
     toast({
       title: "Sign Up Successful",
@@ -87,7 +106,15 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
   const handleSocialLogin = (provider: 'Google' | 'Apple') => {
     setIsSubmitting(true);
     console.log(`Signing in with ${provider}`);
-    // Mock API call
+
+    // Mock user data for social login
+     const mockSocialUser = {
+        name: 'Jane Smith',
+        email: 'jane.s@email.com',
+        phone: '+233 55 555 5555'
+    };
+    setUser(mockSocialUser);
+    
     setTimeout(() => {
         toast({
             title: `Signed in with ${provider}`,

@@ -59,7 +59,7 @@ const menuItems = [
 ];
 
 export function ProfileSidebar() {
-    const { user } = useUser();
+    const { user, setUser } = useUser();
     const userImage = PlaceHolderImages.find((p) => p.id === 'user-avatar')?.imageUrl;
     const [theme, setTheme] = useState('light');
     const router = useRouter();
@@ -83,7 +83,7 @@ export function ProfileSidebar() {
     };
 
     const handleLogout = () => {
-        // In a real app with authentication, you would clear tokens/session here.
+        setUser(null); // Clear user from context
         router.push('/');
     };
     
@@ -110,18 +110,35 @@ export function ProfileSidebar() {
                 </SheetHeader>
                 <div className="py-6 flex flex-col h-full">
                     {/* Profile Section */}
-                    <div className="flex items-center gap-4">
-                        <Avatar className="h-16 w-16">
-                            {userImage && <AvatarImage src={userImage} alt="User Name" />}
-                            <AvatarFallback>
-                                <User />
-                            </AvatarFallback>
-                        </Avatar>
-                        <div>
-                            <p className="text-lg font-semibold">{user.name}</p>
-                            <p className="text-sm text-muted-foreground">{user.email}</p>
+                    {user ? (
+                        <div className="flex items-center gap-4">
+                            <Avatar className="h-16 w-16">
+                                {userImage && <AvatarImage src={userImage} alt={user.name} />}
+                                <AvatarFallback>
+                                    <User />
+                                </AvatarFallback>
+                            </Avatar>
+                            <div>
+                                <p className="text-lg font-semibold">{user.name}</p>
+                                <p className="text-sm text-muted-foreground">{user.email}</p>
+                            </div>
                         </div>
-                    </div>
+                    ) : (
+                         <div className="flex items-center gap-4">
+                            <Avatar className="h-16 w-16">
+                                <AvatarFallback>
+                                    <User />
+                                </AvatarFallback>
+                            </Avatar>
+                            <div>
+                                <p className="text-lg font-semibold">Guest</p>
+                                <Button variant="link" className="p-0 h-auto" onClick={() => router.push('/')}>
+                                    Sign In
+                                </Button>
+                            </div>
+                        </div>
+                    )}
+
 
                     <Separator className="my-6" />
 
@@ -168,6 +185,7 @@ export function ProfileSidebar() {
                                         variant="ghost"
                                         className="justify-start gap-3 text-md"
                                         onClick={() => handleNavigate(item.href)}
+                                        disabled={!user && item.href}
                                     >
                                         <Icon className="h-5 w-5 text-muted-foreground" />
                                         {item.label}
@@ -191,13 +209,13 @@ export function ProfileSidebar() {
 
                     <div className="space-y-2">
                         {/* Logout Button */}
-                        <Button variant="outline" className="w-full" onClick={handleLogout}>
+                        <Button variant="outline" className="w-full" onClick={handleLogout} disabled={!user}>
                             <LogOut className="mr-2 h-5 w-5" />
                             Logout
                         </Button>
 
                          {/* Delete Account Button */}
-                        <Button variant="destructive" className="w-full">
+                        <Button variant="destructive" className="w-full" disabled={!user}>
                             <Trash2 className="mr-2 h-5 w-5" />
                             Delete Account
                         </Button>

@@ -1,7 +1,7 @@
 
 'use client';
 
-import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 
 type User = {
   name: string;
@@ -10,20 +10,15 @@ type User = {
 };
 
 type UserContextType = {
-  user: User;
-  setUser: (user: User) => void;
+  user: User | null;
+  setUser: (user: User | null) => void;
+  isHydrated: boolean;
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-const INITIAL_USER: User = {
-  name: 'Ama Serwaa',
-  email: 'ama.s@email.com',
-  phone: '+233 24 123 4567',
-};
-
 export function UserProvider({ children }: { children: ReactNode }) {
-  const [user, setUserState] = useState<User>(INITIAL_USER);
+  const [user, setUserState] = useState<User | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
@@ -38,21 +33,25 @@ export function UserProvider({ children }: { children: ReactNode }) {
     setIsHydrated(true);
   }, []);
   
-  const setUser = (newUser: User) => {
+  const setUser = useCallback((newUser: User | null) => {
     setUserState(newUser);
     try {
-      localStorage.setItem('eritas-user', JSON.stringify(newUser));
+      if (newUser) {
+        localStorage.setItem('eritas-user', JSON.stringify(newUser));
+      } else {
+        localStorage.removeItem('eritas-user');
+      }
     } catch (error) {
       console.error("Failed to write user to localStorage", error);
     }
-  };
+  }, []);
   
   if (!isHydrated) {
     return null; // Or a loading spinner
   }
 
   return (
-    <UserContext.Provider value={{ user, setUser }}>
+    <UserContext.Provider value={{ user, setUser, isHydrated }}>
       {children}
     </UserContext.Provider>
   );
