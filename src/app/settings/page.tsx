@@ -17,6 +17,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import Link from 'next/link';
+import { ThemeSwitcher } from '@/components/theme-switcher';
 
 const settingsOptions = [
   {
@@ -39,11 +40,6 @@ const settingsOptions = [
     icon: Bell,
     title: 'Notifications',
     description: 'Enable/disable route or booking alerts',
-  },
-  {
-    icon: Palette,
-    title: 'App Theme',
-    description: 'Light / Dark / Auto',
   },
   {
     icon: Lock,
@@ -120,6 +116,18 @@ export default function SettingsPage() {
                     </div>
                   );
                 })}
+                 <div className="flex items-center gap-4 p-4">
+                    <div className="p-2 bg-muted rounded-full">
+                        <Palette className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                    <div className="flex-grow">
+                        <p className="font-semibold">App Theme</p>
+                        <p className="text-sm text-muted-foreground">
+                        Light / Dark / Auto
+                        </p>
+                    </div>
+                    <ThemeSwitcher />
+                </div>
               </div>
             </CardContent>
           </Card>

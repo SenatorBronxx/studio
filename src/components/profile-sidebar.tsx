@@ -17,8 +17,6 @@ import {
     Award,
     LogOut,
     Settings,
-    Sun,
-    Moon,
     QrCode,
     MapPin,
     Home,
@@ -28,9 +26,6 @@ import {
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { useState, useEffect } from 'react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useRouter } from 'next/navigation';
 import {
@@ -51,6 +46,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
   } from '@/components/ui/alert-dialog';
+import { ThemeSwitcher } from './theme-switcher';
 
 const menuItems = [
     { icon: Settings, label: 'Profile Settings', href: '/settings' },
@@ -72,26 +68,7 @@ const menuItems = [
 export function ProfileSidebar() {
     const { user, setUser } = useUser();
     const userImage = PlaceHolderImages.find((p) => p.id === 'user-avatar')?.imageUrl;
-    const [theme, setTheme] = useState('light');
     const router = useRouter();
-
-    useEffect(() => {
-        const localTheme = localStorage.getItem('theme');
-        if (localTheme) {
-            setTheme(localTheme);
-            document.documentElement.classList.toggle('dark', localTheme === 'dark');
-        } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            setTheme('dark');
-            document.documentElement.classList.add('dark');
-        }
-    }, []);
-
-    const handleThemeChange = (isDark: boolean) => {
-        const newTheme = isDark ? 'dark' : 'light';
-        setTheme(newTheme);
-        localStorage.setItem('theme', newTheme);
-        document.documentElement.classList.toggle('dark', isDark);
-    };
 
     const handleLogout = () => {
         setUser(null); // Clear user from context
@@ -215,14 +192,7 @@ export function ProfileSidebar() {
 
                     {/* Theme Switcher */}
                     <div className="flex items-center justify-between mb-6">
-                        <Label htmlFor="theme-switch" className="flex items-center gap-3">
-                            <Sun className="h-5 w-5" /> Light / <Moon className="h-5 w-5" /> Dark
-                        </Label>
-                        <Switch
-                            id="theme-switch"
-                            checked={theme === 'dark'}
-                            onCheckedChange={handleThemeChange}
-                        />
+                       <ThemeSwitcher showLabel />
                     </div>
 
                     <div className="space-y-2">
