@@ -42,6 +42,7 @@ export default function EritasPayPage() {
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   const [selectedBus, setSelectedBus] = useState<{ plate: string } | null>(null);
   const [selectedSeat, setSelectedSeat] = useState<string | null>(null);
+  const [showAllTransactions, setShowAllTransactions] = useState(false);
 
 
   return (
@@ -152,34 +153,40 @@ export default function EritasPayPage() {
           <div>
             <div className="flex justify-between items-center mb-2">
               <h2 className="text-lg font-semibold">Recent Activity</h2>
-              <Button variant="link" className="text-primary">
-                See all
+              <Button 
+                variant="link" 
+                className="text-primary"
+                onClick={() => setShowAllTransactions(!showAllTransactions)}
+              >
+                {showAllTransactions ? 'Hide' : 'See all'}
               </Button>
             </div>
-            <Card>
-              <CardContent className="p-0">
-                <div className="divide-y divide-border">
-                  {transactions.map((tx) => (
-                    <DeletableItem key={tx.id} onDelete={() => removeTransaction(tx.id)}>
-                        <div className="flex items-center gap-4 p-4 bg-background">
-                            <Avatar className="h-10 w-10 border bg-primary/10 text-primary">
-                                <AvatarFallback>
-                                    <Bus className='w-5 h-5'/>
-                                </AvatarFallback>
-                            </Avatar>
-                            <div className="flex-grow">
-                                <p className="font-semibold">{tx.type === 'payment' ? 'Bus Ticket Payment' : 'Mobile Money Top-up'}</p>
-                                <p className="text-sm text-muted-foreground font-mono">{tx.plate}</p>
-                            </div>
-                            <div className={`font-semibold ${tx.amount > 0 ? 'text-green-600' : 'text-foreground'}`}>
-                               {tx.amount > 0 ? '+' : ''}GH₵{tx.amount.toFixed(2)}
-                            </div>
-                        </div>
-                    </DeletableItem>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            {showAllTransactions && (
+              <Card>
+                <CardContent className="p-0">
+                  <div className="divide-y divide-border">
+                    {transactions.map((tx) => (
+                      <DeletableItem key={tx.id} onDelete={() => removeTransaction(tx.id)}>
+                          <div className="flex items-center gap-4 p-4 bg-background">
+                              <Avatar className="h-10 w-10 border bg-primary/10 text-primary">
+                                  <AvatarFallback>
+                                      <Bus className='w-5 h-5'/>
+                                  </AvatarFallback>
+                              </Avatar>
+                              <div className="flex-grow">
+                                  <p className="font-semibold">{tx.type === 'payment' ? 'Bus Ticket Payment' : 'Mobile Money Top-up'}</p>
+                                  <p className="text-sm text-muted-foreground font-mono">{tx.plate}</p>
+                              </div>
+                              <div className={`font-semibold ${tx.amount > 0 ? 'text-green-600' : 'text-foreground'}`}>
+                                 {tx.amount > 0 ? '+' : ''}GH₵{tx.amount.toFixed(2)}
+                              </div>
+                          </div>
+                      </DeletableItem>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
       </main>
