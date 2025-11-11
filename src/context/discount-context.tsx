@@ -12,6 +12,7 @@ type Discount = {
 type DiscountContextType = {
   activeDiscount: Discount | null;
   activateDiscount: (discount: Discount) => void;
+  deactivateDiscount: () => void;
   isDiscountBannerDismissed: boolean;
   dismissDiscountBanner: () => void;
   isHydrated: boolean;
@@ -51,6 +52,17 @@ export function DiscountProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const deactivateDiscount = useCallback(() => {
+    setActiveDiscount(null);
+    setIsDiscountBannerDismissed(true); // Hide banner when deactivated
+    try {
+        localStorage.removeItem('eritas-active-discount');
+        localStorage.setItem('eritas-discount-banner-dismissed', JSON.stringify(true));
+    } catch (error) {
+        console.error("Failed to write discount state to localStorage", error);
+    }
+  }, []);
+
   const dismissDiscountBanner = useCallback(() => {
     setIsDiscountBannerDismissed(true);
     try {
@@ -63,6 +75,7 @@ export function DiscountProvider({ children }: { children: ReactNode }) {
   const value = {
     activeDiscount,
     activateDiscount,
+    deactivateDiscount,
     isDiscountBannerDismissed,
     dismissDiscountBanner,
     isHydrated

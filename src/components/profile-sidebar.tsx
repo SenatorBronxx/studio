@@ -79,7 +79,7 @@ export function ProfileSidebar() {
     const userImage = PlaceHolderImages.find((p) => p.id === 'user-avatar')?.imageUrl;
     const router = useRouter();
     const { toast } = useToast();
-    const { activateDiscount } = useDiscount();
+    const { activeDiscount, activateDiscount, deactivateDiscount } = useDiscount();
 
     const handleLogout = () => {
         setUser(null); // Clear user from context
@@ -104,6 +104,14 @@ export function ProfileSidebar() {
         toast({
             title: 'Discount Activated!',
             description: `Your ${discountOffer.percentage}% discount has been applied to your account.`,
+        });
+    }
+
+    const handleDeactivateDiscount = () => {
+        deactivateDiscount();
+        toast({
+            title: 'Discount Deactivated',
+            description: 'Your active discount has been removed.',
         });
     }
 
@@ -176,24 +184,46 @@ export function ProfileSidebar() {
                                                 </Button>
                                             </AlertDialogTrigger>
                                             <AlertDialogContent>
-                                                <AlertDialogHeader>
-                                                    <AlertDialogTitle>Discount Eligibility</AlertDialogTitle>
-                                                    <AlertDialogDescription>
-                                                        Congratulations! You are eligible for a {discountOffer.percentage}% discount on your next 3 trips. Activate the code below to apply it to your account.
-                                                    </AlertDialogDescription>
-                                                </AlertDialogHeader>
-                                                <div className="py-4">
-                                                    <div className="relative rounded-lg bg-muted p-4 flex items-center justify-center">
-                                                        <Ticket className="absolute left-4 top-1/2 -translate-y-1/2 h-8 w-8 text-primary/30" />
-                                                        <p className="font-mono text-2xl font-bold tracking-widest text-primary">
-                                                            {discountOffer.code}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                <AlertDialogFooter>
-                                                    <AlertDialogCancel>Close</AlertDialogCancel>
-                                                    <AlertDialogAction onClick={handleActivateDiscount}>Activate</AlertDialogAction>
-                                                </AlertDialogFooter>
+                                                {activeDiscount ? (
+                                                    <>
+                                                        <AlertDialogHeader>
+                                                            <AlertDialogTitle>Deactivate Current Discount?</AlertDialogTitle>
+                                                            <AlertDialogDescription>
+                                                                You have an active discount of {activeDiscount.percentage}%. Deactivating it is permanent and cannot be undone.
+                                                            </AlertDialogDescription>
+                                                        </AlertDialogHeader>
+                                                        <AlertDialogFooter>
+                                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                            <AlertDialogAction
+                                                                onClick={handleDeactivateDiscount}
+                                                                className="bg-destructive hover:bg-destructive/90"
+                                                            >
+                                                                Deactivate
+                                                            </AlertDialogAction>
+                                                        </AlertDialogFooter>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <AlertDialogHeader>
+                                                            <AlertDialogTitle>Discount Eligibility</AlertDialogTitle>
+                                                            <AlertDialogDescription>
+                                                                Congratulations! You are eligible for a {discountOffer.percentage}% discount on your next 3 trips. Activate the code below to apply it to your account.
+                                                            </AlertDialogDescription>
+                                                        </AlertDialogHeader>
+                                                        <div className="py-4">
+                                                            <div className="relative rounded-lg bg-muted p-4 flex items-center justify-center">
+                                                                <Ticket className="absolute left-4 top-1/2 -translate-y-1/2 h-8 w-8 text-primary/30" />
+                                                                <p className="font-mono text-2xl font-bold tracking-widest text-primary">
+                                                                    {discountOffer.code}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <AlertDialogFooter>
+                                                            <AlertDialogCancel>Close</AlertDialogCancel>
+                                                            <AlertDialogAction onClick={handleActivateDiscount}>Activate</AlertDialogAction>
+                                                        </AlertDialogFooter>
+                                                    </>
+                                                )}
                                             </AlertDialogContent>
                                         </AlertDialog>
                                     )
