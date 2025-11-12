@@ -300,12 +300,13 @@ export function ProfileSidebar() {
                             <Globe className="h-5 w-5 text-muted-foreground" />
                             <span className="text-sm font-medium">Language</span>
                         </div>
-                        <Select defaultValue="en">
+                        <Select defaultValue="en-us">
                             <SelectTrigger className="w-[120px]">
                                 <SelectValue placeholder="Language" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="en">English</SelectItem>
+                                <SelectItem value="en-us">English (US)</SelectItem>
+                                <SelectItem value="en-gb">English (UK)</SelectItem>
                                 <SelectItem value="tw">Twi</SelectItem>
                                 <SelectItem value="ga">Ga</SelectItem>
                                 <SelectItem value="ew">Ewe</SelectItem>
