@@ -13,10 +13,6 @@ const translations: Record<string, Record<string, string>> = {
   'en-us': en,
   'en-gb': en, // Using same as US for now
   'tw': tw,
-  'ga': {}, // Placeholder
-  'ew': {}, // Placeholder
-  'sf': {}, // Placeholder
-  'ha': {}, // Placeholder
 };
 
 type LanguageContextType = {

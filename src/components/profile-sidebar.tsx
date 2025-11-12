@@ -324,10 +324,6 @@ export function ProfileSidebar() {
                                 <SelectItem value="en-us">English (US)</SelectItem>
                                 <SelectItem value="en-gb">English (UK)</SelectItem>
                                 <SelectItem value="tw">Twi</SelectItem>
-                                <SelectItem value="ga">Ga</SelectItem>
-                                <SelectItem value="ew">Ewe</SelectItem>
-                                <SelectItem value="sf">Sefwi</SelectItem>
-                                <SelectItem value="ha">Hausa</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
