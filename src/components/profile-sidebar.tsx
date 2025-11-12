@@ -158,12 +158,19 @@ export function ProfileSidebar() {
                 url: shareUrl,
             });
         } catch (error) {
-            console.error('Error sharing trip:', error);
-            toast({
-                variant: 'destructive',
-                title: t('shareFailedTitle'),
-                description: t('shareFailedDescription'),
-            });
+            if (error instanceof DOMException && (error.name === 'AbortError' || error.name === 'NotAllowedError')) {
+                toast({
+                    title: t('shareCancelledTitle'),
+                    description: t('shareCancelledDescription'),
+                });
+            } else {
+                console.error('Error sharing trip:', error);
+                toast({
+                    variant: 'destructive',
+                    title: t('shareFailedTitle'),
+                    description: t('shareFailedDescription'),
+                });
+            }
         }
     };
 
@@ -414,3 +421,5 @@ export function ProfileSidebar() {
         </Sheet>
     );
 }
+
+    

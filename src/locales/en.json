@@ -286,6 +286,10 @@
     "trackMyTrip": "Track my trip",
     "shareFailedTitle": "Share Failed",
     "shareFailedDescription": "An error occurred while trying to share your trip.",
+    "shareCancelledTitle": "Share Cancelled",
+    "shareCancelledDescription": "Your trip details were not shared.",
     "tripEndedTitle": "Trip Ended",
     "tripEndedDescription": "You have arrived at your destination. Hope you had a pleasant journey!"
 }
+
+    
