@@ -225,7 +225,7 @@ export default function SearchPage() {
         if (updatedBus) {
           const newTrip: ActiveTrip = {
             bus: updatedBus,
-            from: fromLocation,
+            from: fromLocation || "Your Location",
             destination: stop.name,
             eta: updatedBus.eta,
             seat: selectedSeat,
@@ -426,7 +426,18 @@ export default function SearchPage() {
                                                     </AccordionTrigger>
                                                     <AccordionContent>
                                                         <div className="px-3 pt-2 pb-2 text-center">
-                                                        {activeTrip ? (
+                                                        {activeTrip && activeTrip.destination === stop.name && isOnBus ? (
+                                                            <div className="p-3 bg-primary/10 rounded-lg text-center">
+                                                                <div className="flex items-center justify-center gap-2 text-primary font-semibold text-lg">
+                                                                    <Clock className="h-5 w-5" />
+                                                                    {activeTrip.eta > 0 ? (
+                                                                        <span dangerouslySetInnerHTML={{ __html: t('arrivingIn', { minutes: activeTrip.eta }) }} />
+                                                                    ) : (
+                                                                        <span>{t('youAreOnTheBus')}</span>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        ) : activeTrip ? (
                                                             <p className='text-sm text-muted-foreground'>{t('tripInProgress')}</p>
                                                         ) : displayedBus.capacity.current < displayedBus.capacity.max ? (
                                                             <Button className='w-full' onClick={() => handleBoard(stop)} disabled={isBoarding || !selectedSeat || !!activeTrip}>
@@ -592,6 +603,8 @@ export default function SearchPage() {
     </div>
   );
 }
+
+    
 
     
 

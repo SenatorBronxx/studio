@@ -232,7 +232,7 @@ export default function HomePage() {
         if(updatedBus){
             const newTrip: ActiveTrip = {
                 bus: updatedBus,
-                from: fromLocation, // Assuming fromLocation is set, or could be another source
+                from: fromLocation || "Your Location", // Fallback for 'from'
                 destination: stop.name,
                 eta: updatedBus.eta, // ETA for bus to arrive at user's location
                 seat: selectedSeat,
@@ -515,7 +515,7 @@ export default function HomePage() {
                                  </AccordionTrigger>
                                  <AccordionContent>
                                     <div className="px-3 pt-2 pb-2 text-center">
-                                    {activeTrip && activeTrip.destination === stop.name ? (
+                                    {activeTrip && activeTrip.destination === stop.name && isOnBus ? (
                                         <div className="p-3 bg-primary/10 rounded-lg text-center">
                                             <div className="flex items-center justify-center gap-2 text-primary font-semibold text-lg">
                                                 <Clock className="h-5 w-5" />
@@ -618,3 +618,5 @@ export default function HomePage() {
     </div>
   );
 }
+
+    
