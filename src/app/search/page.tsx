@@ -403,7 +403,7 @@ export default function SearchPage() {
                                                 {activeTrip && activeTrip.from === stop.name ? (
                                                     <div className="flex items-center justify-center gap-2 text-primary font-semibold p-2 bg-primary/10 rounded-md">
                                                         <Clock className="h-5 w-5" />
-                                                         {activeTrip && activeTrip.eta > 0 ? (
+                                                         {activeTrip.eta > 0 ? (
                                                             <span dangerouslySetInnerHTML={{ __html: t('arrivingIn', { minutes: activeTrip.eta }) }} />
                                                         ) : (
                                                             <span>{t('youAreOnTheBus')}</span>
@@ -572,3 +572,5 @@ export default function SearchPage() {
     </div>
   );
 }
+
+    
