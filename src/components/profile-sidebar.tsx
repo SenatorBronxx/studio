@@ -314,7 +314,6 @@ export function ProfileSidebar() {
                                 <SelectItem value="ew">Ewe</SelectItem>
                                 <SelectItem value="sf">Sefwi</SelectItem>
                                 <SelectItem value="ha">Hausa</SelectItem>
-                                <SelectItem value="ka">Kasem</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
