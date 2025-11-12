@@ -58,7 +58,7 @@ import { useTrip } from '@/context/trip-context';
 const menuItems = [
     { id: 'settings', icon: Settings, labelKey: 'profileSettings', href: '/settings' },
     { id: 'trips', icon: History, labelKey: 'recentTrips', href: '/settings/recent-trips' },
-    { id: 'share', icon: Share2, labelKey: 'shareMyTrip', href: '/share-trip' },
+    { id: 'share', icon: Share2, labelKey: 'shareMyTrip' },
     { id: 'qr', icon: QrCode, labelKey: 'tripQrCodes' },
     {
         id: 'places',
@@ -90,30 +90,20 @@ export function ProfileSidebar() {
     const { activeTrip } = useTrip();
 
     const handleLogout = () => {
-        setUser(null); // Clear user from context
-        router.push('/');
+        setUser(null); // This will trigger the data clearing logic in UserProvider
     };
 
     const handleDeleteAccount = () => {
         // In a real app, this would trigger a backend process to delete the user.
         console.log('Deleting user account and all local data...');
         
-        // Clear all app-related data from localStorage
-        // This is a more robust way than clearing everything, in case other apps on the same domain use localStorage.
-        Object.keys(localStorage).forEach(key => {
-            if (key.startsWith('eritas-')) {
-                localStorage.removeItem(key);
-            }
-        });
-        
-        setUser(null); // Clear user from context
+        setUser(null); // This will also trigger the data clearing
         
         toast({
             title: t('accountDeletedToastTitle'),
             description: t('accountDeletedToastDescription')
         });
         
-        router.push('/'); // Redirect to the home/login page
     };
     
     const handleNavigate = (href?: string) => {
