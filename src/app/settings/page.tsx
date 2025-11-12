@@ -48,6 +48,7 @@ const settingsOptions = [
     icon: Lock,
     title: 'Security Settings',
     description: 'PIN, biometric login, 2FA toggle',
+    href: '/settings/security',
   },
 ];
 

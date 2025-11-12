@@ -8,6 +8,7 @@ import { OfflineIndicator } from "@/components/offline-indicator";
 export const metadata: Metadata = {
   title: "Eritas Gateway",
   description: "Sign in or create an account for Eritas Gateway.",
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({
