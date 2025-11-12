@@ -305,6 +305,7 @@
     "goToHome": "Go to Home",
     "tripInProgress": "Trip in progress. View ETA above.",
     "arrivingAt": "Arriving at",
+    "busArrivingAtYourLocation": "Bus arriving at your location",
     "signInToContinue": "Sign In to Continue",
     "signInToAccessFeatures": "Please sign in to access all app features."
 }

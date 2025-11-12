@@ -96,7 +96,7 @@ export default function SearchPage() {
     setIsOnBus,
     isOnBus,
   } = useMusic();
-  const { activeTrip, setActiveTrip, clearActiveTrip, setDynamicEta, isHydrated: isTripHydrated } = useTrip();
+  const { activeTrip, setActiveTrip, setDynamicEta, isHydrated: isTripHydrated } = useTrip();
   const { t } = useLanguage();
   
   const [buses, setBuses] = useState(initialBusData);
@@ -149,15 +149,20 @@ export default function SearchPage() {
       interval = setInterval(() => {
         setDynamicEta(activeTrip.eta - 1);
       }, 60 * 1000); // Decrease every minute
-    } else if (activeTrip && activeTrip.eta === 0) {
+    } else if (activeTrip && activeTrip.eta <= 0 && !isOnBus) {
         setIsOnBus(true);
+        // Switch to destination ETA
+        const destinationStop = [...activeTrip.bus.stops, activeTrip.bus.finalDestination].find(s => s.name === activeTrip.destination);
+        if (destinationStop) {
+            setDynamicEta(destinationStop.eta);
+        }
         toast({
             title: t('onTheBusToastTitle'),
             description: t('onTheBusToastDescription'),
         });
     }
     return () => clearInterval(interval);
-  }, [activeTrip, setIsOnBus, setDynamicEta, toast, t]);
+  }, [activeTrip, isOnBus, setIsOnBus, setDynamicEta, toast, t]);
 
   const handleSearch = () => {
     router.push(`/search?from=${encodeURIComponent(fromLocation)}&to=${encodeURIComponent(toLocation)}`);
@@ -220,10 +225,11 @@ export default function SearchPage() {
         if (updatedBus) {
           const newTrip: ActiveTrip = {
             bus: updatedBus,
-            from: stop.name,
+            from: fromLocation,
             destination: stop.name,
-            eta: stop.eta,
+            eta: updatedBus.eta,
             seat: selectedSeat,
+            destinationEta: stop.eta,
           };
           setActiveTrip(newTrip);
         }
@@ -358,7 +364,9 @@ export default function SearchPage() {
 
                                 {activeTrip ? (
                                     <div className="p-3 bg-primary/10 rounded-lg text-center">
-                                        <p className='text-sm text-primary/80'>{t('arrivingAt')} <span className='font-bold'>{activeTrip.destination}</span></p>
+                                        <p className='text-sm text-primary/80'>
+                                            {isOnBus ? t('arrivingAt') : t('busArrivingAtYourLocation')} <span className='font-bold'>{isOnBus ? activeTrip.destination : activeTrip.from}</span>
+                                        </p>
                                         <div className="flex items-center justify-center gap-2 text-primary font-semibold text-lg">
                                             <Clock className="h-5 w-5" />
                                             {activeTrip.eta > 0 ? (

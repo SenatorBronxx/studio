@@ -13,14 +13,16 @@ type BusData = {
     capacity: { current: number, max: number };
     stops: { name: string; fare: number; eta: number; }[];
     finalDestination: { name: string; fare: number; eta: number; };
+    eta: number; // ETA for bus to arrive at user's location
 };
 
 export type ActiveTrip = {
     bus: BusData;
     from: string;
     destination: string;
-    eta: number;
+    eta: number; // This will now dynamically hold the current relevant ETA
     seat: string | null;
+    destinationEta: number; // ETA from boarding stop to destination
 };
 
 type TripContextType = {
@@ -124,5 +126,3 @@ export function useTrip() {
     }
     return context;
 }
-
-    
