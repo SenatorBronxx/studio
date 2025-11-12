@@ -90,7 +90,8 @@ export function ProfileSidebar() {
     const { activeTrip } = useTrip();
 
     const handleLogout = () => {
-        setUser(null); // This will trigger the data clearing logic in UserProvider
+        setUser(null);
+        router.push('/');
     };
 
     const handleDeleteAccount = () => {
@@ -367,3 +368,5 @@ export function ProfileSidebar() {
         </Sheet>
     );
 }
+
+    
