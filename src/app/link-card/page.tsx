@@ -27,6 +27,29 @@ export default function LinkCardPage() {
     const [topUpAmount, setTopUpAmount] = useState('');
     const [isToppingUp, setIsToppingUp] = useState(false);
 
+    const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+        setCardNumber(value);
+    };
+
+    const handleCardHolderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value.replace(/[^a-zA-Z\s]/g, ''); // Remove non-letters/spaces
+        setCardHolder(value);
+    };
+
+    const handleExpiryDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length > 2) {
+            value = value.slice(0, 2) + '/' + value.slice(2, 4);
+        }
+        setExpiryDate(value);
+    };
+    
+    const handleCvvChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value.replace(/\D/g, '');
+        setCvv(value);
+    };
+
     const handleLinkCard = (e: React.FormEvent) => {
         e.preventDefault();
         setIsProcessing(true);
@@ -120,7 +143,7 @@ export default function LinkCardPage() {
                                             id="card-number"
                                             placeholder="4500 1234 5678 9012"
                                             value={cardNumber}
-                                            onChange={(e) => setCardNumber(e.target.value)}
+                                            onChange={handleCardNumberChange}
                                             maxLength={16}
                                             required
                                             disabled={isProcessing}
@@ -132,7 +155,7 @@ export default function LinkCardPage() {
                                             id="card-holder"
                                             placeholder="e.g., Jane Doe"
                                             value={cardHolder}
-                                            onChange={(e) => setCardHolder(e.target.value)}
+                                            onChange={handleCardHolderChange}
                                             required
                                             disabled={isProcessing}
                                         />
@@ -144,7 +167,7 @@ export default function LinkCardPage() {
                                                 id="expiry-date"
                                                 placeholder="MM/YY"
                                                 value={expiryDate}
-                                                onChange={(e) => setExpiryDate(e.target.value)}
+                                                onChange={handleExpiryDateChange}
                                                 maxLength={5}
                                                 required
                                                 disabled={isProcessing}
@@ -157,7 +180,7 @@ export default function LinkCardPage() {
                                                 placeholder="123"
                                                 type="password"
                                                 value={cvv}
-                                                onChange={(e) => setCvv(e.target.value)}
+                                                onChange={handleCvvChange}
                                                 maxLength={3}
                                                 required
                                                 disabled={isProcessing}
