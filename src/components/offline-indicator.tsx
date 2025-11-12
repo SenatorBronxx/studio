@@ -4,7 +4,7 @@
 import { useOnlineStatus } from '@/hooks/use-online-status';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/context/language-context';
-import { LostBallIcon } from './icons/lost-ball';
+import { NoWifiPhoneIcon } from './icons/no-wifi-phone';
 
 export function OfflineIndicator() {
   const isOnline = useOnlineStatus();
@@ -21,10 +21,8 @@ export function OfflineIndicator() {
         'animate-in fade-in duration-500'
       )}
     >
-      <div className="relative h-48 w-48">
-        <div className="absolute inset-0 animate-float">
-            <LostBallIcon className="h-full w-full text-primary" />
-        </div>
+      <div className="relative h-48 w-48 flex items-center justify-center">
+         <NoWifiPhoneIcon className="h-40 w-40 text-muted-foreground" />
       </div>
 
       <div className="max-w-xs space-y-2">
