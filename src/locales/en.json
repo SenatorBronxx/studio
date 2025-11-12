@@ -274,5 +274,6 @@
     "noPointsHistory": "No Points History",
     "noPointsHistoryDescription": "Take a trip to start earning loyalty points.",
     "loyaltyPointsAwarded": "Loyalty Points Awarded",
-    "loyaltyPointsAwardedDescription": "You earned {{points}} points from your last trip!"
+    "loyaltyPointsAwardedDescription": "You earned {{points}} points from your last trip!",
+    "shareMyTrip": "Share My Trip"
 }

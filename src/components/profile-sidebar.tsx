@@ -24,6 +24,7 @@ import {
     Trash2,
     Ticket,
     Globe,
+    Share2,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
@@ -56,6 +57,7 @@ import { useLanguage } from '@/context/language-context';
 const menuItems = [
     { id: 'settings', icon: Settings, labelKey: 'profileSettings', href: '/settings' },
     { id: 'trips', icon: History, labelKey: 'recentTrips', href: '/settings/recent-trips' },
+    { id: 'share', icon: Share2, labelKey: 'shareMyTrip' },
     { id: 'qr', icon: QrCode, labelKey: 'tripQrCodes' },
     {
         id: 'places',
