@@ -23,6 +23,7 @@ import {
     Plus,
     Trash2,
     Ticket,
+    Globe,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
@@ -49,6 +50,7 @@ import {
 import { ThemeSwitcher } from './theme-switcher';
 import { useToast } from '@/hooks/use-toast';
 import { useDiscount } from '@/context/discount-context';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
 const menuItems = [
     { id: 'settings', icon: Settings, label: 'Profile Settings', href: '/settings' },
@@ -290,6 +292,24 @@ export function ProfileSidebar() {
                                 );
                             })}
                          </Accordion>
+                    </div>
+
+                    {/* Language Switcher */}
+                    <div className="flex items-center justify-between mb-4">
+                        <div className='flex items-center gap-3 text-md'>
+                            <Globe className="h-5 w-5 text-muted-foreground" />
+                            <span className="text-sm font-medium">Language</span>
+                        </div>
+                        <Select defaultValue="en">
+                            <SelectTrigger className="w-[120px]">
+                                <SelectValue placeholder="Language" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="en">English</SelectItem>
+                                <SelectItem value="tw">Twi</SelectItem>
+                                <SelectItem value="ga">Ga</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
 
                     {/* Theme Switcher */}
