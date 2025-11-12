@@ -52,7 +52,7 @@ import { useDiscount } from '@/context/discount-context';
 
 const menuItems = [
     { id: 'settings', icon: Settings, label: 'Profile Settings', href: '/settings' },
-    { id: 'trips', icon: History, label: 'Recent Trips' },
+    { id: 'trips', icon: History, label: 'Recent Trips', href: '/settings/recent-trips' },
     { id: 'qr', icon: QrCode, label: 'Trip QR Codes' },
     {
         id: 'places',
