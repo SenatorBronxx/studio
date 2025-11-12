@@ -51,23 +51,24 @@ import { ThemeSwitcher } from './theme-switcher';
 import { useToast } from '@/hooks/use-toast';
 import { useDiscount } from '@/context/discount-context';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { useLanguage } from '@/context/language-context';
 
 const menuItems = [
-    { id: 'settings', icon: Settings, label: 'Profile Settings', href: '/settings' },
-    { id: 'trips', icon: History, label: 'Recent Trips', href: '/settings/recent-trips' },
-    { id: 'qr', icon: QrCode, label: 'Trip QR Codes' },
+    { id: 'settings', icon: Settings, labelKey: 'profileSettings', href: '/settings' },
+    { id: 'trips', icon: History, labelKey: 'recentTrips', href: '/settings/recent-trips' },
+    { id: 'qr', icon: QrCode, labelKey: 'tripQrCodes' },
     {
         id: 'places',
         icon: MapPin,
-        label: 'Saved Places',
+        labelKey: 'savedPlaces',
         subItems: [
-            { icon: Home, label: 'Add home address' },
-            { icon: Briefcase, label: 'Add work address' },
-            { icon: Plus, label: 'Add place' },
+            { icon: Home, labelKey: 'addHomeAddress' },
+            { icon: Briefcase, labelKey: 'addWorkAddress' },
+            { icon: Plus, labelKey: 'addPlace' },
         ],
     },
-    { id: 'discounts', icon: Percent, label: 'User Discounts' },
-    { id: 'loyalty', icon: Award, label: 'Loyalty Points' },
+    { id: 'discounts', icon: Percent, labelKey: 'userDiscounts' },
+    { id: 'loyalty', icon: Award, labelKey: 'loyaltyPoints' },
 ];
 
 const discountOffer = {
@@ -82,6 +83,7 @@ export function ProfileSidebar() {
     const router = useRouter();
     const { toast } = useToast();
     const { activeDiscount, activateDiscount, deactivateDiscount } = useDiscount();
+    const { language, setLanguage, t } = useLanguage();
 
     const handleLogout = () => {
         setUser(null); // Clear user from context
@@ -103,8 +105,8 @@ export function ProfileSidebar() {
         setUser(null); // Clear user from context
         
         toast({
-            title: "Account Deleted",
-            description: "Your account and all local data have been removed."
+            title: t('accountDeletedToastTitle'),
+            description: t('accountDeletedToastDescription')
         });
         
         router.push('/'); // Redirect to the home/login page
@@ -119,16 +121,16 @@ export function ProfileSidebar() {
     const handleActivateDiscount = () => {
         activateDiscount(discountOffer);
         toast({
-            title: 'Discount Activated!',
-            description: `Your ${discountOffer.percentage}% discount has been applied to your account.`,
+            title: t('discountActivatedToastTitle'),
+            description: t('discountActivatedToastDescription', { percentage: discountOffer.percentage }),
         });
     }
 
     const handleDeactivateDiscount = () => {
         deactivateDiscount();
         toast({
-            title: 'Discount Deactivated',
-            description: 'Your active discount has been removed.',
+            title: t('discountDeactivatedToastTitle'),
+            description: t('discountDeactivatedToastDescription'),
         });
     }
 
@@ -145,7 +147,7 @@ export function ProfileSidebar() {
             </SheetTrigger>
             <SheetContent>
                 <SheetHeader className="text-left">
-                    <SheetTitle>My Profile</SheetTitle>
+                    <SheetTitle>{t('myProfile')}</SheetTitle>
                 </SheetHeader>
                 <div className="py-6 flex flex-col h-full">
                     {/* Profile Section */}
@@ -170,9 +172,9 @@ export function ProfileSidebar() {
                                 </AvatarFallback>
                             </Avatar>
                             <div>
-                                <p className="text-lg font-semibold">Guest</p>
+                                <p className="text-lg font-semibold">{t('guest')}</p>
                                 <Button variant="link" className="p-0 h-auto" onClick={() => router.push('/')}>
-                                    Sign In
+                                    {t('signIn')}
                                 </Button>
                             </div>
                         </div>
@@ -197,34 +199,34 @@ export function ProfileSidebar() {
                                                     disabled={!user}
                                                 >
                                                     <Icon className="h-5 w-5 text-muted-foreground" />
-                                                    {item.label}
+                                                    {t(item.labelKey)}
                                                 </Button>
                                             </AlertDialogTrigger>
                                             <AlertDialogContent>
                                                 {activeDiscount ? (
                                                     <>
                                                         <AlertDialogHeader>
-                                                            <AlertDialogTitle>Deactivate Current Discount?</AlertDialogTitle>
+                                                            <AlertDialogTitle>{t('deactivateDiscountTitle')}</AlertDialogTitle>
                                                             <AlertDialogDescription>
-                                                                You have an active discount of {activeDiscount.percentage}%. Deactivating it is permanent and cannot be undone.
+                                                                {t('deactivateDiscountDescription', { percentage: activeDiscount.percentage })}
                                                             </AlertDialogDescription>
                                                         </AlertDialogHeader>
                                                         <AlertDialogFooter>
-                                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                            <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
                                                             <AlertDialogAction
                                                                 onClick={handleDeactivateDiscount}
                                                                 className="bg-destructive hover:bg-destructive/90"
                                                             >
-                                                                Deactivate
+                                                                {t('deactivate')}
                                                             </AlertDialogAction>
                                                         </AlertDialogFooter>
                                                     </>
                                                 ) : (
                                                     <>
                                                         <AlertDialogHeader>
-                                                            <AlertDialogTitle>Discount Eligibility</AlertDialogTitle>
+                                                            <AlertDialogTitle>{t('discountEligibilityTitle')}</AlertDialogTitle>
                                                             <AlertDialogDescription>
-                                                                Congratulations! You are eligible for a {discountOffer.percentage}% discount on your next 3 trips. Activate the code below to apply it to your account.
+                                                                {t('discountEligibilityDescription', { percentage: discountOffer.percentage })}
                                                             </AlertDialogDescription>
                                                         </AlertDialogHeader>
                                                         <div className="py-4">
@@ -236,8 +238,8 @@ export function ProfileSidebar() {
                                                             </div>
                                                         </div>
                                                         <AlertDialogFooter>
-                                                            <AlertDialogCancel>Close</AlertDialogCancel>
-                                                            <AlertDialogAction onClick={handleActivateDiscount}>Activate</AlertDialogAction>
+                                                            <AlertDialogCancel>{t('close')}</AlertDialogCancel>
+                                                            <AlertDialogAction onClick={handleActivateDiscount}>{t('activate')}</AlertDialogAction>
                                                         </AlertDialogFooter>
                                                     </>
                                                 )}
@@ -256,7 +258,7 @@ export function ProfileSidebar() {
                                             >
                                                 <div>
                                                     <Icon className="h-5 w-5 text-muted-foreground" />
-                                                    {item.label}
+                                                    {t(item.labelKey)}
                                                 </div>
                                             </Button>
                                         </AccordionTrigger>
@@ -271,7 +273,7 @@ export function ProfileSidebar() {
                                                             className="justify-start gap-3 text-md"
                                                         >
                                                             <SubIcon className="h-5 w-5 text-muted-foreground" />
-                                                            {subItem.label}
+                                                            {t(subItem.labelKey)}
                                                         </Button>
                                                     );
                                                 })}
@@ -287,7 +289,7 @@ export function ProfileSidebar() {
                                         disabled={!user && !!item.href}
                                     >
                                         <Icon className="h-5 w-5 text-muted-foreground" />
-                                        {item.label}
+                                        {t(item.labelKey)}
                                     </Button>
                                 );
                             })}
@@ -298,9 +300,9 @@ export function ProfileSidebar() {
                     <div className="flex items-center justify-between mb-4">
                         <div className='flex items-center gap-3 text-md'>
                             <Globe className="h-5 w-5 text-muted-foreground" />
-                            <span className="text-sm font-medium">Language</span>
+                            <span className="text-sm font-medium">{t('language')}</span>
                         </div>
-                        <Select defaultValue="en-us">
+                        <Select value={language} onValueChange={setLanguage}>
                             <SelectTrigger className="w-[120px]">
                                 <SelectValue placeholder="Language" />
                             </SelectTrigger>
@@ -326,7 +328,7 @@ export function ProfileSidebar() {
                         {/* Logout Button */}
                         <Button variant="outline" className="w-full" onClick={handleLogout} disabled={!user}>
                             <LogOut className="mr-2 h-5 w-5" />
-                            Logout
+                            {t('logout')}
                         </Button>
 
                          {/* Delete Account Button */}
@@ -334,20 +336,19 @@ export function ProfileSidebar() {
                             <AlertDialogTrigger asChild>
                                 <Button variant="destructive" className="w-full" disabled={!user}>
                                     <Trash2 className="mr-2 h-5 w-5" />
-                                    Delete Account
+                                    {t('deleteAccount')}
                                 </Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                                 <AlertDialogHeader>
-                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                <AlertDialogTitle>{t('deleteAccountConfirmationTitle')}</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    This action cannot be undone. This will permanently delete your
-                                    account and remove your data from our servers.
+                                    {t('deleteAccountConfirmationDescription')}
                                 </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={handleDeleteAccount}>Continue</AlertDialogAction>
+                                <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                                <AlertDialogAction onClick={handleDeleteAccount}>{t('continue')}</AlertDialogAction>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                         </AlertDialog>

@@ -8,21 +8,24 @@ import { NotificationSettingsProvider } from "@/context/notification-settings-co
 import { DiscountProvider } from "@/context/discount-context";
 import { SecuritySettingsProvider } from "@/context/security-settings-context";
 import { ReactNode } from "react";
+import { LanguageProvider } from "@/context/language-context";
 
 export function ClientProviders({ children }: { children: ReactNode }) {
     return (
-        <UserProvider>
-            <WalletProvider>
-                <MusicProvider>
-                    <NotificationSettingsProvider>
-                        <SecuritySettingsProvider>
-                            <DiscountProvider>
-                                {children}
-                            </DiscountProvider>
-                        </SecuritySettingsProvider>
-                    </NotificationSettingsProvider>
-                </MusicProvider>
-            </WalletProvider>
-        </UserProvider>
+        <LanguageProvider>
+            <UserProvider>
+                <WalletProvider>
+                    <MusicProvider>
+                        <NotificationSettingsProvider>
+                            <SecuritySettingsProvider>
+                                <DiscountProvider>
+                                    {children}
+                                </DiscountProvider>
+                            </SecuritySettingsProvider>
+                        </NotificationSettingsProvider>
+                    </MusicProvider>
+                </WalletProvider>
+            </UserProvider>
+        </LanguageProvider>
     );
 }
