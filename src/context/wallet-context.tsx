@@ -1,7 +1,7 @@
 
 'use client';
 
-import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useToast } from '@/hooks/use-toast';
 import { useOnlineStatus } from '@/hooks/use-online-status';
@@ -17,10 +17,12 @@ type Transaction = {
 type WalletContextType = {
   balance: number;
   transactions: Transaction[];
+  loyaltyPoints: number;
   deductBalance: (amount: number) => void;
   addBalance: (amount: number) => void;
   addTransaction: (transaction: Omit<Transaction, 'id' | 'amount'> & { amount: number }) => void;
   removeTransaction: (id: string) => void;
+  addLoyaltyPoints: (points: number) => void;
 };
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
@@ -47,10 +49,12 @@ const initialTransactions: Transaction[] = [
 ];
 
 const INITIAL_BALANCE = 250.00;
+const INITIAL_LOYALTY_POINTS = 500;
 
 export function WalletProvider({ children }: { children: ReactNode }) {
   const [balance, setBalance] = useState<number>(INITIAL_BALANCE);
   const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
+  const [loyaltyPoints, setLoyaltyPoints] = useState<number>(INITIAL_LOYALTY_POINTS);
   const [isHydrated, setIsHydrated] = useState(false);
   const { toast } = useToast();
   const isOnline = useOnlineStatus();
@@ -69,6 +73,11 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       if (storedTransactions) {
         setTransactions(JSON.parse(storedTransactions));
       }
+
+      const storedLoyaltyPoints = localStorage.getItem('eritas-loyalty-points');
+      if (storedLoyaltyPoints) {
+        setLoyaltyPoints(parseInt(storedLoyaltyPoints, 10));
+      }
     } catch (error) {
       console.error("Failed to read from localStorage", error);
     }
@@ -79,11 +88,12 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     if (isHydrated) {
       try {
         localStorage.setItem('eritas-wallet-balance', balance.toString());
+        localStorage.setItem('eritas-loyalty-points', loyaltyPoints.toString());
       } catch (error) {
-        console.error("Failed to write balance to localStorage", error);
+        console.error("Failed to write to localStorage", error);
       }
     }
-  }, [balance, isHydrated]);
+  }, [balance, loyaltyPoints, isHydrated]);
 
   useEffect(() => {
     if (isHydrated) {
@@ -112,7 +122,6 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }
   }, [balance, isHydrated, toast, isOnline, hasShownLowBalanceWarning, t]);
 
-
   const deductBalance = (amount: number) => {
     setBalance((prevBalance) => prevBalance - amount);
   };
@@ -130,13 +139,18 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     setTransactions((prevTransactions) => prevTransactions.filter(tx => tx.id !== id));
   };
   
+  const addLoyaltyPoints = useCallback((points: number) => {
+    setLoyaltyPoints(prev => prev + points);
+  }, []);
+  
+  const value = { balance, transactions, loyaltyPoints, deductBalance, addBalance, addTransaction, removeTransaction, addLoyaltyPoints };
+
   if (!isHydrated) {
     return null; 
   }
 
-
   return (
-    <WalletContext.Provider value={{ balance, transactions, deductBalance, addBalance, addTransaction, removeTransaction }}>
+    <WalletContext.Provider value={value}>
       {children}
     </WalletContext.Provider>
   );

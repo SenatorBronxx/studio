@@ -209,7 +209,6 @@
     "socialSignInToastTitle": "Signed in with {{provider}}",
     "welcome": "Welcome!",
     "orContinueWith": "Or continue with",
-    "signUp": "Sign Up",
     "firstNameLabel": "First Name",
     "firstNamePlaceholder": "Jane",
     "lastNameLabel": "Last Name",
@@ -266,5 +265,14 @@
     "cannotRemoveSongToastTitle": "Cannot Remove",
     "cannotRemoveSongToastDescription": "You can only remove songs you have added.",
     "songRemovedToastTitle": "Song Removed",
-    "songRemovedToastDescription": "The song has been removed from the playlist."
+    "songRemovedToastDescription": "The song has been removed from the playlist.",
+    "totalPoints": "Total Points",
+    "redeemForDiscounts": "Redeem for discounts on future trips",
+    "pointsHistory": "Points History",
+    "pointsHistoryDescription": "A log of all loyalty points earned from your trips.",
+    "points": "Points",
+    "noPointsHistory": "No Points History",
+    "noPointsHistoryDescription": "Take a trip to start earning loyalty points.",
+    "loyaltyPointsAwarded": "Loyalty Points Awarded",
+    "loyaltyPointsAwardedDescription": "You earned {{points}} points from your last trip!"
 }

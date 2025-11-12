@@ -84,7 +84,7 @@ export default function SearchPage() {
   const [isHydrated, setIsHydrated] = useState(false);
 
   const { toast } = useToast();
-  const { balance, deductBalance, addTransaction } = useWallet();
+  const { balance, deductBalance, addTransaction, addLoyaltyPoints } = useWallet();
   const { 
     playlist,
     nowPlaying,
@@ -201,6 +201,9 @@ export default function SearchPage() {
             });
             return newBuses;
         });
+        
+        const pointsEarned = Math.floor(stop.fare);
+        addLoyaltyPoints(pointsEarned);
 
         const qrData = { bus: selectedBus?.plate, seat: selectedSeat, from: stop.name, to: selectedBus?.finalDestination.name, fare: stop.fare, timestamp: new Date().toISOString() };
         const encodedQrData = encodeURIComponent(JSON.stringify(qrData));
@@ -218,6 +221,13 @@ export default function SearchPage() {
             title: t('seatBookedToastTitle'),
             description: t('fareDeductedToastDescription', { fare: stop.fare.toFixed(2) }),
         });
+        
+        if (pointsEarned > 0) {
+            toast({
+                title: t('loyaltyPointsAwarded'),
+                description: t('loyaltyPointsAwardedDescription', { points: pointsEarned }),
+            });
+        }
 
     }, 1500);
   }

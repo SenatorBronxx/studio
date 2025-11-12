@@ -68,7 +68,7 @@ const menuItems = [
         ],
     },
     { id: 'discounts', icon: Percent, labelKey: 'userDiscounts' },
-    { id: 'loyalty', icon: Award, labelKey: 'loyaltyPoints' },
+    { id: 'loyalty', icon: Award, labelKey: 'loyaltyPoints', href: '/loyalty' },
 ];
 
 const discountOffer = {

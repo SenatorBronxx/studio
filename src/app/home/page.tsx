@@ -93,7 +93,7 @@ export default function HomePage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { toast } = useToast();
-  const { balance, deductBalance, addTransaction } = useWallet();
+  const { balance, deductBalance, addTransaction, addLoyaltyPoints } = useWallet();
   const { setIsOnBus } = useMusic();
   const { bookingAlerts } = useNotificationSettings();
   const { activeDiscount, isDiscountBannerDismissed, dismissDiscountBanner } = useDiscount();
@@ -213,6 +213,10 @@ export default function HomePage() {
             return newBuses;
         });
 
+        // Add loyalty points (1 point per 1 GHS spent)
+        const pointsEarned = Math.floor(finalFare);
+        addLoyaltyPoints(pointsEarned);
+
 
         // Generate QR code data
         const qrData = {
@@ -250,6 +254,14 @@ export default function HomePage() {
                 title: t('seatBookedToastTitle'),
                 description: toastDescription,
             });
+
+             // Loyalty points toast
+            if (pointsEarned > 0) {
+                toast({
+                    title: t('loyaltyPointsAwarded'),
+                    description: t('loyaltyPointsAwardedDescription', { points: pointsEarned }),
+                });
+            }
         }
 
     }, 1500);

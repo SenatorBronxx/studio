@@ -200,6 +200,7 @@
     "selectMomoNetwork": "Paw Mobile Money Network",
     "enterDetails": "Hyɛ Nsɛm no mu",
     "enterDetailsDescription": "Hyɛ fon nɔma ne sika dodow a wopɛ sɛ wode gu mu no mu.",
+    "phoneNumberLabel": "Phone Number",
     "confirmTopUp": "Hyɛ Sika a Wode Regu mu no mu Den",
     "signInSuccessfulToastTitle": "Woakɔ mu Yie",
     "signInSuccessfulToastDescription": "Akwaaba san bra!",
@@ -264,5 +265,14 @@
     "cannotRemoveSongToastTitle": "Worentumi Nyi",
     "cannotRemoveSongToastDescription": "Nnwom a wo ara wode aka ho no nkutoo na wubetumi ayi.",
     "songRemovedToastTitle": "Wɔayi Nnwom no",
-    "songRemovedToastDescription": "Wɔayi nnwom no afi playlist no so."
+    "songRemovedToastDescription": "Wɔayi nnwom no afi playlist no so.",
+    "totalPoints": "Nkontabuo nyinaa",
+    "redeemForDiscounts": "Sesa ma aniammɔnho wɔ akwantu a ɛbɛba no so",
+    "pointsHistory": "Nkontabuo Abakɔsɛm",
+    "pointsHistoryDescription": "Nkontabuo a woanya afi w’akwantu ahorow mu no nyinaa ho kyerɛwtohɔ.",
+    "points": "Nkontabuo",
+    "noPointsHistory": "Nkontabuo Abakɔsɛm Nni hɔ",
+    "noPointsHistoryDescription": "Fa akwantu na fi ase nya nkontabuo a wode bɛkyɛ.",
+    "loyaltyPointsAwarded": "Nkontabuo a Wɔde Kyɛ no Ayɛ Adwuma",
+    "loyaltyPointsAwardedDescription": "Woanya nkontabuo {{points}} afi w’akwantu a etwaam no mu!"
 }
