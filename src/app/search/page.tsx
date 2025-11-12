@@ -24,6 +24,7 @@ import { useMusic } from '@/context/music-context';
 import { NowPlayingIcon } from '@/components/icons/now-playing-icon';
 import { ListMusic } from 'lucide-react';
 import { useLanguage } from '@/context/language-context';
+import { useTrip } from '@/context/trip-context';
 
 const initialBusData = [
     {
@@ -95,6 +96,7 @@ export default function SearchPage() {
     setIsOnBus,
     isOnBus,
   } = useMusic();
+  const { setActiveTrip, clearActiveTrip, setDynamicEta, activeTrip } = useTrip();
   const { t } = useLanguage();
   
   const [buses, setBuses] = useState(initialBusData);
@@ -107,7 +109,6 @@ export default function SearchPage() {
   const [isQrSheetOpen, setIsQrSheetOpen] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [dynamicEta, setDynamicEta] = useState<number | null>(null);
 
   useEffect(() => {
     setIsHydrated(true);
@@ -131,11 +132,11 @@ export default function SearchPage() {
 
    useEffect(() => {
     let interval: NodeJS.Timeout;
-    if (boardedStop && dynamicEta !== null && dynamicEta > 0) {
+    if (activeTrip && activeTrip.eta > 0) {
       interval = setInterval(() => {
-        setDynamicEta(prevEta => (prevEta ? prevEta - 1 : 0));
+        setDynamicEta(activeTrip.eta - 1);
       }, 60 * 1000); // Decrease every minute
-    } else if (dynamicEta === 0) {
+    } else if (activeTrip && activeTrip.eta === 0) {
         setIsOnBus(true);
         toast({
             title: t('onTheBusToastTitle'),
@@ -143,7 +144,7 @@ export default function SearchPage() {
         });
     }
     return () => clearInterval(interval);
-  }, [boardedStop, dynamicEta, setIsOnBus, toast, t]);
+  }, [activeTrip, setIsOnBus, setDynamicEta, toast, t]);
 
   const handleSearch = () => {
     router.push(`/search?from=${encodeURIComponent(fromLocation)}&to=${encodeURIComponent(toLocation)}`);
@@ -153,7 +154,7 @@ export default function SearchPage() {
     setSelectedBus(bus);
     setBoardedStop(null);
     setSelectedSeat(null);
-    setDynamicEta(bus.eta);
+    clearActiveTrip();
     setIsOnBus(false);
   }
   
@@ -161,7 +162,7 @@ export default function SearchPage() {
     setSelectedBus(null);
     setBoardedStop(null);
     setSelectedSeat(null);
-    setDynamicEta(null);
+    clearActiveTrip();
     setIsOnBus(false);
   }
 
@@ -177,6 +178,7 @@ export default function SearchPage() {
 
     setIsBoarding(true);
     setTimeout(() => {
+        if (!selectedBus) return;
         setIsBoarding(false);
         setBoardedStop(stop.name);
         deductBalance(stop.fare);
@@ -189,18 +191,17 @@ export default function SearchPage() {
         };
         addTransaction(newTransaction);
         
-        setBuses(prevBuses => {
-            const newBuses = prevBuses.map(b => {
-                if (b.id === selectedBus?.id) {
-                    const newSeating = b.seating.map(s => s && s.id === selectedSeat ? { ...s, isOccupied: true } : s);
-                    const updatedBus = { ...b, seating: newSeating, capacity: { ...b.capacity, current: b.capacity.current + 1 }};
-                    setSelectedBus(updatedBus);
-                    return updatedBus;
-                }
-                return b;
-            });
-            return newBuses;
+        const updatedBuses = buses.map(b => {
+            if (b.id === selectedBus.id) {
+                const newSeating = b.seating.map(s => s && s.id === selectedSeat ? { ...s, isOccupied: true } : s);
+                const updatedBus = { ...b, seating: newSeating, capacity: { ...b.capacity, current: b.capacity.current + 1 }};
+                setSelectedBus(updatedBus);
+                setActiveTrip({ bus: updatedBus, from: stop.name, destination: updatedBus.finalDestination.name, eta: updatedBus.eta });
+                return updatedBus;
+            }
+            return b;
         });
+        setBuses(updatedBuses);
         
         const pointsEarned = Math.floor(stop.fare);
         addLoyaltyPoints(pointsEarned);
@@ -236,7 +237,7 @@ export default function SearchPage() {
     if (selectedBus) {
         const seat = selectedBus.seating.find(s => s?.id === seatId);
         if (seat && !seat.isOccupied) {
-            setSelectedSeat(prevSeat => prevSeat === seatId ? null : seatId);
+            setSelectedSeat(prevSeat => prevSeat === seatId ? null : prevSeat);
         }
     }
   }
@@ -376,8 +377,8 @@ export default function SearchPage() {
                                                 {boardedStop === stop.name ? (
                                                     <div className="flex items-center justify-center gap-2 text-primary font-semibold p-2 bg-primary/10 rounded-md">
                                                         <Clock className="h-5 w-5" />
-                                                         {dynamicEta !== null && dynamicEta > 0 ? (
-                                                            <span>{t('arrivingIn', { minutes: dynamicEta })}</span>
+                                                         {activeTrip && activeTrip.eta > 0 ? (
+                                                            <span dangerouslySetInnerHTML={{ __html: t('arrivingIn', { minutes: activeTrip.eta }) }} />
                                                         ) : (
                                                             <span>{t('youAreOnTheBus')}</span>
                                                         )}

@@ -5,6 +5,7 @@ import { createContext, useContext, useState, ReactNode, useEffect } from 'react
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from './language-context';
+import { useTrip } from './trip-context';
 
 const musicArtworks = PlaceHolderImages.filter(p => p.id.startsWith('music-art-'));
 
@@ -47,6 +48,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
   const [isHydrated, setIsHydrated] = useState(false);
   const { toast } = useToast();
   const { t } = useLanguage();
+  const { clearActiveTrip } = useTrip();
 
    useEffect(() => {
     try {
@@ -99,18 +101,19 @@ export function MusicProvider({ children }: { children: ReactNode }) {
         setSongProgress(prev => {
           const nextProgress = prev + 100 / durationInSeconds;
           if (nextProgress >= 100) {
-            // Move to next song
-            const currentIndex = playlist.findIndex(p => p.id === nowPlaying.id);
-            const nextIndex = (currentIndex + 1) % playlist.length;
-            setNowPlaying(playlist[nextIndex] || null);
-            return 0;
+            // Trip over simulation
+            toast({ title: t('tripEndedTitle'), description: t('tripEndedDescription') });
+            setIsOnBus(false);
+            setNowPlaying(null);
+            clearActiveTrip();
+            return 100;
           }
           return nextProgress;
         });
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [nowPlaying, playlist, isOnBus]);
+  }, [nowPlaying, playlist, isOnBus, toast, t, clearActiveTrip]);
 
   const addToPlaylist = (track: Track) => {
     if (!isOnBus) {

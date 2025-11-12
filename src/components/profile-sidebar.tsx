@@ -53,6 +53,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useDiscount } from '@/context/discount-context';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { useLanguage } from '@/context/language-context';
+import { useTrip } from '@/context/trip-context';
 
 const menuItems = [
     { id: 'settings', icon: Settings, labelKey: 'profileSettings', href: '/settings' },
@@ -86,6 +87,7 @@ export function ProfileSidebar() {
     const { toast } = useToast();
     const { activeDiscount, activateDiscount, deactivateDiscount } = useDiscount();
     const { language, setLanguage, t } = useLanguage();
+    const { activeTrip } = useTrip();
 
     const handleLogout = () => {
         setUser(null); // Clear user from context
@@ -119,6 +121,59 @@ export function ProfileSidebar() {
             router.push(href);
         }
     };
+
+    const handleShareTrip = async () => {
+        if (!activeTrip) {
+            toast({
+                variant: 'destructive',
+                title: t('noActiveTripTitle'),
+                description: t('noActiveTripDescription'),
+            });
+            return;
+        }
+
+        if (!navigator.share) {
+            toast({
+                variant: 'destructive',
+                title: t('shareNotSupportedTitle'),
+                description: t('shareNotSupportedDescription'),
+            });
+            return;
+        }
+
+        const { bus, destination, eta } = activeTrip;
+        const shareText = t('shareTripText', {
+            driver: bus.driver,
+            plate: bus.plate,
+            destination: destination,
+            eta: eta,
+        });
+
+        const shareUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`;
+        
+        try {
+            await navigator.share({
+                title: t('shareTripTitle'),
+                text: `${shareText}\n\n${t('trackMyTrip')}:\n${shareUrl}`,
+                url: shareUrl,
+            });
+        } catch (error) {
+            console.error('Error sharing trip:', error);
+            toast({
+                variant: 'destructive',
+                title: t('shareFailedTitle'),
+                description: t('shareFailedDescription'),
+            });
+        }
+    };
+
+    const handleMenuClick = (item: (typeof menuItems)[0]) => {
+        if (item.id === 'share') {
+            handleShareTrip();
+        } else if (item.href) {
+            handleNavigate(item.href);
+        }
+    }
 
     const handleActivateDiscount = () => {
         activateDiscount(discountOffer);
@@ -287,7 +342,7 @@ export function ProfileSidebar() {
                                         key={item.id}
                                         variant="ghost"
                                         className="justify-start gap-3 text-md"
-                                        onClick={() => handleNavigate(item.href)}
+                                        onClick={() => handleMenuClick(item)}
                                         disabled={!user && !!item.href}
                                     >
                                         <Icon className="h-5 w-5 text-muted-foreground" />

@@ -41,6 +41,7 @@ import { useMusic } from '@/context/music-context';
 import { useNotificationSettings } from '@/context/notification-settings-context';
 import { useDiscount } from '@/context/discount-context';
 import { useLanguage } from '@/context/language-context';
+import { useTrip } from '@/context/trip-context';
 
 const initialBusData = [
     {
@@ -95,6 +96,7 @@ export default function HomePage() {
   const { toast } = useToast();
   const { balance, deductBalance, addTransaction, addLoyaltyPoints } = useWallet();
   const { setIsOnBus } = useMusic();
+  const { setActiveTrip, clearActiveTrip, setDynamicEta, activeTrip } = useTrip();
   const { bookingAlerts } = useNotificationSettings();
   const { activeDiscount, isDiscountBannerDismissed, dismissDiscountBanner } = useDiscount();
   const { t } = useLanguage();
@@ -111,7 +113,6 @@ export default function HomePage() {
   const [isQrSheetOpen, setIsQrSheetOpen] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [dynamicEta, setDynamicEta] = useState<number | null>(null);
   const [showDiscountBanner, setShowDiscountBanner] = useState(false);
   
   useEffect(() => {
@@ -125,11 +126,11 @@ export default function HomePage() {
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    if (boardedStop && dynamicEta !== null && dynamicEta > 0) {
+    if (activeTrip && activeTrip.eta > 0) {
       interval = setInterval(() => {
-        setDynamicEta(prevEta => (prevEta ? prevEta - 1 : 0));
+        setDynamicEta(activeTrip.eta - 1);
       }, 60 * 1000); // Decrease every minute
-    } else if (dynamicEta === 0) {
+    } else if (activeTrip && activeTrip.eta === 0) {
         setIsOnBus(true);
         toast({
             title: t('onTheBusToastTitle'),
@@ -137,7 +138,7 @@ export default function HomePage() {
         });
     }
     return () => clearInterval(interval);
-  }, [boardedStop, dynamicEta, setIsOnBus, toast, t]);
+  }, [activeTrip, setIsOnBus, setDynamicEta, toast, t]);
 
   const handleSearch = () => {
     router.push(`/search?from=${encodeURIComponent(fromLocation)}&to=${encodeURIComponent(toLocation)}`);
@@ -147,7 +148,7 @@ export default function HomePage() {
     setSelectedBus(bus);
     setBoardedStop(null); // Reset boarded stop when a new bus is selected
     setSelectedSeat(null); // Reset selected seat
-    setDynamicEta(bus.eta); // Initialize dynamic ETA
+    clearActiveTrip(); // Clear any previous trip
     setIsOnBus(false); // Reset on bus status
   }
   
@@ -155,7 +156,7 @@ export default function HomePage() {
     setSelectedBus(null);
     setBoardedStop(null);
     setSelectedSeat(null);
-    setDynamicEta(null);
+    clearActiveTrip();
     setIsOnBus(false); // Reset on bus status
   }
 
@@ -177,6 +178,7 @@ export default function HomePage() {
     setIsBoarding(true);
     // Simulate API call
     setTimeout(() => {
+        if (!selectedBus) return;
         setIsBoarding(false);
         setBoardedStop(stop.name);
         
@@ -191,27 +193,17 @@ export default function HomePage() {
         addTransaction(newTransaction);
         
         // Update bus data
-        setBuses(prevBuses => {
-            const newBuses = prevBuses.map(b => {
-                if (b.id === selectedBus?.id) {
-                    const newSeating = b.seating.map(s => {
-                        if (s && s.id === selectedSeat) {
-                            return { ...s, isOccupied: true };
-                        }
-                        return s;
-                    });
-                    const updatedBus = {
-                        ...b,
-                        seating: newSeating,
-                        capacity: { ...b.capacity, current: b.capacity.current + 1 },
-                    };
-                    setSelectedBus(updatedBus); // Update selectedBus with new data
-                    return updatedBus;
-                }
-                return b;
-            });
-            return newBuses;
+        const updatedBuses = buses.map(b => {
+            if (b.id === selectedBus.id) {
+                const newSeating = b.seating.map(s => (s && s.id === selectedSeat) ? { ...s, isOccupied: true } : s);
+                const updatedBus = { ...b, seating: newSeating, capacity: { ...b.capacity, current: b.capacity.current + 1 }};
+                setSelectedBus(updatedBus);
+                setActiveTrip({ bus: updatedBus, from: stop.name, destination: updatedBus.finalDestination.name, eta: updatedBus.eta });
+                return updatedBus;
+            }
+            return b;
         });
+        setBuses(updatedBuses);
 
         // Add loyalty points (1 point per 1 GHS spent)
         const pointsEarned = Math.floor(finalFare);
@@ -220,10 +212,10 @@ export default function HomePage() {
 
         // Generate QR code data
         const qrData = {
-          bus: selectedBus?.plate,
+          bus: selectedBus.plate,
           seat: selectedSeat,
           from: stop.name,
-          to: selectedBus?.finalDestination.name,
+          to: selectedBus.finalDestination.name,
           fare: finalFare,
           timestamp: new Date().toISOString(),
         };
@@ -234,7 +226,7 @@ export default function HomePage() {
             const newNotification: Notification = {
                 id: Date.now(),
                 title: t('seatBookedNotificationTitle'),
-                description: t('seatBookedNotificationDescription', { seat: selectedSeat, plate: selectedBus?.plate }),
+                description: t('seatBookedNotificationDescription', { seat: selectedSeat, plate: selectedBus.plate }),
                 action: (
                      <Button variant="outline" size="sm" onClick={() => setIsQrSheetOpen(true)}>
                         <QrCode className="mr-2 h-4 w-4" />
@@ -467,8 +459,8 @@ export default function HomePage() {
                                     {boardedStop === stop.name ? (
                                         <div className="flex items-center justify-center gap-2 text-primary font-semibold p-2 bg-primary/10 rounded-md">
                                             <Clock className="h-5 w-5" />
-                                            {dynamicEta !== null && dynamicEta > 0 ? (
-                                                <span>{t('arrivingIn', { minutes: dynamicEta })}</span>
+                                            {activeTrip && activeTrip.eta > 0 ? (
+                                                <span dangerouslySetInnerHTML={{ __html: t('arrivingIn', { minutes: activeTrip.eta }) }} />
                                             ) : (
                                                 <span>{t('youAreOnTheBus')}</span>
                                             )}

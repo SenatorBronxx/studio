@@ -275,5 +275,16 @@
     "noPointsHistoryDescription": "Take a trip to start earning loyalty points.",
     "loyaltyPointsAwarded": "Loyalty Points Awarded",
     "loyaltyPointsAwardedDescription": "You earned {{points}} points from your last trip!",
-    "shareMyTrip": "Share My Trip"
+    "shareMyTrip": "Share My Trip",
+    "noActiveTripTitle": "No Active Trip",
+    "noActiveTripDescription": "You can only share your trip details when you are on a bus.",
+    "shareNotSupportedTitle": "Share Not Supported",
+    "shareNotSupportedDescription": "Your browser does not support the Web Share API.",
+    "shareTripTitle": "My Eritas Trip",
+    "shareTripText": "I'm on my way! My bus ({{plate}}, driven by {{driver}}) is heading to {{destination}} and will arrive in about {{eta}} minutes.",
+    "trackMyTrip": "Track my trip",
+    "shareFailedTitle": "Share Failed",
+    "shareFailedDescription": "An error occurred while trying to share your trip.",
+    "tripEndedTitle": "Trip Ended",
+    "tripEndedDescription": "You have arrived at your destination. Hope you had a pleasant journey!"
 }

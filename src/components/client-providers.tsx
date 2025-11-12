@@ -9,21 +9,24 @@ import { DiscountProvider } from "@/context/discount-context";
 import { SecuritySettingsProvider } from "@/context/security-settings-context";
 import { ReactNode } from "react";
 import { LanguageProvider } from "@/context/language-context";
+import { TripProvider } from "@/context/trip-context";
 
 export function ClientProviders({ children }: { children: ReactNode }) {
     return (
         <LanguageProvider>
             <UserProvider>
                 <WalletProvider>
-                    <MusicProvider>
-                        <NotificationSettingsProvider>
-                            <SecuritySettingsProvider>
-                                <DiscountProvider>
-                                    {children}
-                                </DiscountProvider>
-                            </SecuritySettingsProvider>
-                        </NotificationSettingsProvider>
-                    </MusicProvider>
+                    <TripProvider>
+                        <MusicProvider>
+                            <NotificationSettingsProvider>
+                                <SecuritySettingsProvider>
+                                    <DiscountProvider>
+                                        {children}
+                                    </DiscountProvider>
+                                </SecuritySettingsProvider>
+                            </NotificationSettingsProvider>
+                        </MusicProvider>
+                    </TripProvider>
                 </WalletProvider>
             </UserProvider>
         </LanguageProvider>

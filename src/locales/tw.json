@@ -275,5 +275,16 @@
     "noPointsHistoryDescription": "Fa akwantu na fi ase nya nkontabuo a wode bɛkyɛ.",
     "loyaltyPointsAwarded": "Nkontabuo a Wɔde Kyɛ no Ayɛ Adwuma",
     "loyaltyPointsAwardedDescription": "Woanya nkontabuo {{points}} afi w’akwantu a etwaam no mu!",
-    "shareMyTrip": "Kyɛ M'akwantu"
+    "shareMyTrip": "Kyɛ M'akwantu",
+    "noActiveTripTitle": "Akwantu Biara Nni Hɔ",
+    "noActiveTripDescription": "Wubetumi akyɛ w’akwantu ho nsɛm bere a wowɔ bɔs mu nkutoo.",
+    "shareNotSupportedTitle": "Wɔnnye Nkyɛmu Ntom",
+    "shareNotSupportedDescription": "Wo browser no nnye Web Share API no ntom.",
+    "shareTripTitle": "M’akwantu a Mefare Eritas",
+    "shareTripText": "Mewɔ kwan so! Me bɔs ({{plate}}, a {{driver}} na ɔreka) rekɔ {{destination}} na ɛbɛduru bɛyɛ simma {{eta}} mu.",
+    "trackMyTrip": "Di m’akwantu akyi",
+    "shareFailedTitle": "Nkyɛmu no Annyɛ Yie",
+    "shareFailedDescription": "Mfomso bi asisi bere a yɛrebɔ mmɔden sɛ yɛbɛkyɛ w’akwantu no.",
+    "tripEndedTitle": "Akwantu no Aba Awiei",
+    "tripEndedDescription": "Woadu beae a worekɔ no. Yɛwɔ anidaso sɛ w’akwantu no yɛɛ anigye!"
 }
