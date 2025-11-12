@@ -209,6 +209,7 @@
     "socialSignInToastTitle": "Wɔde {{provider}} akɔ mu",
     "welcome": "Akwaaba!",
     "orContinueWith": "Anaasɛ toa so wɔ",
+    "favouriteMusicPlaceholder": "nhwɛso, Highlife, Afrobeats",
     "firstNameLabel": "First Name",
     "firstNamePlaceholder": "Abena",
     "lastNameLabel": "Last Name",
@@ -252,7 +253,6 @@
     "favouriteFoodLabel": "Aduane a Wopɛ",
     "favouriteFoodPlaceholder": "nhwɛso, Waakye, Jollof Rice",
     "favouriteMusicLabel": "Nnwom a Wopɛ",
-    "favouriteMusicPlaceholder": "nhwɛso, Highlife, Afrobeats",
     "favouriteDestinationLabel": "Ghana Beae a Wopɛ",
     "favouriteDestinationPlaceholder": "nhwɛso, Cape Coast Abankɛse, Kakum National Park",
     "lowBalanceWarningToastTitle": "Sika a Aka Sua",
@@ -301,5 +301,8 @@
     "shareOnWhatsApp": "Kyɛ wɔ WhatsApp so",
     "shareViaSms": "Fa SMS kyɛ",
     "copyLink": "Kɔpi Link no",
-    "linkCopied": "Wɔakɔpi akwantu link no agu clipboard so!"
+    "linkCopied": "Wɔakɔpi akwantu link no agu clipboard so!",
+    "goToHome": "Kɔ Fie",
+    "tripInProgress": "Akwantu rekɔ so. Hwɛ ETA wɔ soro hɔ.",
+    "arrivingAt": "Yɛrebedu"
 }

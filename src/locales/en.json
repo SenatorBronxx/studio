@@ -301,5 +301,8 @@
     "shareOnWhatsApp": "Share on WhatsApp",
     "shareViaSms": "Share via SMS",
     "copyLink": "Copy Link",
-    "linkCopied": "Trip link copied to clipboard!"
+    "linkCopied": "Trip link copied to clipboard!",
+    "goToHome": "Go to Home",
+    "tripInProgress": "Trip in progress. View ETA above.",
+    "arrivingAt": "Arriving at"
 }

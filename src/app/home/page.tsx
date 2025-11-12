@@ -220,7 +220,7 @@ export default function HomePage() {
             const newTrip: ActiveTrip = {
                 bus: updatedBus,
                 from: stop.name,
-                destination: updatedBus.finalDestination.name,
+                destination: stop.name,
                 eta: stop.eta, // Use stop-specific ETA
                 seat: selectedSeat
             };
@@ -413,26 +413,40 @@ export default function HomePage() {
                     )}
                 </div>
 
-                <Sheet open={isSeatSheetOpen} onOpenChange={setIsSeatSheetOpen}>
-                    <SheetTrigger asChild>
-                        <Button variant="outline" className='w-full' disabled={!!activeTrip}>
-                            <Armchair className="mr-2 h-5 w-5" />
-                            {selectedSeat ? t('seatSelected', { seat: selectedSeat }) : t('viewSeats')}
-                        </Button>
-                    </SheetTrigger>
-                    <SheetContent side="bottom" className="rounded-t-2xl">
-                        <SheetHeader>
-                            <SheetTitle>{t('selectYourSeat')}</SheetTitle>
-                        </SheetHeader>
-                        <BusSeatingChart 
-                            seating={displayedBus.seating}
-                            selectedSeat={selectedSeat}
-                            onSeatSelect={handleSeatSelect}
-                            busPlate={displayedBus.plate}
-                            onConfirm={handleConfirmSeat}
-                        />
-                    </SheetContent>
-                </Sheet>
+                {activeTrip ? (
+                    <div className="p-3 bg-primary/10 rounded-lg text-center">
+                        <p className='text-sm text-primary/80'>{t('arrivingAt')} <span className='font-bold'>{activeTrip.destination}</span></p>
+                        <div className="flex items-center justify-center gap-2 text-primary font-semibold text-lg">
+                            <Clock className="h-5 w-5" />
+                            {activeTrip.eta > 0 ? (
+                                <span dangerouslySetInnerHTML={{ __html: t('arrivingIn', { minutes: activeTrip.eta }) }} />
+                            ) : (
+                                <span>{t('youAreOnTheBus')}</span>
+                            )}
+                        </div>
+                    </div>
+                ) : (
+                    <Sheet open={isSeatSheetOpen} onOpenChange={setIsSeatSheetOpen}>
+                        <SheetTrigger asChild>
+                            <Button variant="outline" className='w-full'>
+                                <Armchair className="mr-2 h-5 w-5" />
+                                {selectedSeat ? t('seatSelected', { seat: selectedSeat }) : t('viewSeats')}
+                            </Button>
+                        </SheetTrigger>
+                        <SheetContent side="bottom" className="rounded-t-2xl">
+                            <SheetHeader>
+                                <SheetTitle>{t('selectYourSeat')}</SheetTitle>
+                            </SheetHeader>
+                            <BusSeatingChart 
+                                seating={displayedBus.seating}
+                                selectedSeat={selectedSeat}
+                                onSeatSelect={handleSeatSelect}
+                                busPlate={displayedBus.plate}
+                                onConfirm={handleConfirmSeat}
+                            />
+                        </SheetContent>
+                    </Sheet>
+                )}
 
                  <Separator />
 
@@ -452,7 +466,6 @@ export default function HomePage() {
                              if (activeDiscount) {
                                 fare = fare * (1 - activeDiscount.percentage / 100);
                              }
-                             const eta = (activeTrip?.eta ?? 0) + stop.eta;
 
                             return (
                                <AccordionItem value={`item-${index}`} key={index} className="border-b-0">
@@ -473,14 +486,7 @@ export default function HomePage() {
                                  <AccordionContent>
                                     <div className="px-3 pt-2 pb-2 text-center">
                                     {activeTrip ? (
-                                        <div className="flex items-center justify-center gap-2 text-primary font-semibold p-2 bg-primary/10 rounded-md">
-                                            <Clock className="h-5 w-5" />
-                                            {eta > 0 ? (
-                                                <span dangerouslySetInnerHTML={{ __html: t('arrivingIn', { minutes: eta }) }} />
-                                            ) : (
-                                                <span>{t('youAreOnTheBus')}</span>
-                                            )}
-                                        </div>
+                                        <p className='text-sm text-muted-foreground'>{t('tripInProgress')}</p>
                                     ) : displayedBus.capacity.current < displayedBus.capacity.max ? (
                                         <Button 
                                             className='w-full' 

@@ -221,7 +221,7 @@ export default function SearchPage() {
           const newTrip: ActiveTrip = {
             bus: updatedBus,
             from: stop.name,
-            destination: updatedBus.finalDestination.name,
+            destination: stop.name,
             eta: stop.eta,
             seat: selectedSeat,
           };
@@ -356,24 +356,38 @@ export default function SearchPage() {
                                     )}
                                 </div>
 
-                                <Sheet open={isSeatSheetOpen} onOpenChange={setIsSeatSheetOpen}>
-                                    <SheetTrigger asChild>
-                                        <Button variant="outline" className='w-full' disabled={!!activeTrip}>
-                                            <Armchair className="mr-2 h-5 w-5" />
-                                            {selectedSeat ? t('seatSelected', { seat: selectedSeat }) : t('viewSeats')}
-                                        </Button>
-                                    </SheetTrigger>
-                                    <SheetContent side="bottom" className="rounded-t-2xl">
-                                        <SheetHeader><SheetTitle>{t('selectYourSeat')}</SheetTitle></SheetHeader>
-                                        <BusSeatingChart 
-                                            seating={displayedBus.seating}
-                                            selectedSeat={selectedSeat}
-                                            onSeatSelect={handleSeatSelect}
-                                            busPlate={displayedBus.plate}
-                                            onConfirm={handleConfirmSeat}
-                                        />
-                                    </SheetContent>
-                                </Sheet>
+                                {activeTrip ? (
+                                    <div className="p-3 bg-primary/10 rounded-lg text-center">
+                                        <p className='text-sm text-primary/80'>{t('arrivingAt')} <span className='font-bold'>{activeTrip.destination}</span></p>
+                                        <div className="flex items-center justify-center gap-2 text-primary font-semibold text-lg">
+                                            <Clock className="h-5 w-5" />
+                                            {activeTrip.eta > 0 ? (
+                                                <span dangerouslySetInnerHTML={{ __html: t('arrivingIn', { minutes: activeTrip.eta }) }} />
+                                            ) : (
+                                                <span>{t('youAreOnTheBus')}</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <Sheet open={isSeatSheetOpen} onOpenChange={setIsSeatSheetOpen}>
+                                        <SheetTrigger asChild>
+                                            <Button variant="outline" className='w-full'>
+                                                <Armchair className="mr-2 h-5 w-5" />
+                                                {selectedSeat ? t('seatSelected', { seat: selectedSeat }) : t('viewSeats')}
+                                            </Button>
+                                        </SheetTrigger>
+                                        <SheetContent side="bottom" className="rounded-t-2xl">
+                                            <SheetHeader><SheetTitle>{t('selectYourSeat')}</SheetTitle></SheetHeader>
+                                            <BusSeatingChart 
+                                                seating={displayedBus.seating}
+                                                selectedSeat={selectedSeat}
+                                                onSeatSelect={handleSeatSelect}
+                                                busPlate={displayedBus.plate}
+                                                onConfirm={handleConfirmSeat}
+                                            />
+                                        </SheetContent>
+                                    </Sheet>
+                                )}
 
                                 <Separator />
 
@@ -389,7 +403,6 @@ export default function SearchPage() {
                                     <h3 className="text-sm font-semibold text-foreground/80 mb-2">{t('busFares')}:</h3>
                                     <Accordion type="single" collapsible className="w-full">
                                         {[...displayedBus.stops, { ...displayedBus.finalDestination, isFinal: true }].map((stop, index) => {
-                                            const eta = (activeTrip?.eta ?? 0) + stop.eta;
                                             return (
                                                 <AccordionItem value={`item-${index}`} key={index} className="border-b-0">
                                                     <AccordionTrigger className="py-2 rounded-lg hover:bg-muted/50 px-2 data-[state=open]:bg-muted">
@@ -406,14 +419,7 @@ export default function SearchPage() {
                                                     <AccordionContent>
                                                         <div className="px-3 pt-2 pb-2 text-center">
                                                         {activeTrip ? (
-                                                            <div className="flex items-center justify-center gap-2 text-primary font-semibold p-2 bg-primary/10 rounded-md">
-                                                                <Clock className="h-5 w-5" />
-                                                                {eta > 0 ? (
-                                                                    <span dangerouslySetInnerHTML={{ __html: t('arrivingIn', { minutes: eta }) }} />
-                                                                ) : (
-                                                                    <span>{t('youAreOnTheBus')}</span>
-                                                                )}
-                                                            </div>
+                                                            <p className='text-sm text-muted-foreground'>{t('tripInProgress')}</p>
                                                         ) : displayedBus.capacity.current < displayedBus.capacity.max ? (
                                                             <Button className='w-full' onClick={() => handleBoard(stop)} disabled={isBoarding || !selectedSeat || !!activeTrip}>
                                                                 {isBoarding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : !selectedSeat ? t('selectBusSeatFirst') : t('board')}
