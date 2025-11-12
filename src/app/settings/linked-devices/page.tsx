@@ -18,6 +18,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useState } from 'react';
+import { useLanguage } from '@/context/language-context';
 
 const initialDevices = [
   {
@@ -55,6 +56,7 @@ const deviceIcons = {
 export default function LinkedDevicesPage() {
   const router = useRouter();
   const [devices, setDevices] = useState(initialDevices);
+  const { t } = useLanguage();
 
   const handleUnlink = (deviceId: number) => {
     setDevices((prevDevices) => prevDevices.filter((device) => device.id !== deviceId));
@@ -73,14 +75,14 @@ export default function LinkedDevicesPage() {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-lg font-semibold mx-auto">Linked Devices</h1>
+          <h1 className="text-lg font-semibold mx-auto">{t('linkedDevices')}</h1>
         </div>
       </header>
 
       <main className="flex-grow p-4">
         <div className="max-w-md mx-auto space-y-4">
           <p className="text-sm text-muted-foreground text-center">
-            These are the devices that are currently signed in to your account.
+            {t('linkedDevicesDescription')}
           </p>
 
           {devices.map((device) => {
@@ -96,7 +98,7 @@ export default function LinkedDevicesPage() {
                     </p>
                   </div>
                   {device.isCurrent ? (
-                    <Badge variant="secondary">Current device</Badge>
+                    <Badge variant="secondary">{t('currentDevice')}</Badge>
                   ) : (
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
@@ -106,18 +108,18 @@ export default function LinkedDevicesPage() {
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
-                          <AlertDialogTitle>Unlink this device?</AlertDialogTitle>
+                          <AlertDialogTitle>{t('unlinkDeviceTitle')}</AlertDialogTitle>
                           <AlertDialogDescription>
-                            Are you sure you want to unlink the {device.name}? It will be signed out of your account.
+                            {t('unlinkDeviceDescription', { deviceName: device.name })}
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
                           <AlertDialogAction
                             onClick={() => handleUnlink(device.id)}
                             className="bg-destructive hover:bg-destructive/90"
                           >
-                            Unlink
+                            {t('unlink')}
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>

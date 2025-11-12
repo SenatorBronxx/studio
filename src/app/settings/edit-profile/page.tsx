@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { useUser } from '@/context/user-context';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
+import { useLanguage } from '@/context/language-context';
 
 const profileSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
@@ -38,6 +39,7 @@ export default function EditProfilePage() {
   const router = useRouter();
   const { user, setUser, isHydrated } = useUser();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const userImage = PlaceHolderImages.find((p) => p.id === 'user-avatar')?.imageUrl;
@@ -74,14 +76,14 @@ export default function EditProfilePage() {
         phone: data.phone,
       });
 
-      let description = 'Your profile changes have been saved successfully.';
+      let description = t('profileUpdatedToastDescription');
       if (data.password) {
         console.log("Password change requested. In a real app, this would be a secure backend call.");
-        description += ' Your password has also been updated.';
+        description += ` ${t('passwordUpdatedToastDescription')}`;
       }
       
       toast({
-        title: 'Profile Updated',
+        title: t('profileUpdatedToastTitle'),
         description: description,
       });
       setIsSubmitting(false);
@@ -100,9 +102,9 @@ export default function EditProfilePage() {
   if (!user) {
     return (
         <div className="flex flex-col min-h-screen bg-background items-center justify-center text-center p-4">
-            <h1 className="text-xl font-bold">You're not logged in</h1>
-            <p className='text-muted-foreground'>Please sign in to edit your profile.</p>
-            <Button onClick={() => router.push('/')} className="mt-4">Go to Sign In</Button>
+            <h1 className="text-xl font-bold">{t('notLoggedIn')}</h1>
+            <p className='text-muted-foreground'>{t('signInToEditProfile')}</p>
+            <Button onClick={() => router.push('/')} className="mt-4">{t('goToSignIn')}</Button>
         </div>
     );
   }
@@ -119,7 +121,7 @@ export default function EditProfilePage() {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-lg font-semibold mx-auto">Edit Profile</h1>
+          <h1 className="text-lg font-semibold mx-auto">{t('editProfile')}</h1>
         </div>
       </header>
 
@@ -148,9 +150,9 @@ export default function EditProfilePage() {
                     name="name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Full Name</FormLabel>
+                        <FormLabel>{t('fullNameLabel')}</FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g., Jane Doe" {...field} />
+                          <Input placeholder={t('fullNamePlaceholder')} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -161,9 +163,9 @@ export default function EditProfilePage() {
                     name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Email Address</FormLabel>
+                        <FormLabel>{t('emailAddressLabel')}</FormLabel>
                         <FormControl>
-                          <Input type="email" placeholder="e.g., jane.doe@example.com" {...field} />
+                          <Input type="email" placeholder={t('emailAddressPlaceholder')} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -174,7 +176,7 @@ export default function EditProfilePage() {
                     name="phone"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Phone Number</FormLabel>
+                        <FormLabel>{t('phoneNumberLabel')}</FormLabel>
                         <FormControl>
                           <Input type="tel" placeholder="+233 24 123 4567" {...field} />
                         </FormControl>
@@ -187,9 +189,9 @@ export default function EditProfilePage() {
                     name="password"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>New Password</FormLabel>
+                        <FormLabel>{t('newPasswordLabel')}</FormLabel>
                         <FormControl>
-                          <Input type="password" placeholder='Enter new password' {...field} />
+                          <Input type="password" placeholder={t('newPasswordPlaceholder')} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -200,9 +202,9 @@ export default function EditProfilePage() {
                     name="confirmPassword"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Confirm New Password</FormLabel>
+                        <FormLabel>{t('confirmNewPasswordLabel')}</FormLabel>
                         <FormControl>
-                          <Input type="password" placeholder='Confirm new password' {...field} />
+                          <Input type="password" placeholder={t('confirmNewPasswordPlaceholder')} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -215,7 +217,7 @@ export default function EditProfilePage() {
                     ) : (
                         <Save className="mr-2 h-4 w-4" />
                     )}
-                    Save Changes
+                    {t('saveChanges')}
                   </Button>
                 </form>
               </Form>

@@ -12,40 +12,43 @@ import {
 } from '@/components/ui/carousel';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Button } from './ui/button';
+import { useLanguage } from '@/context/language-context';
 
 type SignupSlideshowProps = {
     onFinish: () => void;
 };
 
-const slideContent = [
-    {
-        id: 'smart-routing',
-        title: 'Smart Routing',
-        description: 'Our intelligent algorithms find the fastest and most efficient routes, so you get to your destination sooner.',
-    },
-    {
-        id: 'gps-tracking',
-        title: 'Intelligent GPS Tracking',
-        description: 'Track your bus in real-time on the map. Know exactly when it will arrive and plan your time better.',
-    },
-    {
-        id: 'personal-music',
-        title: 'Your Music, Your Ride',
-        description: 'Enjoy a personalized playlist based on your favorite music. Your journey, your soundtrack.',
-    },
-    {
-        id: 'real-time-availability',
-        title: 'Real-time Availability',
-        description: 'Check seat availability and book your ticket instantly. No more waiting or uncertainty.',
-    },
-    {
-        id: 'frosted-glass-ui',
-        title: 'Frosted Glass UI',
-        description: "Experience ERITAS' unique frosted glass UI on another level.",
-    },
-];
-
 export function SignupSlideshow({ onFinish }: SignupSlideshowProps) {
+    const { t } = useLanguage();
+
+    const slideContent = [
+        {
+            id: 'smart-routing',
+            titleKey: 'smartRoutingTitle',
+            descriptionKey: 'smartRoutingDescription',
+        },
+        {
+            id: 'gps-tracking',
+            titleKey: 'gpsTrackingTitle',
+            descriptionKey: 'gpsTrackingDescription',
+        },
+        {
+            id: 'personal-music',
+            titleKey: 'personalMusicTitle',
+            descriptionKey: 'personalMusicDescription',
+        },
+        {
+            id: 'real-time-availability',
+            titleKey: 'realTimeAvailabilityTitle',
+            descriptionKey: 'realTimeAvailabilityDescription',
+        },
+        {
+            id: 'frosted-glass-ui',
+            titleKey: 'frostedGlassUiTitle',
+            descriptionKey: 'frostedGlassUiDescription',
+        },
+    ];
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-background p-4 sm:p-6">
       <div className="w-full max-w-sm sm:max-w-md mx-auto">
@@ -69,8 +72,8 @@ export function SignupSlideshow({ onFinish }: SignupSlideshowProps) {
                             />
                           </div>
                         )}
-                        <h3 className="text-xl sm:text-2xl font-semibold text-center">{slide.title}</h3>
-                        <p className="text-sm text-muted-foreground text-center">{slide.description}</p>
+                        <h3 className="text-xl sm:text-2xl font-semibold text-center">{t(slide.titleKey)}</h3>
+                        <p className="text-sm text-muted-foreground text-center">{t(slide.descriptionKey)}</p>
                       </CardContent>
                     </Card>
                   </div>
@@ -82,7 +85,7 @@ export function SignupSlideshow({ onFinish }: SignupSlideshowProps) {
           <CarouselNext className="hidden sm:flex" />
         </Carousel>
         <Button onClick={onFinish} className="w-full mt-6">
-          Get Started
+          {t('getStarted')}
         </Button>
       </div>
     </div>

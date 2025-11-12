@@ -5,6 +5,7 @@ import { Armchair, BusFront } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
+import { useLanguage } from '@/context/language-context';
 
 type Seat = {
     id: string;
@@ -20,6 +21,7 @@ type BusSeatingChartProps = {
 };
 
 export function BusSeatingChart({ seating, selectedSeat, onSeatSelect, busPlate, onConfirm }: BusSeatingChartProps) {
+    const { t } = useLanguage();
     return (
         <div className="p-4 space-y-6">
             <div className="bg-muted p-4 rounded-lg flex flex-col items-center justify-center gap-4">
@@ -65,20 +67,20 @@ export function BusSeatingChart({ seating, selectedSeat, onSeatSelect, busPlate,
             <div className="flex justify-around text-sm">
                 <div className="flex items-center gap-2">
                     <div className="w-4 h-4 rounded bg-primary/20 border border-primary"></div>
-                    <span>Available</span>
+                    <span>{t('available')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="w-4 h-4 rounded bg-primary text-primary-foreground border border-primary"></div>
-                    <span>Selected</span>
+                    <span>{t('selected')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="w-4 h-4 rounded bg-muted border border-muted-foreground"></div>
-                    <span>Taken</span>
+                    <span>{t('taken')}</span>
                 </div>
             </div>
 
             <Button className='w-full' disabled={!selectedSeat} onClick={onConfirm}>
-                Confirm Seat {selectedSeat}
+                {t('confirmSeat')} {selectedSeat}
             </Button>
         </div>
     );

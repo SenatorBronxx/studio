@@ -12,6 +12,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useWallet } from '@/context/wallet-context';
 import { useToast } from '@/hooks/use-toast';
 import { MtnMomoIcon } from '@/components/icons/mtn-momo';
+import { useLanguage } from '@/context/language-context';
 
 const mobileMoneyNetworks = [
     { id: 'mtn', name: 'MTN Mobile Money', logo: MtnMomoIcon },
@@ -28,6 +29,7 @@ export default function TopUpPage() {
     const { addBalance, addTransaction } = useWallet();
     const router = useRouter();
     const { toast } = useToast();
+    const { t } = useLanguage();
 
     const handleTopUp = (e: React.FormEvent) => {
         e.preventDefault();
@@ -35,8 +37,8 @@ export default function TopUpPage() {
         if (!topUpAmount || topUpAmount <= 0) {
             toast({
                 variant: 'destructive',
-                title: 'Invalid Amount',
-                description: 'Please enter a valid amount to top up.',
+                title: t('invalidAmountToastTitle'),
+                description: t('invalidAmountToastDescription'),
             });
             return;
         }
@@ -48,13 +50,13 @@ export default function TopUpPage() {
             addBalance(topUpAmount);
             addTransaction({
                 type: 'top-up',
-                plate: `${mobileMoneyNetworks.find(n => n.id === network)?.name || 'Top-up'}`,
+                plate: `${mobileMoneyNetworks.find(n => n.id === network)?.name || t('topUp')}`,
                 amount: topUpAmount,
             });
 
             toast({
-                title: 'Top-up Successful',
-                description: `GH₵${topUpAmount.toFixed(2)} has been added to your ERITAS Pay balance.`,
+                title: t('topUpSuccessfulToastTitle'),
+                description: t('topUpSuccessfulToastDescription', { amount: topUpAmount.toFixed(2) }),
             });
             
             setIsProcessing(false);
@@ -71,7 +73,7 @@ export default function TopUpPage() {
                 <Button variant="ghost" size="icon" onClick={() => router.back()}>
                     <ArrowLeft className="h-5 w-5" />
                 </Button>
-                <h1 className="text-lg font-semibold mx-auto">Top-up Wallet</h1>
+                <h1 className="text-lg font-semibold mx-auto">{t('topUpWallet')}</h1>
             </div>
       </header>
 
@@ -80,7 +82,7 @@ export default function TopUpPage() {
             <form onSubmit={handleTopUp}>
                 <Card>
                     <CardHeader>
-                        <CardTitle>Select Mobile Money Network</CardTitle>
+                        <CardTitle>{t('selectMomoNetwork')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <RadioGroup value={network} onValueChange={setNetwork} className="space-y-4">
@@ -108,12 +110,12 @@ export default function TopUpPage() {
 
                 <Card className="mt-6">
                     <CardHeader>
-                        <CardTitle>Enter Details</CardTitle>
-                        <CardDescription>Enter the phone number and amount for the top-up.</CardDescription>
+                        <CardTitle>{t('enterDetails')}</CardTitle>
+                        <CardDescription>{t('enterDetailsDescription')}</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="phone">Phone Number</Label>
+                            <Label htmlFor="phone">{t('phoneNumberLabel')}</Label>
                             <Input 
                                 id="phone" 
                                 type="tel" 
@@ -124,11 +126,11 @@ export default function TopUpPage() {
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="amount">Amount (GH₵)</Label>
+                            <Label htmlFor="amount">{t('amountLabel')}</Label>
                             <Input 
                                 id="amount" 
                                 type="number" 
-                                placeholder="e.g., 50.00" 
+                                placeholder={t('amountExample')}
                                 value={amount}
                                 onChange={(e) => setAmount(e.target.value)}
                                 required
@@ -144,7 +146,7 @@ export default function TopUpPage() {
                     ) : (
                         <Wallet className="mr-2 h-5 w-5" />
                     )}
-                    Confirm Top-up
+                    {t('confirmTopUp')}
                 </Button>
             </form>
         </div>

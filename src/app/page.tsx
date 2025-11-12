@@ -9,12 +9,14 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useState } from 'react';
 import { SignupSlideshow } from '@/components/signup-slideshow';
 import { useRouter } from 'next/navigation';
+import { useLanguage } from '@/context/language-context';
 
 export default function Home() {
   const busImage = PlaceHolderImages.find(p => p.id === 'bus-side-view');
   const [showSlideshow, setShowSlideshow] = useState(false);
   const [userName, setUserName] = useState('');
   const router = useRouter();
+  const { t } = useLanguage();
 
   const handleSignUpSuccess = (name: string) => {
     setUserName(name);
@@ -24,7 +26,7 @@ export default function Home() {
   const handleSignInSuccess = () => {
     // For sign-in, we don't have the name immediately, so we'll pass a default.
     // In a real app, you'd fetch the user's name from your backend.
-    router.push(`/home?name=${encodeURIComponent('Friend')}`);
+    router.push(`/home?name=${encodeURIComponent(t('friend'))}`);
   };
 
   const handleSlideshowFinish = () => {
@@ -50,7 +52,7 @@ export default function Home() {
                 />
               </div>
               <p className="text-balance text-muted-foreground">
-                Your journey starts here. Access your account or create a new one.
+                {t('welcomeMessage')}
               </p>
             </div>
             <AuthForm onSignUpSuccess={handleSignUpSuccess} onSignInSuccess={handleSignInSuccess} />

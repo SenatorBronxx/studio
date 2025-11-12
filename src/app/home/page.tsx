@@ -40,6 +40,7 @@ import { Map } from '@/components/map';
 import { useMusic } from '@/context/music-context';
 import { useNotificationSettings } from '@/context/notification-settings-context';
 import { useDiscount } from '@/context/discount-context';
+import { useLanguage } from '@/context/language-context';
 
 const initialBusData = [
     {
@@ -96,7 +97,8 @@ export default function HomePage() {
   const { setIsOnBus } = useMusic();
   const { bookingAlerts } = useNotificationSettings();
   const { activeDiscount, isDiscountBannerDismissed, dismissDiscountBanner } = useDiscount();
-  const userName = searchParams.get('name') || 'there';
+  const { t } = useLanguage();
+  const userName = searchParams.get('name') || t('there');
   
   const [fromLocation, setFromLocation] = useState('');
   const [toLocation, setToLocation] = useState('');
@@ -130,12 +132,12 @@ export default function HomePage() {
     } else if (dynamicEta === 0) {
         setIsOnBus(true);
         toast({
-            title: "You're on the bus!",
-            description: "You can now add songs to the bus playlist.",
+            title: t('onTheBusToastTitle'),
+            description: t('onTheBusToastDescription'),
         });
     }
     return () => clearInterval(interval);
-  }, [boardedStop, dynamicEta, setIsOnBus, toast]);
+  }, [boardedStop, dynamicEta, setIsOnBus, toast, t]);
 
   const handleSearch = () => {
     router.push(`/search?from=${encodeURIComponent(fromLocation)}&to=${encodeURIComponent(toLocation)}`);
@@ -166,8 +168,8 @@ export default function HomePage() {
     if (balance < finalFare) {
       toast({
         variant: "destructive",
-        title: "Insufficient Balance",
-        description: `Your ERITAS Pay balance is too low to book this trip. Please top-up.`,
+        title: t('insufficientBalanceToastTitle'),
+        description: t('insufficientBalanceToastDescription'),
       });
       return;
     }
@@ -227,25 +229,25 @@ export default function HomePage() {
         if (bookingAlerts) {
             const newNotification: Notification = {
                 id: Date.now(),
-                title: 'Seat Booked Successfully!',
-                description: `Your seat ${selectedSeat} on bus ${selectedBus?.plate} is confirmed.`,
+                title: t('seatBookedNotificationTitle'),
+                description: t('seatBookedNotificationDescription', { seat: selectedSeat, plate: selectedBus?.plate }),
                 action: (
                      <Button variant="outline" size="sm" onClick={() => setIsQrSheetOpen(true)}>
                         <QrCode className="mr-2 h-4 w-4" />
-                        View QR Code
+                        {t('viewQrCode')}
                     </Button>
                 )
             }
             
             setNotifications(prev => [newNotification, ...prev]);
 
-            let toastDescription = `The fare of GH₵${finalFare.toFixed(2)} has been deducted.`;
+            let toastDescription = t('fareDeductedToastDescription', { fare: finalFare.toFixed(2) });
             if (activeDiscount) {
-                toastDescription += ` (${activeDiscount.percentage}% discount applied!)`
+                toastDescription += ` (${t('discountAppliedToast', { percentage: activeDiscount.percentage })})`
             }
 
             toast({
-                title: "Seat Booked Successfully!",
+                title: t('seatBookedToastTitle'),
                 description: toastDescription,
             });
         }
@@ -303,7 +305,7 @@ export default function HomePage() {
             </SheetTrigger>
             <SheetContent>
                 <SheetHeader>
-                    <SheetTitle>Notifications</SheetTitle>
+                    <SheetTitle>{t('notifications')}</SheetTitle>
                 </SheetHeader>
                 <div className="py-4 h-full flex flex-col">
                     {notifications.length > 0 ? (
@@ -321,13 +323,13 @@ export default function HomePage() {
                             </div>
                             <Button variant="outline" className="mt-4" onClick={() => setNotifications([])}>
                                 <Trash2 className="mr-2 h-4 w-4" />
-                                Clear All
+                                {t('clearAll')}
                             </Button>
                         </>
                     ) : (
                         <div className="flex flex-col items-center justify-center text-center h-full text-muted-foreground">
                             <Bell className="h-12 w-12 mb-4" />
-                            <p>You have no new notifications.</p>
+                            <p>{t('noNewNotifications')}</p>
                         </div>
                     )}
                 </div>
@@ -368,7 +370,7 @@ export default function HomePage() {
                     <div className="flex items-center gap-3">
                         <Ticket className="h-8 w-8 text-primary" />
                         <div>
-                            <h3 className="font-bold text-primary">{activeDiscount.percentage}% Discount Activated!</h3>
+                            <h3 className="font-bold text-primary">{t('discountActivatedTitle', { percentage: activeDiscount.percentage })}</h3>
                             <p className="text-sm text-primary/80">{activeDiscount.description}</p>
                         </div>
                     </div>
@@ -396,12 +398,12 @@ export default function HomePage() {
                     <SheetTrigger asChild>
                         <Button variant="outline" className='w-full'>
                             <Armchair className="mr-2 h-5 w-5" />
-                            {selectedSeat ? `Seat ${selectedSeat} Selected` : 'View Seats'}
+                            {selectedSeat ? t('seatSelected', { seat: selectedSeat }) : t('viewSeats')}
                         </Button>
                     </SheetTrigger>
                     <SheetContent side="bottom" className="rounded-t-2xl">
                         <SheetHeader>
-                            <SheetTitle>Select Your Seat</SheetTitle>
+                            <SheetTitle>{t('selectYourSeat')}</SheetTitle>
                         </SheetHeader>
                         <BusSeatingChart 
                             seating={selectedBus.seating}
@@ -417,14 +419,14 @@ export default function HomePage() {
 
                  <div>
                     <div className="flex justify-between items-center mb-1">
-                        <h3 className="text-sm font-semibold text-foreground/80 flex items-center gap-2"><Users className="h-4 w-4" />Bus Capacity</h3>
-                        <p className="text-sm font-mono text-muted-foreground">{selectedBus.capacity.current} / {selectedBus.capacity.max} Seats</p>
+                        <h3 className="text-sm font-semibold text-foreground/80 flex items-center gap-2"><Users className="h-4 w-4" />{t('busCapacity')}</h3>
+                        <p className="text-sm font-mono text-muted-foreground">{selectedBus.capacity.current} / {selectedBus.capacity.max} {t('seats')}</p>
                     </div>
                     <Progress value={(selectedBus.capacity.current / selectedBus.capacity.max) * 100} className="h-2" />
                  </div>
 
                  <div>
-                    <h3 className="text-sm font-semibold text-foreground/80 mb-2">Bus Fares:</h3>
+                    <h3 className="text-sm font-semibold text-foreground/80 mb-2">{t('busFares')}:</h3>
                      <Accordion type="single" collapsible className="w-full">
                         {[...selectedBus.stops, { ...selectedBus.finalDestination, isFinal: true }].map((stop, index) => {
                              let fare = stop.fare;
@@ -440,7 +442,7 @@ export default function HomePage() {
                                              <div className={`h-5 w-5 rounded-full flex items-center justify-center ${stop.isFinal ? 'bg-primary/20' : 'bg-muted-foreground/20'}`}>
                                                 {stop.isFinal ? <Flag className="h-3 w-3 text-primary" /> : <MapPin className="h-3 w-3 text-muted-foreground" />}
                                             </div>
-                                            <p className={`text-sm ${stop.isFinal ? 'font-semibold text-primary' : 'text-foreground'}`}>{stop.name} {stop.isFinal && '(Final)'}</p>
+                                            <p className={`text-sm ${stop.isFinal ? 'font-semibold text-primary' : 'text-foreground'}`}>{stop.name} {stop.isFinal && `(${t('final')})`}</p>
                                         </div>
                                         <div className='flex items-center gap-2'>
                                         {activeDiscount && <Badge variant="destructive">-{activeDiscount.percentage}%</Badge>}
@@ -454,9 +456,9 @@ export default function HomePage() {
                                         <div className="flex items-center justify-center gap-2 text-primary font-semibold p-2 bg-primary/10 rounded-md">
                                             <Clock className="h-5 w-5" />
                                             {dynamicEta !== null && dynamicEta > 0 ? (
-                                                <span>Arriving in <strong>{dynamicEta} min</strong></span>
+                                                <span>{t('arrivingIn', { minutes: dynamicEta })}</span>
                                             ) : (
-                                                <span>You are on the bus!</span>
+                                                <span>{t('youAreOnTheBus')}</span>
                                             )}
                                         </div>
                                     ) : selectedBus.capacity.current < selectedBus.capacity.max ? (
@@ -468,13 +470,13 @@ export default function HomePage() {
                                             {isBoarding ? (
                                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                             ) : !selectedSeat ? (
-                                                'Select bus seat first'
+                                                t('selectBusSeatFirst')
                                             ) : (
-                                                'BOARD'
+                                                t('board')
                                             )}
                                         </Button>
                                     ) : (
-                                        <p className="text-sm text-destructive font-medium p-2 bg-destructive/10 rounded-md">This bus is full.</p>
+                                        <p className="text-sm text-destructive font-medium p-2 bg-destructive/10 rounded-md">{t('busIsFull')}</p>
                                     )}
                                     </div>
                                  </AccordionContent>
@@ -487,14 +489,14 @@ export default function HomePage() {
             ) : (
             <>
                 <div className='text-center'>
-                    <h2 className="text-xl font-bold text-foreground">Hi {userName}, ready for your next trip?</h2>
-                    <p className="text-sm text-muted-foreground">Find the perfect bus for your journey</p>
+                    <h2 className="text-xl font-bold text-foreground">{t('homeGreeting', { name: userName })}</h2>
+                    <p className="text-sm text-muted-foreground">{t('homeSubGreeting')}</p>
                 </div>
                 <div className='flex items-center gap-2'>
                     <div className='relative flex-1'>
                         <BusFront className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                         <Input 
-                        placeholder='From' 
+                        placeholder={t('from')}
                         className='pl-10' 
                         value={fromLocation}
                         onChange={(e) => setFromLocation(e.target.value)}
@@ -506,7 +508,7 @@ export default function HomePage() {
                     <div className='relative flex-1'>
                         <BusFront className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                         <Input 
-                        placeholder='To' 
+                        placeholder={t('to')}
                         className='pl-10'
                         value={toLocation}
                         onChange={(e) => setToLocation(e.target.value)}
@@ -515,7 +517,7 @@ export default function HomePage() {
                 </div>
                 <Button onClick={handleSearch}>
                     <Search className='mr-2 h-5 w-5' />
-                    Search Buses
+                    {t('searchBuses')}
                 </Button>
             </>
             )}
@@ -526,21 +528,21 @@ export default function HomePage() {
        <Sheet open={isQrSheetOpen} onOpenChange={setIsQrSheetOpen}>
             <SheetContent side="bottom" className="rounded-t-2xl">
                 <SheetHeader>
-                    <SheetTitle>Your Boarding Pass</SheetTitle>
+                    <SheetTitle>{t('yourBoardingPass')}</SheetTitle>
                 </SheetHeader>
                 <div className="p-4 flex flex-col items-center justify-center space-y-4">
                     {qrCodeUrl ? (
-                        <Image src={qrCodeUrl} alt="Boarding QR Code" width={200} height={200} />
+                        <Image src={qrCodeUrl} alt={t('boardingQrCode')} width={200} height={200} />
                     ) : (
                         <div className="h-[200px] w-[200px] flex items-center justify-center bg-muted rounded-md">
                             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                         </div>
                     )}
                     <div className="text-center space-y-1">
-                        <p className="text-sm text-muted-foreground">Show this QR code to the driver for verification.</p>
+                        <p className="text-sm text-muted-foreground">{t('showQrToDriver')}</p>
                         <div className="flex items-center gap-4 justify-center">
                             <Badge variant="outline">{selectedBus?.plate}</Badge>
-                            <Badge>Seat {selectedSeat}</Badge>
+                            <Badge>{t('seat')} {selectedSeat}</Badge>
                         </div>
                     </div>
                 </div>

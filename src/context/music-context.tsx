@@ -4,6 +4,7 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from './language-context';
 
 const musicArtworks = PlaceHolderImages.filter(p => p.id.startsWith('music-art-'));
 
@@ -45,6 +46,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
   const [isOnBus, setIsOnBus] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
   const { toast } = useToast();
+  const { t } = useLanguage();
 
    useEffect(() => {
     try {
@@ -114,8 +116,8 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     if (!isOnBus) {
         toast({
             variant: 'destructive',
-            title: 'Not on Bus',
-            description: 'You must be on a bus to add songs to the playlist.',
+            title: t('notOnBusToastTitle'),
+            description: t('notOnBusToastDescription'),
         });
         return;
     }
@@ -123,8 +125,8 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     if (playlist.find(t => t.id === track.id)) {
       toast({
         variant: 'destructive',
-        title: 'Already in Playlist',
-        description: `${track.title} is already in the bus playlist.`,
+        title: t('alreadyInPlaylistToastTitle'),
+        description: t('alreadyInPlaylistToastDescription', { title: track.title }),
       });
       return;
     }
@@ -136,8 +138,8 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     }
 
     toast({
-      title: 'Added to Playlist',
-      description: `${track.title} by ${track.artist} has been added to the bus playlist.`,
+      title: t('addedToPlaylistToastTitle'),
+      description: t('addedToPlaylistToastDescription', { title: track.title, artist: track.artist }),
     });
   };
 
@@ -146,8 +148,8 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     if (!songToRemove || !songToRemove.addedByUser) {
       toast({
         variant: "destructive",
-        title: "Cannot Remove",
-        description: "You can only remove songs you have added.",
+        title: t('cannotRemoveSongToastTitle'),
+        description: t('cannotRemoveSongToastDescription'),
       });
       return;
     }
@@ -164,8 +166,8 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     setPlaylist(newPlaylist);
 
     toast({
-      title: 'Song Removed',
-      description: 'The song has been removed from the playlist.',
+      title: t('songRemovedToastTitle'),
+      description: t('songRemovedToastDescription'),
     });
   };
   

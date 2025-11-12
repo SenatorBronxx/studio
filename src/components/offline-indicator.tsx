@@ -4,9 +4,11 @@
 import { useOnlineStatus } from '@/hooks/use-online-status';
 import { SatelliteIcon } from '@/components/icons/satellite';
 import { cn } from '@/lib/utils';
+import { useLanguage } from '@/context/language-context';
 
 export function OfflineIndicator() {
   const isOnline = useOnlineStatus();
+  const { t } = useLanguage();
 
   if (isOnline) {
     return null;
@@ -29,11 +31,10 @@ export function OfflineIndicator() {
 
       <div className="max-w-xs space-y-2">
         <h1 className="text-2xl font-bold text-foreground">
-          No Connection
+          {t('noConnection')}
         </h1>
         <p className="text-muted-foreground">
-          Please check your internet connection and try again. The app will
-          automatically reconnect when it's back online.
+          {t('noConnectionDescription')}
         </p>
       </div>
     </div>

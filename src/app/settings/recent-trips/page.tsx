@@ -2,16 +2,18 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Bus, History, Wallet } from 'lucide-react';
+import { ArrowLeft, Bus, History } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useWallet } from '@/context/wallet-context';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useLanguage } from '@/context/language-context';
 
 export default function RecentTripsPage() {
   const router = useRouter();
   const { transactions } = useWallet();
+  const { t } = useLanguage();
 
   const tripHistory = transactions.filter((tx) => tx.type === 'payment');
 
@@ -27,7 +29,7 @@ export default function RecentTripsPage() {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-lg font-semibold mx-auto">Recent Trips</h1>
+          <h1 className="text-lg font-semibold mx-auto">{t('recentTrips')}</h1>
         </div>
       </header>
 
@@ -35,8 +37,8 @@ export default function RecentTripsPage() {
         <div className="max-w-md mx-auto">
           <Card>
             <CardHeader>
-                <CardTitle>Your Trip History</CardTitle>
-                <CardDescription>A log of all your completed bus journeys.</CardDescription>
+                <CardTitle>{t('yourTripHistory')}</CardTitle>
+                <CardDescription>{t('yourTripHistoryDescription')}</CardDescription>
             </CardHeader>
             <CardContent>
                 {tripHistory.length > 0 ? (
@@ -50,12 +52,12 @@ export default function RecentTripsPage() {
                                     </AvatarFallback>
                                 </Avatar>
                                 <div className="flex-grow">
-                                    <p className="font-semibold">Trip on bus {trip.plate}</p>
-                                    <p className="text-sm text-muted-foreground">Journey details would appear here</p>
+                                    <p className="font-semibold">{t('tripOnBus', { plate: trip.plate })}</p>
+                                    <p className="text-sm text-muted-foreground">{t('journeyDetailsPlaceholder')}</p>
                                 </div>
                                 <div className="font-semibold text-right">
                                     <p>GH₵{Math.abs(trip.amount).toFixed(2)}</p>
-                                    <p className="text-xs text-muted-foreground font-normal">Fare</p>
+                                    <p className="text-xs text-muted-foreground font-normal">{t('fare')}</p>
                                 </div>
                             </div>
                         ))}
@@ -64,8 +66,8 @@ export default function RecentTripsPage() {
                 ) : (
                     <div className="text-center py-12 text-muted-foreground flex flex-col items-center justify-center">
                         <History className="h-12 w-12 mb-4" />
-                        <h3 className="font-semibold">No Trip History</h3>
-                        <p className="text-sm mt-1">You haven't completed any trips yet.</p>
+                        <h3 className="font-semibold">{t('noTripHistory')}</h3>
+                        <p className="text-sm mt-1">{t('noTripHistoryDescription')}</p>
                     </div>
                 )}
             </CardContent>

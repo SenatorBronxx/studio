@@ -15,6 +15,7 @@ import { NowPlayingIcon } from '@/components/icons/now-playing-icon';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { useMusic, type Track } from '@/context/music-context';
+import { useLanguage } from '@/context/language-context';
 
 
 const musicArtworks = PlaceHolderImages.filter(p => p.id.startsWith('music-art-'));
@@ -46,6 +47,7 @@ export default function MusicPage() {
         isOnBus,
     } = useMusic();
 
+    const { t } = useLanguage();
     const [searchQuery, setSearchQuery] = useState('');
     const [filteredTracks, setFilteredTracks] = useState(newTracks);
 
@@ -85,7 +87,7 @@ export default function MusicPage() {
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm p-4 space-y-4">
         <div className="max-w-md mx-auto flex justify-between items-center">
-            <h1 className="text-2xl font-bold">Browse</h1>
+            <h1 className="text-2xl font-bold">{t('browse')}</h1>
             <Sheet open={isPlaylistOpen} onOpenChange={setIsPlaylistOpen}>
                 <SheetTrigger asChild>
                     <Button variant="ghost" size="icon">
@@ -101,7 +103,7 @@ export default function MusicPage() {
                 </SheetTrigger>
                 <SheetContent>
                     <SheetHeader>
-                        <SheetTitle>Bus Playlist</SheetTitle>
+                        <SheetTitle>{t('busPlaylist')}</SheetTitle>
                     </SheetHeader>
                     <div className="py-4 flex flex-col h-full">
                        {isOnBus ? (
@@ -109,7 +111,7 @@ export default function MusicPage() {
                             {nowPlaying ? (
                                 <>
                                     <div className='mb-4 space-y-3'>
-                                        <p className="text-sm font-medium text-muted-foreground">Now Playing</p>
+                                        <p className="text-sm font-medium text-muted-foreground">{t('nowPlaying')}</p>
                                         <div className="flex items-center gap-4 p-3 bg-primary/10 rounded-lg">
                                             <Image src={nowPlaying.image} alt={nowPlaying.title} width={48} height={48} className="rounded-md" />
                                             <div className="flex-grow space-y-2">
@@ -133,7 +135,7 @@ export default function MusicPage() {
                            <div className="flex-grow overflow-y-auto mt-4">
                             {playlist.filter(p => p.id !== nowPlaying?.id).length > 0 ? (
                                  <>
-                                    <p className="text-sm font-medium text-muted-foreground mb-2">Up next</p>
+                                    <p className="text-sm font-medium text-muted-foreground mb-2">{t('upNext')}</p>
                                     <div className="space-y-3">
                                     {playlist.filter(p => p.id !== nowPlaying?.id).map(track => (
                                         <div key={track.id} className="flex items-center gap-4 group">
@@ -158,8 +160,8 @@ export default function MusicPage() {
                             ) : !nowPlaying ? (
                                 <div className="text-center text-muted-foreground py-12 flex flex-col items-center justify-center h-full">
                                     <ListMusic className="h-12 w-12 mx-auto mb-4" />
-                                    <p>No songs added yet.</p>
-                                    <p className="text-xs">Browse and add songs to the playlist.</p>
+                                    <p>{t('noSongsAdded')}</p>
+                                    <p className="text-xs">{t('browseAndAddSongs')}</p>
                                 </div>
                             ) : null}
                            </div>
@@ -167,8 +169,8 @@ export default function MusicPage() {
                        ) : (
                          <div className="flex flex-col items-center justify-center text-center h-full text-muted-foreground">
                             <Bus className="h-12 w-12 mb-4" />
-                            <h3 className="font-semibold">Board a bus to see the playlist</h3>
-                            <p className="text-sm mt-1">The bus playlist is only available during your trip.</p>
+                            <h3 className="font-semibold">{t('boardBusToSeePlaylist')}</h3>
+                            <p className="text-sm mt-1">{t('playlistOnlyOnTrip')}</p>
                         </div>
                        )}
                     </div>
@@ -178,7 +180,7 @@ export default function MusicPage() {
         <div className="max-w-md mx-auto relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           <Input 
-            placeholder="Search for songs or artists" 
+            placeholder={t('searchSongsPlaceholder')}
             className="pl-10"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -192,9 +194,9 @@ export default function MusicPage() {
             {searchQuery.trim() === '' ? (
                 <Tabs defaultValue="genres">
                     <TabsList className="grid w-full grid-cols-3">
-                        <TabsTrigger value="moods">Moods</TabsTrigger>
-                        <TabsTrigger value="genres">Genres</TabsTrigger>
-                        <TabsTrigger value="artists">Artists</TabsTrigger>
+                        <TabsTrigger value="moods">{t('moods')}</TabsTrigger>
+                        <TabsTrigger value="genres">{t('genres')}</TabsTrigger>
+                        <TabsTrigger value="artists">{t('artists')}</TabsTrigger>
                     </TabsList>
                     <TabsContent value="genres" className="mt-6">
                         <div className="grid grid-cols-2 gap-4">
@@ -211,19 +213,19 @@ export default function MusicPage() {
                     </TabsContent>
                     <TabsContent value="moods">
                          <div className="text-center text-muted-foreground py-12">
-                            <p>Moods feature coming soon!</p>
+                            <p>{t('moodsComingSoon')}</p>
                         </div>
                     </TabsContent>
                     <TabsContent value="artists">
                          <div className="text-center text-muted-foreground py-12">
-                            <p>Artists feature coming soon!</p>
+                            <p>{t('artistsComingSoon')}</p>
                         </div>
                     </TabsContent>
                 </Tabs>
             ) : null }
 
             <div>
-                <h2 className="text-lg font-semibold mb-2">{searchQuery.trim() === '' ? 'New Tracks' : `Results for "${searchQuery}"`}</h2>
+                <h2 className="text-lg font-semibold mb-2">{searchQuery.trim() === '' ? t('newTracks') : t('searchResultsFor', { query: searchQuery })}</h2>
                 <div className="space-y-2">
                     {filteredTracks.length > 0 ? (
                         filteredTracks.map(track => (
@@ -247,7 +249,7 @@ export default function MusicPage() {
                         ))
                     ) : (
                         <div className="text-center text-muted-foreground py-12">
-                            <p>No tracks found.</p>
+                            <p>{t('noTracksFound')}</p>
                         </div>
                     )}
                 </div>
@@ -262,7 +264,4 @@ export default function MusicPage() {
       </div>
     </div>
   );
-
-    
-
-
+}

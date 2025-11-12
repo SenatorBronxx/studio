@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react';
 import { APIProvider, Map as GoogleMap, Marker, useMapsLibrary } from '@vis.gl/react-google-maps';
 import { Loader2 } from 'lucide-react';
+import { useLanguage } from '@/context/language-context';
 
 type Position = {
   lat: number;
@@ -13,16 +14,17 @@ type Position = {
 function MapComponent() {
   const [position, setPosition] = useState<Position | null>(null);
   const [mapError, setMapError] = useState<string | null>(null);
+  const { t } = useLanguage();
 
   // Check if the maps library loaded correctly
   const coreLib = useMapsLibrary('core');
   useEffect(() => {
     if (!coreLib) {
-      setMapError("Google Maps failed to load. This might be due to a missing API key, or billing not being enabled on your Google Cloud project. Please check the browser console for a `BillingNotEnabledMapError` or other specific errors.");
+      setMapError(t('mapLoadError'));
     } else {
       setMapError(null);
     }
-  }, [coreLib]);
+  }, [coreLib, t]);
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -48,7 +50,7 @@ function MapComponent() {
     return (
        <div className="w-full h-full bg-muted flex items-center justify-center">
         <div className="text-destructive-foreground p-4 text-center bg-destructive rounded-md max-w-sm">
-            <h3 className="font-bold mb-2">Map Error</h3>
+            <h3 className="font-bold mb-2">{t('mapErrorTitle')}</h3>
             <p className="text-sm">{mapError}</p>
         </div>
       </div>
@@ -59,7 +61,7 @@ function MapComponent() {
     return (
       <div className="w-full h-full bg-background flex items-center justify-center">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        <p className="ml-4 text-muted-foreground">Finding your location...</p>
+        <p className="ml-4 text-muted-foreground">{t('findingYourLocation')}</p>
       </div>
     );
   }
@@ -81,13 +83,14 @@ function MapComponent() {
 
 export function Map() {
   const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as string;
+  const { t } = useLanguage();
 
   if (!API_KEY) {
     return (
       <div className="w-full h-full bg-muted flex items-center justify-center">
         <div className="text-destructive-foreground p-4 text-center bg-destructive rounded-md">
-            <h3 className="font-bold mb-2">Configuration Error</h3>
-            <p className="text-sm">Google Maps API Key is missing from your environment variables.</p>
+            <h3 className="font-bold mb-2">{t('mapConfigErrorTitle')}</h3>
+            <p className="text-sm">{t('mapConfigErrorDescription')}</p>
         </div>
       </div>
     );

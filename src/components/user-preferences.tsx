@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useActionState } from "react";
@@ -16,6 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Loader2, Save } from "lucide-react";
 import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/context/language-context";
 
 const initialState = {
   message: null,
@@ -24,6 +26,7 @@ const initialState = {
 
 function SubmitButton() {
   const { pending } = useFormStatus();
+  const { t } = useLanguage();
   return (
     <Button type="submit" className="w-full" disabled={pending}>
       {pending ? (
@@ -31,7 +34,7 @@ function SubmitButton() {
       ) : (
         <Save className="mr-2 h-4 w-4" />
       )}
-      Save Preferences
+      {t('savePreferences')}
     </Button>
   );
 }
@@ -42,67 +45,68 @@ export function UserPreferences() {
     initialState
   );
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   useEffect(() => {
     if (state.message) {
       if (state.data) {
         toast({
-          title: "Preferences Saved!",
+          title: t('preferencesSavedToastTitle'),
           description: state.message,
         });
       } else {
         toast({
           variant: "destructive",
-          title: "Uh oh! Something went wrong.",
+          title: t('uhOhSomethingWentWrong'),
           description: state.message,
         });
       }
     }
-  }, [state, toast]);
+  }, [state, toast, t]);
 
   return (
     <Card className="w-full max-w-md bg-card/80 backdrop-blur-sm border-white/20 text-card-foreground lg:bg-card/80 lg:text-card-foreground lg:border-white/20">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-white lg:text-white">
           <Save />
-          Tell Us More About You
+          {t('tellUsMoreTitle')}
         </CardTitle>
         <CardDescription className="text-white/80 lg:text-white/80">
-          Help us personalize your experience by sharing your favorites.
+          {t('tellUsMoreDescription')}
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form action={formAction} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="food" className="text-white/90 lg:text-white/90">
-              Favourite Food
+              {t('favouriteFoodLabel')}
             </Label>
             <Input
               id="food"
               name="food"
-              placeholder="e.g., Waakye, Jollof Rice"
+              placeholder={t('favouriteFoodPlaceholder')}
               className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:ring-accent"
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="music" className="text-white/90 lg:text-white/90">
-              Favourite Music
+              {t('favouriteMusicLabel')}
             </Label>
             <Input
               id="music"
               name="music"
-              placeholder="e.g., Highlife, Afrobeats"
+              placeholder={t('favouriteMusicPlaceholder')}
               className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:ring-accent"
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="destination" className="text-white/90 lg:text-white/90">
-              Favourite Ghanaian Destination
+              {t('favouriteDestinationLabel')}
             </Label>
             <Input
               id="destination"
               name="destination"
-              placeholder="e.g., Cape Coast Castle, Kakum National Park"
+              placeholder={t('favouriteDestinationPlaceholder')}
               className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:ring-accent"
             />
           </div>

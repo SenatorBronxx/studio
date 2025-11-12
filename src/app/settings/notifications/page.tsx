@@ -8,6 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useNotificationSettings } from '@/context/notification-settings-context';
+import { useLanguage } from '@/context/language-context';
 
 export default function NotificationsPage() {
   const router = useRouter();
@@ -19,6 +20,7 @@ export default function NotificationsPage() {
     systemAlerts,
     setSystemAlerts
   } = useNotificationSettings();
+  const { t } = useLanguage();
   
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -32,7 +34,7 @@ export default function NotificationsPage() {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-lg font-semibold mx-auto">Notifications</h1>
+          <h1 className="text-lg font-semibold mx-auto">{t('notifications')}</h1>
         </div>
       </header>
 
@@ -47,9 +49,9 @@ export default function NotificationsPage() {
                         <Bus className="h-5 w-5 text-muted-foreground" />
                     </div>
                     <div className="flex-grow">
-                        <p className="font-semibold">Route Alerts</p>
+                        <p className="font-semibold">{t('routeAlerts')}</p>
                         <p className="text-sm text-muted-foreground">
-                            Real-time updates about your bus route.
+                            {t('routeAlertsDescription')}
                         </p>
                     </div>
                   </Label>
@@ -66,9 +68,9 @@ export default function NotificationsPage() {
                         <FileText className="h-5 w-5 text-muted-foreground" />
                     </div>
                     <div className="flex-grow">
-                        <p className="font-semibold">Booking Alerts</p>
+                        <p className="font-semibold">{t('bookingAlerts')}</p>
                         <p className="text-sm text-muted-foreground">
-                            Confirmations and reminders for your bookings.
+                            {t('bookingAlertsDescription')}
                         </p>
                     </div>
                    </Label>
@@ -85,9 +87,9 @@ export default function NotificationsPage() {
                         <Settings className="h-5 w-5 text-muted-foreground" />
                     </div>
                     <div className="flex-grow">
-                        <p className="font-semibold">System Alerts</p>
+                        <p className="font-semibold">{t('systemAlerts')}</p>
                         <p className="text-sm text-muted-foreground">
-                            Important updates about the app and services.
+                            {t('systemAlertsDescription')}
                         </p>
                     </div>
                   </Label>

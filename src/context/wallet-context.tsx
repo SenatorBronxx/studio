@@ -5,6 +5,7 @@ import { createContext, useContext, useState, ReactNode, useEffect } from 'react
 import { v4 as uuidv4 } from 'uuid';
 import { useToast } from '@/hooks/use-toast';
 import { useOnlineStatus } from '@/hooks/use-online-status';
+import { useLanguage } from './language-context';
 
 type Transaction = {
   id: string;
@@ -53,6 +54,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [isHydrated, setIsHydrated] = useState(false);
   const { toast } = useToast();
   const isOnline = useOnlineStatus();
+  const { t } = useLanguage();
   const lowBalanceThreshold = 10.00;
   const [hasShownLowBalanceWarning, setHasShownLowBalanceWarning] = useState(false);
 
@@ -99,8 +101,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         if (!hasShownLowBalanceWarning) {
           toast({
             variant: 'destructive',
-            title: 'Low Balance Warning',
-            description: "ERITAS Pay wallet's balance is running low, top-up now to continue enjoying our trips.",
+            title: t('lowBalanceWarningToastTitle'),
+            description: t('lowBalanceWarningToastDescription'),
           });
           setHasShownLowBalanceWarning(true);
         }
@@ -108,7 +110,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         setHasShownLowBalanceWarning(false);
       }
     }
-  }, [balance, isHydrated, toast, isOnline, hasShownLowBalanceWarning]);
+  }, [balance, isHydrated, toast, isOnline, hasShownLowBalanceWarning, t]);
 
 
   const deductBalance = (amount: number) => {

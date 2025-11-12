@@ -8,7 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useSecuritySettings } from '@/context/security-settings-context';
-import { Separator } from '@/components/ui/separator';
+import { useLanguage } from '@/context/language-context';
 
 export default function SecurityPage() {
   const router = useRouter();
@@ -20,6 +20,7 @@ export default function SecurityPage() {
     is2faEnabled,
     setIs2faEnabled,
   } = useSecuritySettings();
+  const { t } = useLanguage();
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -33,7 +34,7 @@ export default function SecurityPage() {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-lg font-semibold mx-auto">Security Settings</h1>
+          <h1 className="text-lg font-semibold mx-auto">{t('securitySettings')}</h1>
         </div>
       </header>
 
@@ -49,9 +50,9 @@ export default function SecurityPage() {
                             <KeyRound className="h-5 w-5 text-muted-foreground" />
                         </div>
                         <div className="flex-grow">
-                            <p className="font-semibold">PIN Login</p>
+                            <p className="font-semibold">{t('pinLogin')}</p>
                             <p className="text-sm text-muted-foreground">
-                                Secure your app with a 4-digit PIN.
+                                {t('pinLoginDescription')}
                             </p>
                         </div>
                     </Label>
@@ -63,7 +64,7 @@ export default function SecurityPage() {
                    </div>
                    {isPinEnabled && (
                      <div className="pl-12">
-                       <Button variant="outline" size="sm">Change PIN</Button>
+                       <Button variant="outline" size="sm">{t('changePin')}</Button>
                      </div>
                    )}
                 </div>
@@ -74,9 +75,9 @@ export default function SecurityPage() {
                         <Fingerprint className="h-5 w-5 text-muted-foreground" />
                     </div>
                     <div className="flex-grow">
-                        <p className="font-semibold">Biometric Login</p>
+                        <p className="font-semibold">{t('biometricLogin')}</p>
                         <p className="text-sm text-muted-foreground">
-                            Use Face ID or fingerprint to log in.
+                            {t('biometricLoginDescription')}
                         </p>
                     </div>
                    </Label>
@@ -93,9 +94,9 @@ export default function SecurityPage() {
                         <SmartphoneNfc className="h-5 w-5 text-muted-foreground" />
                     </div>
                     <div className="flex-grow">
-                        <p className="font-semibold">Two-Factor Authentication</p>
+                        <p className="font-semibold">{t('twoFactorAuth')}</p>
                         <p className="text-sm text-muted-foreground">
-                            Add an extra layer of security to your account.
+                            {t('twoFactorAuthDescription')}
                         </p>
                     </div>
                   </Label>

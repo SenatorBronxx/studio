@@ -5,17 +5,19 @@ import { LayoutGrid, Music, Search, Utensils, Wallet } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-
-const navItems = [
-  { href: '/home', icon: LayoutGrid, label: 'Home' },
-  { href: '/eritas-pay', icon: Wallet, label: 'ERITAS Pay' },
-  { href: '/search', icon: Search, label: 'Find A Bus' },
-  { href: '/food', icon: Utensils, label: 'Food' },
-  { href: '/music', icon: Music, label: 'MUSIC' },
-];
+import { useLanguage } from '@/context/language-context';
 
 export function BottomNav() {
   const pathname = usePathname();
+  const { t } = useLanguage();
+
+  const navItems = [
+    { href: '/home', icon: LayoutGrid, labelKey: 'home' },
+    { href: '/eritas-pay', icon: Wallet, labelKey: 'eritasPay' },
+    { href: '/search', icon: Search, labelKey: 'findABus' },
+    { href: '/food', icon: Utensils, labelKey: 'food' },
+    { href: '/music', icon: Music, labelKey: 'music' },
+  ];
 
   return (
     <div className="bg-background/80 backdrop-blur-sm p-2 max-w-md mx-auto shadow-lg border-t border-border/50">
@@ -25,7 +27,7 @@ export function BottomNav() {
           const isActive = pathname === item.href;
 
           return (
-            <Link href={item.href} key={item.label} className="flex-1">
+            <Link href={item.href} key={item.labelKey} className="flex-1">
               <div
                 className={cn(
                   'flex flex-col items-center justify-center gap-1 h-full py-2 transition-colors',
@@ -38,7 +40,7 @@ export function BottomNav() {
                 <span className={cn(
                     "text-xs",
                     isActive && "font-medium"
-                )}>{item.label}</span>
+                )}>{t(item.labelKey)}</span>
               </div>
             </Link>
           );

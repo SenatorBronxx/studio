@@ -21,6 +21,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import Link from 'next/link';
+import { useLanguage } from '@/context/language-context';
 
 const linkedCards = [
     { id: 1, type: 'visa', last4: '4589', expiry: '08/26' },
@@ -34,6 +35,7 @@ const mobileMoneyAccounts = [
 export default function PaymentMethodsPage() {
   const router = useRouter();
   const { balance } = useWallet();
+  const { t } = useLanguage();
 
   const getCardIcon = (type: string) => {
     switch (type) {
@@ -58,7 +60,7 @@ export default function PaymentMethodsPage() {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-lg font-semibold mx-auto">Payment Methods</h1>
+          <h1 className="text-lg font-semibold mx-auto">{t('paymentMethods')}</h1>
         </div>
       </header>
 
@@ -72,16 +74,16 @@ export default function PaymentMethodsPage() {
                 <Wallet className="h-5 w-5" />
                 ERITAS Pay
               </CardTitle>
-              <CardDescription>Your primary wallet for all in-app payments.</CardDescription>
+              <CardDescription>{t('eritasPayDescription')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="bg-muted p-4 rounded-lg flex justify-between items-center">
                 <div>
-                  <p className="text-sm text-muted-foreground">Current Balance</p>
+                  <p className="text-sm text-muted-foreground">{t('currentBalance')}</p>
                   <p className="text-2xl font-bold">GH₵ {balance.toFixed(2)}</p>
                 </div>
                 <Link href="/top-up" passHref>
-                    <Button>Top-up</Button>
+                    <Button>{t('topUp')}</Button>
                 </Link>
               </div>
             </CardContent>
@@ -92,17 +94,17 @@ export default function PaymentMethodsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <CreditCard className="h-5 w-5" />
-                Linked Cards
+                {t('linkedCards')}
               </CardTitle>
-              <CardDescription>Manage your connected credit and debit cards.</CardDescription>
+              <CardDescription>{t('linkedCardsDescription')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {linkedCards.map((card) => (
                 <div key={card.id} className="flex items-center gap-4 p-3 border rounded-lg">
                   {getCardIcon(card.type)}
                   <div className="flex-grow">
-                    <p className="font-semibold capitalize">{card.type} ending in {card.last4}</p>
-                    <p className="text-sm text-muted-foreground">Expires {card.expiry}</p>
+                    <p className="font-semibold capitalize">{t('cardEndingIn', { type: card.type, last4: card.last4 })}</p>
+                    <p className="text-sm text-muted-foreground">{t('expires')} {card.expiry}</p>
                   </div>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
@@ -112,17 +114,17 @@ export default function PaymentMethodsPage() {
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>Remove this card?</AlertDialogTitle>
+                        <AlertDialogTitle>{t('removeCardTitle')}</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Are you sure you want to remove the card ending in {card.last4}?
+                          {t('removeCardDescription', { last4: card.last4 })}
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
                         <AlertDialogAction
                           className="bg-destructive hover:bg-destructive/90"
                         >
-                          Remove
+                          {t('remove')}
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
@@ -132,7 +134,7 @@ export default function PaymentMethodsPage() {
                <Link href="/link-card" passHref>
                 <Button variant="outline" className="w-full">
                     <Plus className="mr-2 h-4 w-4" />
-                    Add New Card
+                    {t('addNewCard')}
                 </Button>
                </Link>
             </CardContent>
@@ -143,9 +145,9 @@ export default function PaymentMethodsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Smartphone className="h-5 w-5" />
-                Mobile Money
+                {t('mobileMoney')}
               </CardTitle>
-              <CardDescription>Manage your connected Mobile Money accounts.</CardDescription>
+              <CardDescription>{t('mobileMoneyDescription')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                {mobileMoneyAccounts.map((account) => (
@@ -163,15 +165,15 @@ export default function PaymentMethodsPage() {
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                                 <AlertDialogHeader>
-                                    <AlertDialogTitle>Remove this account?</AlertDialogTitle>
+                                    <AlertDialogTitle>{t('removeAccountTitle')}</AlertDialogTitle>
                                     <AlertDialogDescription>
-                                        Are you sure you want to remove this Mobile Money account?
+                                        {t('removeMomoAccountDescription')}
                                     </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
                                     <AlertDialogAction className="bg-destructive hover:bg-destructive/90">
-                                        Remove
+                                        {t('remove')}
                                     </AlertDialogAction>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
@@ -181,7 +183,7 @@ export default function PaymentMethodsPage() {
                <Link href="/top-up" passHref>
                 <Button variant="outline" className="w-full">
                     <Plus className="mr-2 h-4 w-4" />
-                    Add Mobile Money
+                    {t('addMobileMoney')}
                 </Button>
                </Link>
             </CardContent>

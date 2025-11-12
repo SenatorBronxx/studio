@@ -23,6 +23,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { useMusic } from '@/context/music-context';
 import { NowPlayingIcon } from '@/components/icons/now-playing-icon';
 import { ListMusic } from 'lucide-react';
+import { useLanguage } from '@/context/language-context';
 
 const initialBusData = [
     {
@@ -94,6 +95,7 @@ export default function SearchPage() {
     setIsOnBus,
     isOnBus,
   } = useMusic();
+  const { t } = useLanguage();
   
   const [buses, setBuses] = useState(initialBusData);
   const [filteredBuses, setFilteredBuses] = useState<BusData[]>([]);
@@ -136,12 +138,12 @@ export default function SearchPage() {
     } else if (dynamicEta === 0) {
         setIsOnBus(true);
         toast({
-            title: "You're on the bus!",
-            description: "You can now add songs to the bus playlist.",
+            title: t('onTheBusToastTitle'),
+            description: t('onTheBusToastDescription'),
         });
     }
     return () => clearInterval(interval);
-  }, [boardedStop, dynamicEta, setIsOnBus, toast]);
+  }, [boardedStop, dynamicEta, setIsOnBus, toast, t]);
 
   const handleSearch = () => {
     router.push(`/search?from=${encodeURIComponent(fromLocation)}&to=${encodeURIComponent(toLocation)}`);
@@ -167,8 +169,8 @@ export default function SearchPage() {
     if (balance < stop.fare) {
       toast({
         variant: "destructive",
-        title: "Insufficient Balance",
-        description: `Your ERITAS Pay balance is too low to book this trip. Please top-up.`,
+        title: t('insufficientBalanceToastTitle'),
+        description: t('insufficientBalanceToastDescription'),
       });
       return;
     }
@@ -206,15 +208,15 @@ export default function SearchPage() {
         
         const newNotification: Notification = {
             id: Date.now(),
-            title: 'Seat Booked Successfully!',
-            description: `Your seat ${selectedSeat} on bus ${selectedBus?.plate} is confirmed.`,
-            action: <Button variant="outline" size="sm" onClick={() => setIsQrSheetOpen(true)}><QrCode className="mr-2 h-4 w-4" />View QR Code</Button>
+            title: t('seatBookedToastTitle'),
+            description: t('seatBookedNotificationDescription', { seat: selectedSeat, plate: selectedBus?.plate }),
+            action: <Button variant="outline" size="sm" onClick={() => setIsQrSheetOpen(true)}><QrCode className="mr-2 h-4 w-4" />{t('viewQrCode')}</Button>
         }
         setNotifications(prev => [newNotification, ...prev]);
 
         toast({
-            title: "Seat Booked Successfully!",
-            description: `A notification has been added. The fare of GH₵${stop.fare.toFixed(2)} has been deducted.`,
+            title: t('seatBookedToastTitle'),
+            description: t('fareDeductedToastDescription', { fare: stop.fare.toFixed(2) }),
         });
 
     }, 1500);
@@ -266,7 +268,7 @@ export default function SearchPage() {
                     <div className='relative flex-1'>
                         <BusFront className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                         <Input 
-                        placeholder='From' 
+                        placeholder={t('from')} 
                         className='pl-10' 
                         value={fromLocation}
                         onChange={(e) => setFromLocation(e.target.value)}
@@ -278,7 +280,7 @@ export default function SearchPage() {
                     <div className='relative flex-1'>
                         <BusFront className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                         <Input 
-                        placeholder='To' 
+                        placeholder={t('to')}
                         className='pl-10'
                         value={toLocation}
                         onChange={(e) => setToLocation(e.target.value)}
@@ -287,7 +289,7 @@ export default function SearchPage() {
                 </div>
                 <Button onClick={handleSearch} className="w-full">
                     <Search className='mr-2 h-5 w-5' />
-                    Search For Buses
+                    {t('searchForBuses')}
                 </Button>
             </div>
         </header>
@@ -318,11 +320,11 @@ export default function SearchPage() {
                                     <SheetTrigger asChild>
                                         <Button variant="outline" className='w-full'>
                                             <Armchair className="mr-2 h-5 w-5" />
-                                            {selectedSeat ? `Seat ${selectedSeat} Selected` : 'View Seats'}
+                                            {selectedSeat ? t('seatSelected', { seat: selectedSeat }) : t('viewSeats')}
                                         </Button>
                                     </SheetTrigger>
                                     <SheetContent side="bottom" className="rounded-t-2xl">
-                                        <SheetHeader><SheetTitle>Select Your Seat</SheetTitle></SheetHeader>
+                                        <SheetHeader><SheetTitle>{t('selectYourSeat')}</SheetTitle></SheetHeader>
                                         <BusSeatingChart 
                                             seating={selectedBus.seating}
                                             selectedSeat={selectedSeat}
@@ -337,14 +339,14 @@ export default function SearchPage() {
 
                                 <div>
                                     <div className="flex justify-between items-center mb-1">
-                                        <h3 className="text-sm font-semibold text-foreground/80 flex items-center gap-2"><Users className="h-4 w-4" />Bus Capacity</h3>
-                                        <p className="text-sm font-mono text-muted-foreground">{selectedBus.capacity.current} / {selectedBus.capacity.max} Seats</p>
+                                        <h3 className="text-sm font-semibold text-foreground/80 flex items-center gap-2"><Users className="h-4 w-4" />{t('busCapacity')}</h3>
+                                        <p className="text-sm font-mono text-muted-foreground">{selectedBus.capacity.current} / {selectedBus.capacity.max} {t('seats')}</p>
                                     </div>
                                     <Progress value={(selectedBus.capacity.current / selectedBus.capacity.max) * 100} className="h-2" />
                                 </div>
 
                                 <div>
-                                    <h3 className="text-sm font-semibold text-foreground/80 mb-2">Bus Fares:</h3>
+                                    <h3 className="text-sm font-semibold text-foreground/80 mb-2">{t('busFares')}:</h3>
                                     <Accordion type="single" collapsible className="w-full">
                                         {[...selectedBus.stops, { ...selectedBus.finalDestination, isFinal: true }].map((stop, index) => (
                                         <AccordionItem value={`item-${index}`} key={index} className="border-b-0">
@@ -354,7 +356,7 @@ export default function SearchPage() {
                                                         <div className={`h-5 w-5 rounded-full flex items-center justify-center ${stop.isFinal ? 'bg-primary/20' : 'bg-muted-foreground/20'}`}>
                                                             {stop.isFinal ? <Flag className="h-3 w-3 text-primary" /> : <MapPin className="h-3 w-3 text-muted-foreground" />}
                                                         </div>
-                                                        <p className={`text-sm ${stop.isFinal ? 'font-semibold text-primary' : 'text-foreground'}`}>{stop.name} {stop.isFinal && '(Final)'}</p>
+                                                        <p className={`text-sm ${stop.isFinal ? 'font-semibold text-primary' : 'text-foreground'}`}>{stop.name} {stop.isFinal && `(${t('final')})`}</p>
                                                     </div>
                                                     <p className={`font-mono text-sm ${stop.isFinal ? 'font-semibold text-primary' : 'text-foreground'}`}>GH₵{stop.fare.toFixed(2)}</p>
                                                 </div>
@@ -365,17 +367,17 @@ export default function SearchPage() {
                                                     <div className="flex items-center justify-center gap-2 text-primary font-semibold p-2 bg-primary/10 rounded-md">
                                                         <Clock className="h-5 w-5" />
                                                          {dynamicEta !== null && dynamicEta > 0 ? (
-                                                            <span>Arriving in <strong>{dynamicEta} min</strong></span>
+                                                            <span>{t('arrivingIn', { minutes: dynamicEta })}</span>
                                                         ) : (
-                                                            <span>You are on the bus!</span>
+                                                            <span>{t('youAreOnTheBus')}</span>
                                                         )}
                                                     </div>
                                                 ) : selectedBus.capacity.current < selectedBus.capacity.max ? (
                                                     <Button className='w-full' onClick={() => handleBoard(stop)} disabled={isBoarding || !selectedSeat}>
-                                                        {isBoarding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : !selectedSeat ? 'Select bus seat first' : 'BOARD'}
+                                                        {isBoarding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : !selectedSeat ? t('selectBusSeatFirst') : t('board')}
                                                     </Button>
                                                 ) : (
-                                                    <p className="text-sm text-destructive font-medium p-2 bg-destructive/10 rounded-md">This bus is full.</p>
+                                                    <p className="text-sm text-destructive font-medium p-2 bg-destructive/10 rounded-md">{t('busIsFull')}</p>
                                                 )}
                                                 </div>
                                             </AccordionContent>
@@ -388,7 +390,7 @@ export default function SearchPage() {
                     </div>
                 ) : (fromQuery || toQuery) ? (
                     <div className='space-y-4'>
-                        <h1 className="text-xl font-bold text-foreground">Showing results for:</h1>
+                        <h1 className="text-xl font-bold text-foreground">{t('showingResultsFor')}:</h1>
                         <p className="text-muted-foreground -mt-2"><span className='font-semibold text-foreground'>{fromQuery}</span> to <span className='font-semibold text-foreground'>{toQuery}</span></p>
 
                         {filteredBuses.length > 0 ? (
@@ -404,8 +406,8 @@ export default function SearchPage() {
                                             <p className='text-sm text-muted-foreground font-mono'>{bus.plate}</p>
                                         </div>
                                         <div className='text-right'>
-                                            <p className='font-semibold'>{bus.eta} min</p>
-                                            <p className='text-xs text-muted-foreground'>ETA</p>
+                                            <p className='font-semibold'>{t('minutesAbbr', { minutes: bus.eta })}</p>
+                                            <p className='text-xs text-muted-foreground'>{t('eta')}</p>
                                         </div>
                                     </CardContent>
                                 </Card>
@@ -413,7 +415,7 @@ export default function SearchPage() {
                         ) : (
                              <Card>
                                 <CardContent className='p-8 text-center text-muted-foreground'>
-                                    <p>No buses found for this route.</p>
+                                    <p>{t('noBusesFound')}</p>
                                 </CardContent>
                             </Card>
                         )}
@@ -421,8 +423,8 @@ export default function SearchPage() {
                 ) : (
                     <div className="text-center mt-16 text-muted-foreground">
                         <Search className="h-16 w-16 text-muted-foreground/30 mb-4 mx-auto" />
-                        <h1 className="text-2xl font-bold text-foreground">Find Your Bus</h1>
-                        <p className="mt-2">Enter a destination to see available buses.</p>
+                        <h1 className="text-2xl font-bold text-foreground">{t('findYourBus')}</h1>
+                        <p className="mt-2">{t('enterDestinationToSeeBuses')}</p>
                     </div>
                 )}
             </div>
@@ -435,20 +437,20 @@ export default function SearchPage() {
 
         <Sheet open={isQrSheetOpen} onOpenChange={setIsQrSheetOpen}>
             <SheetContent side="bottom" className="rounded-t-2xl">
-                <SheetHeader><SheetTitle>Your Boarding Pass</SheetTitle></SheetHeader>
+                <SheetHeader><SheetTitle>{t('yourBoardingPass')}</SheetTitle></SheetHeader>
                 <div className="p-4 flex flex-col items-center justify-center space-y-4">
                     {qrCodeUrl ? (
-                        <Image src={qrCodeUrl} alt="Boarding QR Code" width={200} height={200} />
+                        <Image src={qrCodeUrl} alt={t('boardingQrCode')} width={200} height={200} />
                     ) : (
                         <div className="h-[200px] w-[200px] flex items-center justify-center bg-muted rounded-md">
                             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                         </div>
                     )}
                     <div className="text-center space-y-1">
-                        <p className="text-sm text-muted-foreground">Show this QR code to the driver for verification.</p>
+                        <p className="text-sm text-muted-foreground">{t('showQrToDriver')}</p>
                         <div className="flex items-center gap-4 justify-center">
                             <Badge variant="outline">{selectedBus?.plate}</Badge>
-                            <Badge>Seat {selectedSeat}</Badge>
+                            <Badge>{t('seat')} {selectedSeat}</Badge>
                         </div>
                     </div>
                 </div>
@@ -457,7 +459,7 @@ export default function SearchPage() {
         <Sheet open={isPlaylistOpen} onOpenChange={setIsPlaylistOpen}>
             <SheetContent>
                 <SheetHeader>
-                    <SheetTitle>Bus Playlist</SheetTitle>
+                    <SheetTitle>{t('busPlaylist')}</SheetTitle>
                 </SheetHeader>
                 <div className="py-4 flex flex-col h-full">
                 {isOnBus ? (
@@ -465,7 +467,7 @@ export default function SearchPage() {
                         {nowPlaying ? (
                                 <>
                                     <div className='mb-4 space-y-3'>
-                                        <p className="text-sm font-medium text-muted-foreground">Now Playing</p>
+                                        <p className="text-sm font-medium text-muted-foreground">{t('nowPlaying')}</p>
                                         <div className="flex items-center gap-4 p-3 bg-primary/10 rounded-lg">
                                             <Image src={nowPlaying.image} alt={nowPlaying.title} width={48} height={48} className="rounded-md" />
                                             <div className="flex-grow space-y-2">
@@ -489,7 +491,7 @@ export default function SearchPage() {
                         <div className="flex-grow overflow-y-auto mt-4">
                             {playlist.filter(p => p.id !== nowPlaying?.id).length > 0 ? (
                                 <>
-                                    <p className="text-sm font-medium text-muted-foreground mb-2">Up next</p>
+                                    <p className="text-sm font-medium text-muted-foreground mb-2">{t('upNext')}</p>
                                     <div className="space-y-3">
                                     {playlist.filter(p => p.id !== nowPlaying?.id).map(track => (
                                         <div key={track.id} className="flex items-center gap-4 group">
@@ -514,8 +516,8 @@ export default function SearchPage() {
                             ) : !nowPlaying ? (
                                 <div className="text-center text-muted-foreground py-12 flex flex-col items-center justify-center h-full">
                                     <ListMusic className="h-12 w-12 mx-auto mb-4" />
-                                    <p>No songs added yet.</p>
-                                    <p className="text-xs">Browse and add songs to the playlist.</p>
+                                    <p>{t('noSongsAdded')}</p>
+                                    <p className="text-xs">{t('browseAndAddSongs')}</p>
                                 </div>
                             ) : null}
                         </div>
@@ -523,8 +525,8 @@ export default function SearchPage() {
                 ) : (
                     <div className="flex flex-col items-center justify-center text-center h-full text-muted-foreground">
                         <Bus className="h-12 w-12 mb-4" />
-                        <h3 className="font-semibold">Board a bus to see the playlist</h3>
-                        <p className="text-sm mt-1">The bus playlist is only available during your trip.</p>
+                        <h3 className="font-semibold">{t('boardBusToSeePlaylist')}</h3>
+                        <p className="text-sm mt-1">{t('playlistOnlyOnTrip')}</p>
                     </div>
                 )}
                 </div>
@@ -533,5 +535,3 @@ export default function SearchPage() {
     </div>
   );
 }
-
-    

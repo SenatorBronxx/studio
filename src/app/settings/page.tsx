@@ -18,42 +18,44 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import Link from 'next/link';
 import { ThemeSwitcher } from '@/components/theme-switcher';
 import { Palette } from 'lucide-react';
+import { useLanguage } from '@/context/language-context';
 
 const settingsOptions = [
   {
     icon: User,
-    title: 'Edit Profile',
-    description: 'Change name, photo, contact',
+    titleKey: 'editProfile',
+    descriptionKey: 'editProfileDescription',
     href: '/settings/edit-profile',
   },
   {
     icon: Smartphone,
-    title: 'Linked Devices',
-    description: 'See other phones using this account',
+    titleKey: 'linkedDevices',
+    descriptionKey: 'linkedDevicesDescriptionSettings',
     href: '/settings/linked-devices',
   },
   {
     icon: CreditCard,
-    title: 'Payment Methods',
-    description: 'Add/remove MoMo, cards, Eritas Pay wallet',
+    titleKey: 'paymentMethods',
+    descriptionKey: 'paymentMethodsDescription',
     href: '/settings/payment-methods',
   },
   {
     icon: Bell,
-    title: 'Notifications',
-    description: 'Enable/disable route or booking alerts',
+    titleKey: 'notifications',
+    descriptionKey: 'notificationsDescription',
     href: '/settings/notifications',
   },
   {
     icon: Lock,
-    title: 'Security Settings',
-    description: 'PIN, biometric login, 2FA toggle',
+    titleKey: 'securitySettings',
+    descriptionKey: 'securitySettingsDescription',
     href: '/settings/security',
   },
 ];
 
 export default function SettingsPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const userImage = PlaceHolderImages.find((p) => p.id === 'user-avatar')?.imageUrl;
 
   return (
@@ -68,7 +70,7 @@ export default function SettingsPage() {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-lg font-semibold mx-auto">Profile Settings</h1>
+          <h1 className="text-lg font-semibold mx-auto">{t('profileSettings')}</h1>
         </div>
       </header>
 
@@ -88,15 +90,15 @@ export default function SettingsPage() {
                 {settingsOptions.map((item) => {
                   if (item.href) {
                     return (
-                      <Link href={item.href} key={item.title}>
+                      <Link href={item.href} key={item.titleKey}>
                         <div className="flex items-center gap-4 p-4 cursor-pointer hover:bg-muted/50">
                           <div className="p-2 bg-muted rounded-full">
                             <item.icon className="h-5 w-5 text-muted-foreground" />
                           </div>
                           <div className="flex-grow">
-                            <p className="font-semibold">{item.title}</p>
+                            <p className="font-semibold">{t(item.titleKey)}</p>
                             <p className="text-sm text-muted-foreground">
-                              {item.description}
+                              {t(item.descriptionKey)}
                             </p>
                           </div>
                           <ChevronRight className="h-5 w-5 text-muted-foreground" />
@@ -106,14 +108,14 @@ export default function SettingsPage() {
                   }
                   
                   return (
-                    <div key={item.title} className="flex items-center gap-4 p-4 cursor-pointer hover:bg-muted/50">
+                    <div key={item.titleKey} className="flex items-center gap-4 p-4 cursor-pointer hover:bg-muted/50">
                         <div className="p-2 bg-muted rounded-full">
                             <item.icon className="h-5 w-5 text-muted-foreground" />
                         </div>
                         <div className="flex-grow">
-                            <p className="font-semibold">{item.title}</p>
+                            <p className="font-semibold">{t(item.titleKey)}</p>
                             <p className="text-sm text-muted-foreground">
-                            {item.description}
+                            {t(item.descriptionKey)}
                             </p>
                         </div>
                         <ChevronRight className="h-5 w-5 text-muted-foreground" />
@@ -125,9 +127,9 @@ export default function SettingsPage() {
                         <Palette className="h-5 w-5 text-muted-foreground" />
                     </div>
                     <div className="flex-grow">
-                        <p className="font-semibold">App Theme</p>
+                        <p className="font-semibold">{t('appTheme')}</p>
                         <p className="text-sm text-muted-foreground">
-                        Light / Dark / Auto
+                        {t('appThemeDescription')}
                         </p>
                     </div>
                     <ThemeSwitcher />

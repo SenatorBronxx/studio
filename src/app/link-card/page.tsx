@@ -12,11 +12,13 @@ import { useToast } from '@/hooks/use-toast';
 import { VisaIcon } from '@/components/icons/visa';
 import { CardPattern } from '@/components/icons/card-pattern';
 import { useWallet } from '@/context/wallet-context';
+import { useLanguage } from '@/context/language-context';
 
 export default function LinkCardPage() {
     const router = useRouter();
     const { toast } = useToast();
     const { addBalance, addTransaction } = useWallet();
+    const { t } = useLanguage();
     const [isProcessing, setIsProcessing] = useState(false);
     const [cardHolder, setCardHolder] = useState('');
     const [cardNumber, setCardNumber] = useState('');
@@ -58,8 +60,8 @@ export default function LinkCardPage() {
             setIsProcessing(false);
             setIsCardLinked(true);
             toast({
-                title: 'Card Linked Successfully',
-                description: 'Your VISA card has been synchronized with your ERITAS Pay account.',
+                title: t('cardLinkedToastTitle'),
+                description: t('cardLinkedToastDescription'),
             });
         }, 1500);
     };
@@ -70,8 +72,8 @@ export default function LinkCardPage() {
         if (!amount || amount <= 0) {
             toast({
                 variant: 'destructive',
-                title: 'Invalid Amount',
-                description: 'Please enter a valid amount to top up.',
+                title: t('invalidAmountToastTitle'),
+                description: t('invalidAmountToastDescription'),
             });
             return;
         }
@@ -80,12 +82,12 @@ export default function LinkCardPage() {
             addBalance(amount);
             addTransaction({
                 type: 'top-up',
-                plate: 'VISA Card Top-up',
+                plate: t('visaCardTopUp'),
                 amount: amount,
             });
             toast({
-                title: 'Top-up Successful',
-                description: `GH₵${amount.toFixed(2)} has been added to your ERITAS Pay balance.`,
+                title: t('topUpSuccessfulToastTitle'),
+                description: t('topUpSuccessfulToastDescription', { amount: amount.toFixed(2) }),
             });
             setIsToppingUp(false);
             router.push('/eritas-pay');
@@ -100,7 +102,7 @@ export default function LinkCardPage() {
                     <Button variant="ghost" size="icon" onClick={() => router.back()}>
                         <ArrowLeft className="h-5 w-5" />
                     </Button>
-                    <h1 className="text-lg font-semibold mx-auto">{isCardLinked ? 'Top-up from Card' : 'Link VISA Card'}</h1>
+                    <h1 className="text-lg font-semibold mx-auto">{isCardLinked ? t('topUpFromCardTitle') : t('linkVisaCardTitle')}</h1>
                 </div>
             </header>
 
@@ -113,7 +115,7 @@ export default function LinkCardPage() {
                         <CardContent className="p-6 relative">
                             <div className="flex justify-between items-start mb-8">
                                 <div className='space-y-1'>
-                                    <p className="text-xs text-foreground/70">Card Balance</p>
+                                    <p className="text-xs text-foreground/70">{t('cardBalance')}</p>
                                     {isCardLinked ? (
                                         <p className="text-2xl font-bold text-foreground animate-in fade-in">GH₵ 5,840.12</p>
                                     ) : (
@@ -124,7 +126,7 @@ export default function LinkCardPage() {
                             </div>
                             <div className='space-y-1'>
                                 <p className="text-sm font-mono tracking-widest text-foreground/80">{cardNumber.padEnd(16, '•').replace(/(.{4})/g, '$1 ').trim()}</p>
-                                <p className="text-xs text-foreground/70 uppercase">{cardHolder || 'CARDHOLDER NAME'}</p>
+                                <p className="text-xs text-foreground/70 uppercase">{cardHolder || t('cardholderNamePlaceholder')}</p>
                             </div>
                         </CardContent>
                     </Card>
@@ -133,12 +135,12 @@ export default function LinkCardPage() {
                         <form onSubmit={handleLinkCard}>
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>Enter Card Details</CardTitle>
-                                    <CardDescription>Enter your VISA card credentials to link it.</CardDescription>
+                                    <CardTitle>{t('enterCardDetailsTitle')}</CardTitle>
+                                    <CardDescription>{t('enterCardDetailsDescription')}</CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="card-number">Card Number</Label>
+                                        <Label htmlFor="card-number">{t('cardNumberLabel')}</Label>
                                         <Input
                                             id="card-number"
                                             placeholder="4500 1234 5678 9012"
@@ -150,10 +152,10 @@ export default function LinkCardPage() {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="card-holder">Card Holder Name</Label>
+                                        <Label htmlFor="card-holder">{t('cardHolderNameLabel')}</Label>
                                         <Input
                                             id="card-holder"
-                                            placeholder="e.g., Jane Doe"
+                                            placeholder={t('cardHolderNameExample')}
                                             value={cardHolder}
                                             onChange={handleCardHolderChange}
                                             required
@@ -162,7 +164,7 @@ export default function LinkCardPage() {
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <Label htmlFor="expiry-date">Expiry Date</Label>
+                                            <Label htmlFor="expiry-date">{t('expiryDateLabel')}</Label>
                                             <Input
                                                 id="expiry-date"
                                                 placeholder="MM/YY"
@@ -195,23 +197,23 @@ export default function LinkCardPage() {
                                 ) : (
                                     <CreditCard className="mr-2 h-5 w-5" />
                                 )}
-                                Link Card
+                                {t('linkCardButton')}
                             </Button>
                         </form>
                     ) : (
                         <form onSubmit={handleTopUp}>
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>Top-up ERITAS Pay Wallet</CardTitle>
-                                    <CardDescription>Enter the amount you want to transfer from your linked VISA card.</CardDescription>
+                                    <CardTitle>{t('topUpEritasPayWalletTitle')}</CardTitle>
+                                    <CardDescription>{t('topUpEritasPayWalletDescription')}</CardDescription>
                                 </CardHeader>
                                 <CardContent>
                                     <div className="space-y-2">
-                                        <Label htmlFor="top-up-amount">Amount (GH₵)</Label>
+                                        <Label htmlFor="top-up-amount">{t('amountLabel')}</Label>
                                         <Input
                                             id="top-up-amount"
                                             type="number"
-                                            placeholder="e.g., 100.00"
+                                            placeholder={t('amountExample')}
                                             value={topUpAmount}
                                             onChange={(e) => setTopUpAmount(e.target.value)}
                                             required
@@ -226,7 +228,7 @@ export default function LinkCardPage() {
                                 ) : (
                                     <Wallet className="mr-2 h-5 w-5" />
                                 )}
-                                Top-up from Card
+                                {t('topUpFromCardButton')}
                             </Button>
                         </form>
                     )}

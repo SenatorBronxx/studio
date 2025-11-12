@@ -24,6 +24,7 @@ import { useState } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import Image from 'next/image';
 import { Loader2 } from 'lucide-react';
+import { useLanguage } from '@/context/language-context';
 
 type Notification = {
     id: number;
@@ -34,6 +35,7 @@ type Notification = {
 
 export default function EritasPayPage() {
   const { balance, transactions, removeTransaction } = useWallet();
+  const { t } = useLanguage();
   const maxBalance = 400.00;
   const progressPercentage = (balance / maxBalance) * 100;
   
@@ -71,7 +73,7 @@ export default function EritasPayPage() {
                 </SheetTrigger>
                 <SheetContent>
                     <SheetHeader>
-                        <SheetTitle>Notifications</SheetTitle>
+                        <SheetTitle>{t('notifications')}</SheetTitle>
                     </SheetHeader>
                     <div className="py-4 h-full flex flex-col">
                         {notifications.length > 0 ? (
@@ -89,13 +91,13 @@ export default function EritasPayPage() {
                                 </div>
                                 <Button variant="outline" className="mt-4" onClick={() => setNotifications([])}>
                                     <Trash2 className="mr-2 h-4 w-4" />
-                                    Clear All
+                                    {t('clearAll')}
                                 </Button>
                             </>
                         ) : (
                             <div className="flex flex-col items-center justify-center text-center h-full text-muted-foreground">
                                 <Bell className="h-12 w-12 mb-4" />
-                                <p>You have no new notifications.</p>
+                                <p>{t('noNewNotifications')}</p>
                             </div>
                         )}
                     </div>
@@ -111,7 +113,7 @@ export default function EritasPayPage() {
           <Card className="shadow-lg">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">
-                ERITAS Pay Balance
+                {t('eritasPayBalance')}
               </CardTitle>
                 <div className='p-2 bg-primary/10 rounded-lg'>
                     <Bus className="h-4 w-4 text-primary" />
@@ -119,7 +121,7 @@ export default function EritasPayPage() {
             </CardHeader>
             <CardContent>
               <div className="text-4xl font-bold">GH₵ {balance.toFixed(2)}</div>
-              <Badge variant="secondary" className="mt-2">5% cash back on bus tickets</Badge>
+              <Badge variant="secondary" className="mt-2">{t('cashBackOnBusTickets')}</Badge>
             </CardContent>
           </Card>
           
@@ -127,11 +129,11 @@ export default function EritasPayPage() {
             <Card>
                 <CardContent className="p-4">
                     <div className="flex justify-between items-center mb-2">
-                        <h3 className="text-sm font-medium text-foreground">Wallet Threshold</h3>
+                        <h3 className="text-sm font-medium text-foreground">{t('walletThreshold')}</h3>
                         <p className="text-sm font-mono text-muted-foreground">GH₵ {balance.toFixed(2)} / GH₵ {maxBalance.toFixed(2)}</p>
                     </div>
                     <Progress value={progressPercentage} className="h-2" />
-                    <p className="text-xs text-muted-foreground mt-2">Increase your limit by verifying your identity.</p>
+                    <p className="text-xs text-muted-foreground mt-2">{t('increaseLimitByVerifying')}</p>
                 </CardContent>
             </Card>
 
@@ -140,13 +142,13 @@ export default function EritasPayPage() {
             <Link href="/top-up" passHref>
                 <Button size="lg" className="flex-col h-20 w-full">
                 <ArrowUpRight className="h-6 w-6 mb-1" />
-                Top-up
+                {t('topUp')}
                 </Button>
             </Link>
             <Link href="/link-card" passHref>
                 <Button size="lg" variant="secondary" className="flex-col h-20 w-full">
                     <VisaIcon className="w-12 mb-2" />
-                    Synchronize with VISA
+                    {t('synchronizeWithVisa')}
                 </Button>
             </Link>
           </div>
@@ -154,13 +156,13 @@ export default function EritasPayPage() {
           {/* Recent Activity */}
           <div>
             <div className="flex justify-between items-center mb-2">
-              <h2 className="text-lg font-semibold">Recent Activity</h2>
+              <h2 className="text-lg font-semibold">{t('recentActivity')}</h2>
               <Button 
                 variant="link" 
                 className="text-primary"
                 onClick={() => setShowAllTransactions(!showAllTransactions)}
               >
-                {showAllTransactions ? 'Hide' : 'See all'}
+                {showAllTransactions ? t('hide') : t('seeAll')}
               </Button>
             </div>
             {showAllTransactions && (
@@ -176,7 +178,7 @@ export default function EritasPayPage() {
                                   </AvatarFallback>
                               </Avatar>
                               <div className="flex-grow">
-                                  <p className="font-semibold">{tx.type === 'payment' ? 'Bus Ticket Payment' : 'Mobile Money Top-up'}</p>
+                                  <p className="font-semibold">{tx.type === 'payment' ? t('busTicketPayment') : t('mobileMoneyTopUp')}</p>
                                   <p className="text-sm text-muted-foreground font-mono">{tx.plate}</p>
                               </div>
                               <div className={`font-semibold ${tx.amount > 0 ? 'text-green-600' : 'text-foreground'}`}>
@@ -201,21 +203,21 @@ export default function EritasPayPage() {
        <Sheet open={isQrSheetOpen} onOpenChange={setIsQrSheetOpen}>
             <SheetContent side="bottom" className="rounded-t-2xl">
                 <SheetHeader>
-                    <SheetTitle>Your Boarding Pass</SheetTitle>
+                    <SheetTitle>{t('yourBoardingPass')}</SheetTitle>
                 </SheetHeader>
                 <div className="p-4 flex flex-col items-center justify-center space-y-4">
                     {qrCodeUrl ? (
-                        <Image src={qrCodeUrl} alt="Boarding QR Code" width={200} height={200} />
+                        <Image src={qrCodeUrl} alt={t('boardingQrCode')} width={200} height={200} />
                     ) : (
                         <div className="h-[200px] w-[200px] flex items-center justify-center bg-muted rounded-md">
                             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                         </div>
                     )}
                     <div className="text-center space-y-1">
-                        <p className="text-sm text-muted-foreground">Show this QR code to the driver for verification.</p>
+                        <p className="text-sm text-muted-foreground">{t('showQrToDriver')}</p>
                         <div className="flex items-center gap-4 justify-center">
                             <Badge variant="outline">{selectedBus?.plate}</Badge>
-                            <Badge>Seat {selectedSeat}</Badge>
+                            <Badge>{t('seat')} {selectedSeat}</Badge>
                         </div>
                     </div>
                 </div>

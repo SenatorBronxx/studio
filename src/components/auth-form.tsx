@@ -21,6 +21,7 @@ import { AppleIcon } from "@/components/icons/apple";
 import { GoogleIcon } from "@/components/icons/google";
 import { Loader2 } from "lucide-react";
 import { useUser } from "@/context/user-context";
+import { useLanguage } from "@/context/language-context";
 
 // Schemas
 const signInSchema = z.object({
@@ -49,6 +50,7 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const { setUser } = useUser();
+  const { t } = useLanguage();
 
   const signInForm = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
@@ -73,8 +75,8 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
 
     await new Promise((resolve) => setTimeout(resolve, 1000));
     toast({
-      title: "Sign In Successful",
-      description: "Welcome back!",
+      title: t('signInSuccessfulToastTitle'),
+      description: t('signInSuccessfulToastDescription'),
     });
     setIsSubmitting(false);
     onSignInSuccess?.();
@@ -93,8 +95,8 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
 
     await new Promise((resolve) => setTimeout(resolve, 1000));
     toast({
-      title: "Sign Up Successful",
-      description: "Your account has been created. Welcome to Eritas Gateway!",
+      title: t('signUpSuccessfulToastTitle'),
+      description: t('signUpSuccessfulToastDescription'),
     });
     setIsSubmitting(false);
     onSignUpSuccess?.(values.firstName);
@@ -113,8 +115,8 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
     
     setTimeout(() => {
         toast({
-            title: `Signed in with ${provider}`,
-            description: `Welcome!`,
+            title: t('socialSignInToastTitle', { provider }),
+            description: t('welcome'),
         });
         setIsSubmitting(false);
         onSignInSuccess?.();
@@ -124,8 +126,8 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
   return (
     <Tabs defaultValue="sign-in" className="w-full">
       <TabsList className="grid w-full grid-cols-2">
-        <TabsTrigger value="sign-in">Sign In</TabsTrigger>
-        <TabsTrigger value="sign-up">Sign Up</TabsTrigger>
+        <TabsTrigger value="sign-in">{t('signIn')}</TabsTrigger>
+        <TabsTrigger value="sign-up">{t('signUp')}</TabsTrigger>
       </TabsList>
       <TabsContent value="sign-in">
         <Form {...signInForm}>
@@ -135,7 +137,7 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Phone Number</FormLabel>
+                  <FormLabel>{t('phoneNumberLabel')}</FormLabel>
                   <FormControl>
                     <Input placeholder="+233 24 123 4567" {...field} />
                   </FormControl>
@@ -148,7 +150,7 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel>{t('passwordLabel')}</FormLabel>
                   <FormControl>
                     <Input type="password" {...field} />
                   </FormControl>
@@ -158,7 +160,7 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
             />
             <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Sign In
+              {t('signIn')}
             </Button>
           </form>
         </Form>
@@ -172,9 +174,9 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
                 name="firstName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>First Name</FormLabel>
+                    <FormLabel>{t('firstNameLabel')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Jane" {...field} />
+                      <Input placeholder={t('firstNamePlaceholder')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -185,9 +187,9 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
                 name="lastName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Last Name</FormLabel>
+                    <FormLabel>{t('lastNameLabel')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Doe" {...field} />
+                      <Input placeholder={t('lastNamePlaceholder')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -199,7 +201,7 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Phone Number</FormLabel>
+                  <FormLabel>{t('phoneNumberLabel')}</FormLabel>
                   <FormControl>
                     <Input placeholder="+233 24 123 4567" {...field} />
                   </FormControl>
@@ -212,7 +214,7 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email (Optional)</FormLabel>
+                  <FormLabel>{t('emailOptionalLabel')}</FormLabel>
                   <FormControl>
                     <Input placeholder="m@example.com" {...field} />
                   </FormControl>
@@ -225,7 +227,7 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel>{t('passwordLabel')}</FormLabel>
                   <FormControl>
                     <Input type="password" {...field} />
                   </FormControl>
@@ -238,7 +240,7 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
               name="confirmPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Confirm Password</FormLabel>
+                  <FormLabel>{t('confirmPasswordLabel')}</FormLabel>
                   <FormControl>
                     <Input type="password" {...field} />
                   </FormControl>
@@ -248,7 +250,7 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
             />
             <Button type="submit" className="w-full" disabled={isSubmitting}>
              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Sign Up
+              {t('signUp')}
             </Button>
           </form>
         </Form>
@@ -259,7 +261,7 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
         </div>
         <div className="relative flex justify-center text-xs uppercase">
           <span className="bg-background px-2 text-muted-foreground">
-            Or continue with
+            {t('orContinueWith')}
           </span>
         </div>
       </div>
