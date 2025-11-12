@@ -66,9 +66,13 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
     setIsSubmitting(true);
     console.log("Sign in with:", values);
     
+    // Simulate retrieving the last signed-up user
+    const storedUser = localStorage.getItem('eritas-last-signup');
+    const lastSignedUpUser = storedUser ? JSON.parse(storedUser) : { name: 'John Doe', email: 'john.d@email.com' };
+
     const mockUserData = {
-        name: 'John Doe',
-        email: 'john.d@email.com',
+        name: lastSignedUpUser.name,
+        email: lastSignedUpUser.email,
         phone: values.phone
     };
     setUser(mockUserData);
@@ -91,6 +95,8 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
         email: values.email || '',
         phone: values.phone
     };
+    // Store this user as the "last signed up" for the mock sign-in
+    localStorage.setItem('eritas-last-signup', JSON.stringify(newUser));
     setUser(newUser);
 
     await new Promise((resolve) => setTimeout(resolve, 1000));
