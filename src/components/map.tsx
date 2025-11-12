@@ -18,6 +18,21 @@ function MapComponent() {
 
   // Check if the maps library loaded correctly
   const coreLib = useMapsLibrary('core');
+
+  useEffect(() => {
+    // This is a global listener for Google Maps authentication errors.
+    const handleAuthError = () => {
+        setMapError(t('mapBillingError'));
+    };
+
+    window.gm_authFailure = handleAuthError;
+
+    return () => {
+        window.gm_authFailure = () => {}; // Clean up the global listener
+    };
+  }, [t]);
+
+
   useEffect(() => {
     if (!coreLib) {
       setMapError(t('mapLoadError'));
