@@ -264,12 +264,13 @@ export function ProfileSidebar() {
                                 }
 
                                 return item.subItems ? (
-                                    <AccordionItem value={`item-${index}`} key={item.id} className="border-b-0">
-                                        <AccordionTrigger className="hover:no-underline hover:bg-transparent p-0">
+                                    <AccordionItem value={`item-${index}`} key={item.id} className="border-b-0" disabled={!user}>
+                                        <AccordionTrigger className="hover:no-underline hover:bg-transparent p-0" disabled={!user}>
                                              <Button
                                                 variant="ghost"
                                                 className="justify-start gap-3 text-md w-full"
                                                 asChild
+                                                disabled={!user}
                                             >
                                                 <div>
                                                     <Icon className="h-5 w-5 text-muted-foreground" />
@@ -286,6 +287,7 @@ export function ProfileSidebar() {
                                                             key={subIndex}
                                                             variant="ghost"
                                                             className="justify-start gap-3 text-md"
+                                                            disabled={!user}
                                                         >
                                                             <SubIcon className="h-5 w-5 text-muted-foreground" />
                                                             {t(subItem.labelKey)}
@@ -301,7 +303,7 @@ export function ProfileSidebar() {
                                         variant="ghost"
                                         className="justify-start gap-3 text-md"
                                         onClick={() => handleMenuClick(item)}
-                                        disabled={!user && !!item.href}
+                                        disabled={!user}
                                     >
                                         <Icon className="h-5 w-5 text-muted-foreground" />
                                         {t(item.labelKey)}
