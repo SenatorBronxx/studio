@@ -116,7 +116,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
       toast({ title: t('tripEndedTitle'), description: t('tripEndedDescription') });
       setIsOnBus(false);
       setNowPlaying(null);
-      clearActiveTrip();
+      clearActiveTrip(); // This will trigger the UI reset
       setSongProgress(0); // Reset progress after handling
     }
   }, [songProgress, isOnBus, toast, t, clearActiveTrip]);
@@ -196,3 +196,5 @@ export function useMusic() {
   }
   return context;
 }
+
+    

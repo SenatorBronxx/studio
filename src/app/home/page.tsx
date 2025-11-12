@@ -51,10 +51,10 @@ const initialBusData = [
       eta: 1,
       capacity: { current: 35, max: 52 },
       stops: [
-        { name: 'Adenta', fare: 5.00 },
-        { name: 'Madina', fare: 7.50 },
+        { name: 'Adenta', fare: 5.00, eta: 5 },
+        { name: 'Madina', fare: 7.50, eta: 15 },
       ],
-      finalDestination: { name: 'Atomic Junction', fare: 10.00 },
+      finalDestination: { name: 'Atomic Junction', fare: 10.00, eta: 25 },
       position: { top: '45%', left: '25%' },
       driverImage: PlaceHolderImages.find((p) => p.id === 'user-avatar')?.imageUrl,
       seating: [
@@ -72,10 +72,10 @@ const initialBusData = [
       eta: 25,
       capacity: { current: 48, max: 48 },
       stops: [
-        { name: 'Circle', fare: 6.00 },
-        { name: 'Kaneshie', fare: 8.50 },
+        { name: 'Circle', fare: 6.00, eta: 10 },
+        { name: 'Kaneshie', fare: 8.50, eta: 20 },
       ],
-      finalDestination: { name: 'Mallam', fare: 12.00 },
+      finalDestination: { name: 'Mallam', fare: 12.00, eta: 30 },
       position: { top: '55%', left: '65%' },
       driverImage: PlaceHolderImages.find((p) => p.id === 'user-avatar')?.imageUrl,
       seating: Array.from({ length: 25 }, (_, i) => ({ id: `${Math.floor(i/5)+1}${String.fromCharCode(65 + (i % 5 > 1 ? i%5-1 : i%5))}`, isOccupied: true }))
@@ -130,6 +130,9 @@ export default function HomePage() {
         setSelectedBus(busData);
         setSelectedSeat(activeTrip.seat);
       }
+    } else if (isTripHydrated && !activeTrip) {
+      setSelectedBus(null);
+      setSelectedSeat(null);
     }
   }, [isTripHydrated, activeTrip, buses]);
 
@@ -171,7 +174,7 @@ export default function HomePage() {
     setSelectedSeat(null);
   }
 
-  const handleBoard = (stop: {name: string, fare: number}) => {
+  const handleBoard = (stop: {name: string, fare: number, eta: number}) => {
     if (!selectedBus || !selectedSeat) return;
 
     let finalFare = stop.fare;
@@ -218,7 +221,7 @@ export default function HomePage() {
                 bus: updatedBus,
                 from: stop.name,
                 destination: updatedBus.finalDestination.name,
-                eta: updatedBus.eta,
+                eta: stop.eta, // Use stop-specific ETA
                 seat: selectedSeat
             };
             setActiveTrip(newTrip);
@@ -443,16 +446,17 @@ export default function HomePage() {
 
                  <div>
                     <h3 className="text-sm font-semibold text-foreground/80 mb-2">{t('busFares')}:</h3>
-                     <Accordion type="single" collapsible className="w-full" disabled={!!activeTrip}>
+                     <Accordion type="single" collapsible className="w-full">
                         {[...displayedBus.stops, { ...displayedBus.finalDestination, isFinal: true }].map((stop, index) => {
                              let fare = stop.fare;
                              if (activeDiscount) {
                                 fare = fare * (1 - activeDiscount.percentage / 100);
                              }
+                             const eta = (activeTrip?.eta ?? 0) + stop.eta;
 
                             return (
                                <AccordionItem value={`item-${index}`} key={index} className="border-b-0">
-                                 <AccordionTrigger className="py-2 rounded-lg hover:bg-muted/50 px-2 data-[state=open]:bg-muted" disabled={!!activeTrip}>
+                                 <AccordionTrigger className="py-2 rounded-lg hover:bg-muted/50 px-2 data-[state=open]:bg-muted">
                                     <div className="flex items-center justify-between gap-3 w-full">
                                         <div className="flex items-center gap-3">
                                              <div className={`h-5 w-5 rounded-full flex items-center justify-center ${stop.isFinal ? 'bg-primary/20' : 'bg-muted-foreground/20'}`}>
@@ -468,11 +472,11 @@ export default function HomePage() {
                                  </AccordionTrigger>
                                  <AccordionContent>
                                     <div className="px-3 pt-2 pb-2 text-center">
-                                    {activeTrip && activeTrip.from === stop.name ? (
+                                    {activeTrip ? (
                                         <div className="flex items-center justify-center gap-2 text-primary font-semibold p-2 bg-primary/10 rounded-md">
                                             <Clock className="h-5 w-5" />
-                                            {activeTrip.eta > 0 ? (
-                                                <span dangerouslySetInnerHTML={{ __html: t('arrivingIn', { minutes: activeTrip.eta }) }} />
+                                            {eta > 0 ? (
+                                                <span dangerouslySetInnerHTML={{ __html: t('arrivingIn', { minutes: eta }) }} />
                                             ) : (
                                                 <span>{t('youAreOnTheBus')}</span>
                                             )}
@@ -567,5 +571,7 @@ export default function HomePage() {
     </div>
   );
 }
+
+    
 
     

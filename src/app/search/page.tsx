@@ -34,10 +34,10 @@ const initialBusData = [
       eta: 1,
       capacity: { current: 35, max: 52 },
       stops: [
-        { name: 'Adenta', fare: 5.00 },
-        { name: 'Madina', fare: 7.50 },
+        { name: 'Adenta', fare: 5.00, eta: 5 },
+        { name: 'Madina', fare: 7.50, eta: 15 },
       ],
-      finalDestination: { name: 'Atomic Junction', fare: 10.00 },
+      finalDestination: { name: 'Atomic Junction', fare: 10.00, eta: 25 },
       position: { top: '45%', left: '25%' },
       driverImage: PlaceHolderImages.find((p) => p.id === 'user-avatar')?.imageUrl,
       seating: [
@@ -55,10 +55,10 @@ const initialBusData = [
       eta: 25,
       capacity: { current: 48, max: 48 },
       stops: [
-        { name: 'Circle', fare: 6.00 },
-        { name: 'Kaneshie', fare: 8.50 },
+        { name: 'Circle', fare: 6.00, eta: 10 },
+        { name: 'Kaneshie', fare: 8.50, eta: 20 },
       ],
-      finalDestination: { name: 'Mallam', fare: 12.00 },
+      finalDestination: { name: 'Mallam', fare: 12.00, eta: 30 },
       position: { top: '55%', left: '65%' },
       driverImage: PlaceHolderImages.find((p) => p.id === 'user-avatar')?.imageUrl,
       seating: Array.from({ length: 25 }, (_, i) => ({ id: `${Math.floor(i/5)+1}${String.fromCharCode(65 + (i % 5 > 1 ? i%5-1 : i%5))}`, isOccupied: true }))
@@ -137,6 +137,9 @@ export default function SearchPage() {
         setSelectedBus(busData);
         setSelectedSeat(activeTrip.seat);
       }
+    } else if (isTripHydrated && !activeTrip) {
+      setSelectedBus(null);
+      setSelectedSeat(null);
     }
   }, [isTripHydrated, activeTrip, buses]);
 
@@ -178,7 +181,7 @@ export default function SearchPage() {
     setSelectedSeat(null);
   }
 
-  const handleBoard = (stop: {name: string, fare: number}) => {
+  const handleBoard = (stop: {name: string, fare: number, eta: number}) => {
     if(!selectedBus || !selectedSeat) return;
     if (balance < stop.fare) {
       toast({
@@ -219,7 +222,7 @@ export default function SearchPage() {
             bus: updatedBus,
             from: stop.name,
             destination: updatedBus.finalDestination.name,
-            eta: updatedBus.eta,
+            eta: stop.eta,
             seat: selectedSeat,
           };
           setActiveTrip(newTrip);
@@ -384,42 +387,45 @@ export default function SearchPage() {
 
                                 <div>
                                     <h3 className="text-sm font-semibold text-foreground/80 mb-2">{t('busFares')}:</h3>
-                                    <Accordion type="single" collapsible className="w-full" disabled={!!activeTrip}>
-                                        {[...displayedBus.stops, { ...displayedBus.finalDestination, isFinal: true }].map((stop, index) => (
-                                        <AccordionItem value={`item-${index}`} key={index} className="border-b-0">
-                                            <AccordionTrigger className="py-2 rounded-lg hover:bg-muted/50 px-2 data-[state=open]:bg-muted" disabled={!!activeTrip}>
-                                                <div className="flex items-center justify-between gap-3 w-full">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className={`h-5 w-5 rounded-full flex items-center justify-center ${stop.isFinal ? 'bg-primary/20' : 'bg-muted-foreground/20'}`}>
-                                                            {stop.isFinal ? <Flag className="h-3 w-3 text-primary" /> : <MapPin className="h-3 w-3 text-muted-foreground" />}
+                                    <Accordion type="single" collapsible className="w-full">
+                                        {[...displayedBus.stops, { ...displayedBus.finalDestination, isFinal: true }].map((stop, index) => {
+                                            const eta = (activeTrip?.eta ?? 0) + stop.eta;
+                                            return (
+                                                <AccordionItem value={`item-${index}`} key={index} className="border-b-0">
+                                                    <AccordionTrigger className="py-2 rounded-lg hover:bg-muted/50 px-2 data-[state=open]:bg-muted">
+                                                        <div className="flex items-center justify-between gap-3 w-full">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className={`h-5 w-5 rounded-full flex items-center justify-center ${stop.isFinal ? 'bg-primary/20' : 'bg-muted-foreground/20'}`}>
+                                                                    {stop.isFinal ? <Flag className="h-3 w-3 text-primary" /> : <MapPin className="h-3 w-3 text-muted-foreground" />}
+                                                                </div>
+                                                                <p className={`text-sm ${stop.isFinal ? 'font-semibold text-primary' : 'text-foreground'}`}>{stop.name} {stop.isFinal && `(${t('final')})`}</p>
+                                                            </div>
+                                                            <p className={`font-mono text-sm ${stop.isFinal ? 'font-semibold text-primary' : 'text-foreground'}`}>GH₵{stop.fare.toFixed(2)}</p>
                                                         </div>
-                                                        <p className={`text-sm ${stop.isFinal ? 'font-semibold text-primary' : 'text-foreground'}`}>{stop.name} {stop.isFinal && `(${t('final')})`}</p>
-                                                    </div>
-                                                    <p className={`font-mono text-sm ${stop.isFinal ? 'font-semibold text-primary' : 'text-foreground'}`}>GH₵{stop.fare.toFixed(2)}</p>
-                                                </div>
-                                            </AccordionTrigger>
-                                            <AccordionContent>
-                                                <div className="px-3 pt-2 pb-2 text-center">
-                                                {activeTrip && activeTrip.from === stop.name ? (
-                                                    <div className="flex items-center justify-center gap-2 text-primary font-semibold p-2 bg-primary/10 rounded-md">
-                                                        <Clock className="h-5 w-5" />
-                                                         {activeTrip.eta > 0 ? (
-                                                            <span dangerouslySetInnerHTML={{ __html: t('arrivingIn', { minutes: activeTrip.eta }) }} />
+                                                    </AccordionTrigger>
+                                                    <AccordionContent>
+                                                        <div className="px-3 pt-2 pb-2 text-center">
+                                                        {activeTrip ? (
+                                                            <div className="flex items-center justify-center gap-2 text-primary font-semibold p-2 bg-primary/10 rounded-md">
+                                                                <Clock className="h-5 w-5" />
+                                                                {eta > 0 ? (
+                                                                    <span dangerouslySetInnerHTML={{ __html: t('arrivingIn', { minutes: eta }) }} />
+                                                                ) : (
+                                                                    <span>{t('youAreOnTheBus')}</span>
+                                                                )}
+                                                            </div>
+                                                        ) : displayedBus.capacity.current < displayedBus.capacity.max ? (
+                                                            <Button className='w-full' onClick={() => handleBoard(stop)} disabled={isBoarding || !selectedSeat || !!activeTrip}>
+                                                                {isBoarding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : !selectedSeat ? t('selectBusSeatFirst') : t('board')}
+                                                            </Button>
                                                         ) : (
-                                                            <span>{t('youAreOnTheBus')}</span>
+                                                            <p className="text-sm text-destructive font-medium p-2 bg-destructive/10 rounded-md">{t('busIsFull')}</p>
                                                         )}
-                                                    </div>
-                                                ) : displayedBus.capacity.current < displayedBus.capacity.max ? (
-                                                    <Button className='w-full' onClick={() => handleBoard(stop)} disabled={isBoarding || !selectedSeat || !!activeTrip}>
-                                                        {isBoarding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : !selectedSeat ? t('selectBusSeatFirst') : t('board')}
-                                                    </Button>
-                                                ) : (
-                                                    <p className="text-sm text-destructive font-medium p-2 bg-destructive/10 rounded-md">{t('busIsFull')}</p>
-                                                )}
-                                                </div>
-                                            </AccordionContent>
-                                        </AccordionItem>
-                                        ))}
+                                                        </div>
+                                                    </AccordionContent>
+                                                </AccordionItem>
+                                            )
+                                        })}
                                     </Accordion>
                                 </div>
                             </CardContent>
@@ -572,5 +578,7 @@ export default function SearchPage() {
     </div>
   );
 }
+
+    
 
     

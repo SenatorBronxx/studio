@@ -11,8 +11,8 @@ type BusData = {
     // Add other relevant bus properties
     seating: ({ id: string; isOccupied: boolean; } | null)[];
     capacity: { current: number, max: number };
-    stops: { name: string; fare: number; }[];
-    finalDestination: { name: string; fare: number; };
+    stops: { name: string; fare: number; eta: number; }[];
+    finalDestination: { name: string; fare: number; eta: number; };
 };
 
 export type ActiveTrip = {
@@ -124,3 +124,5 @@ export function useTrip() {
     }
     return context;
 }
+
+    
