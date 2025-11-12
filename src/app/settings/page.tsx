@@ -36,6 +36,7 @@ const settingsOptions = [
     icon: CreditCard,
     title: 'Payment Methods',
     description: 'Add/remove MoMo, cards, Eritas Pay wallet',
+    href: '/settings/payment-methods',
   },
   {
     icon: Bell,
