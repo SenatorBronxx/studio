@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ListMusic, ListVideo, Plus, X, Search, Bus } from 'lucide-react';
+import { ListMusic, ListVideo, Plus, X, Search, Bus, LogIn } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { BottomNav } from '@/components/bottom-nav';
@@ -16,6 +16,8 @@ import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { useMusic, type Track } from '@/context/music-context';
 import { useLanguage } from '@/context/language-context';
+import { useUser } from '@/context/user-context';
+import { useRouter } from 'next/navigation';
 
 
 const musicArtworks = PlaceHolderImages.filter(p => p.id.startsWith('music-art-'));
@@ -48,6 +50,8 @@ export default function MusicPage() {
     } = useMusic();
 
     const { t } = useLanguage();
+    const { user } = useUser();
+    const router = useRouter();
     const [searchQuery, setSearchQuery] = useState('');
     const [filteredTracks, setFilteredTracks] = useState(newTracks);
 
@@ -80,6 +84,19 @@ export default function MusicPage() {
                 </div>
             </div>
         )
+    }
+
+    if (!user) {
+        return (
+            <div className="flex flex-col min-h-screen bg-background items-center justify-center text-center p-4">
+                <h1 className="text-xl font-bold">{t('signInToContinue')}</h1>
+                <p className='text-muted-foreground'>{t('signInToAccessFeatures')}</p>
+                <Button onClick={() => router.push('/')} className="mt-4">
+                  <LogIn className="mr-2 h-4 w-4" />
+                  {t('goToSignIn')}
+                </Button>
+            </div>
+        );
     }
 
   return (

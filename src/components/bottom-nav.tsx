@@ -6,10 +6,12 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/context/language-context';
+import { useUser } from '@/context/user-context';
 
 export function BottomNav() {
   const pathname = usePathname();
   const { t } = useLanguage();
+  const { user } = useUser();
 
   const navItems = [
     { href: '/home', icon: LayoutGrid, labelKey: 'home' },
@@ -18,6 +20,10 @@ export function BottomNav() {
     { href: '/food', icon: Utensils, labelKey: 'food' },
     { href: '/music', icon: Music, labelKey: 'music' },
   ];
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="bg-background/80 backdrop-blur-sm p-2 max-w-md mx-auto shadow-lg border-t border-border/50">

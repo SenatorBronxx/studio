@@ -17,6 +17,7 @@ import {
   Bell,
   Trash2,
   Ticket,
+  LogIn,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
@@ -42,6 +43,7 @@ import { useNotificationSettings } from '@/context/notification-settings-context
 import { useDiscount } from '@/context/discount-context';
 import { useLanguage } from '@/context/language-context';
 import { useTrip, type ActiveTrip } from '@/context/trip-context';
+import { useUser } from '@/context/user-context';
 
 const initialBusData = [
     {
@@ -91,8 +93,8 @@ type Notification = {
 };
 
 export default function HomePage() {
-  const searchParams = useSearchParams();
   const router = useRouter();
+  const { user } = useUser();
   const { toast } = useToast();
   const { balance, deductBalance, addTransaction, addLoyaltyPoints } = useWallet();
   const { setIsOnBus } = useMusic();
@@ -100,7 +102,6 @@ export default function HomePage() {
   const { bookingAlerts } = useNotificationSettings();
   const { activeDiscount, isDiscountBannerDismissed, dismissDiscountBanner } = useDiscount();
   const { t } = useLanguage();
-  const userName = searchParams.get('name') || t('there');
   
   const [fromLocation, setFromLocation] = useState('');
   const [toLocation, setToLocation] = useState('');
@@ -126,7 +127,6 @@ export default function HomePage() {
     if (isTripHydrated && activeTrip) {
       const busData = buses.find(b => b.id === activeTrip.bus.id);
       if (busData) {
-        // Sync selectedBus with activeTrip from context
         setSelectedBus(busData);
         setSelectedSeat(activeTrip.seat);
       }
@@ -141,13 +141,15 @@ export default function HomePage() {
     if (activeTrip && activeTrip.eta > 0) {
       interval = setInterval(() => {
         setDynamicEta(activeTrip.eta - 1);
-      }, 60 * 1000); // Decrease every minute
-    } else if (activeTrip && activeTrip.eta === 0) {
-        setIsOnBus(true);
-        toast({
-            title: t('onTheBusToastTitle'),
-            description: t('onTheBusToastDescription'),
-        });
+      }, 60 * 1000); 
+    } else if (activeTrip && activeTrip.eta <= 0) {
+        if (!isOnBus) {
+            setIsOnBus(true);
+            toast({
+                title: t('onTheBusToastTitle'),
+                description: t('onTheBusToastDescription'),
+            });
+        }
     }
     return () => clearInterval(interval);
   }, [activeTrip, setIsOnBus, setDynamicEta, toast, t]);
@@ -157,6 +159,14 @@ export default function HomePage() {
   };
 
   const handleBusSelect = (bus: BusData) => {
+     if (!user) {
+      toast({
+        variant: "destructive",
+        title: t('notLoggedIn'),
+        description: "You must be logged in to select a bus.",
+      });
+      return;
+    }
     if (activeTrip) {
       toast({
         variant: "destructive",
@@ -166,7 +176,7 @@ export default function HomePage() {
       return;
     }
     setSelectedBus(bus);
-    setSelectedSeat(null); // Reset selected seat
+    setSelectedSeat(null); 
   }
   
   const clearSelectedBus = () => {
@@ -221,7 +231,7 @@ export default function HomePage() {
                 bus: updatedBus,
                 from: stop.name,
                 destination: stop.name,
-                eta: stop.eta, // Use stop-specific ETA
+                eta: stop.eta, 
                 seat: selectedSeat
             };
             setActiveTrip(newTrip);
@@ -296,6 +306,20 @@ export default function HomePage() {
   }
 
   const displayedBus = activeTrip?.bus || selectedBus;
+
+  if (!user) {
+    return (
+        <div className="flex flex-col min-h-screen bg-background items-center justify-center text-center p-4">
+            <h1 className="text-xl font-bold">{t('signInToContinue')}</h1>
+            <p className='text-muted-foreground'>{t('signInToAccessFeatures')}</p>
+            <Button onClick={() => router.push('/')} className="mt-4">
+              <LogIn className="mr-2 h-4 w-4" />
+              {t('goToSignIn')}
+            </Button>
+        </div>
+    );
+  }
+
 
   return (
     <div className="relative min-h-screen w-full bg-background font-sans">
@@ -485,9 +509,20 @@ export default function HomePage() {
                                  </AccordionTrigger>
                                  <AccordionContent>
                                     <div className="px-3 pt-2 pb-2 text-center">
-                                    {activeTrip ? (
-                                        <p className='text-sm text-muted-foreground'>{t('tripInProgress')}</p>
-                                    ) : displayedBus.capacity.current < displayedBus.capacity.max ? (
+                                    {activeTrip && activeTrip.destination === stop.name ? (
+                                        <div className="p-3 bg-primary/10 rounded-lg text-center">
+                                            <div className="flex items-center justify-center gap-2 text-primary font-semibold text-lg">
+                                                <Clock className="h-5 w-5" />
+                                                {activeTrip.eta > 0 ? (
+                                                    <span dangerouslySetInnerHTML={{ __html: t('arrivingIn', { minutes: activeTrip.eta }) }} />
+                                                ) : (
+                                                    <span>{t('youAreOnTheBus')}</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ) : activeTrip ? (
+                                         <p className='text-sm text-muted-foreground'>{t('tripInProgress')}</p>
+                                    ): displayedBus.capacity.current < displayedBus.capacity.max ? (
                                         <Button 
                                             className='w-full' 
                                             onClick={() => handleBoard(stop)} 
@@ -515,7 +550,7 @@ export default function HomePage() {
             ) : (
             <>
                 <div className='text-center'>
-                    <h2 className="text-xl font-bold text-foreground">{t('homeGreeting', { name: userName })}</h2>
+                    <h2 className="text-xl font-bold text-foreground">{t('homeGreeting', { name: user?.name.split(' ')[0] || t('friend') })}</h2>
                     <p className="text-sm text-muted-foreground">{t('homeSubGreeting')}</p>
                 </div>
                 <div className='flex items-center gap-2'>
@@ -577,7 +612,3 @@ export default function HomePage() {
     </div>
   );
 }
-
-    
-
-    

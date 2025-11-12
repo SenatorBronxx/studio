@@ -62,7 +62,7 @@
     "seatBookedNotificationDescription": "Your seat {{seat}} on bus {{plate}} is confirmed.",
     "viewQrCode": "View QR Code",
     "fareDeductedToastDescription": "The fare of GH₵{{fare}} has been deducted.",
-    "discountAppliedToast": "{{percentage}}% discount applied!",
+    "discountAppliedToast": "({{percentage}}% discount applied!)",
     "seatBookedToastTitle": "Seat Booked Successfully!",
     "discountActivatedTitle": "{{percentage}}% Discount Activated!",
     "viewSeats": "View Seats",
@@ -260,9 +260,9 @@
     "notOnBusToastTitle": "Not on Bus",
     "notOnBusToastDescription": "You must be on a bus to add songs to the playlist.",
     "alreadyInPlaylistToastTitle": "Already in Playlist",
-    "alreadyInPlaylistToastDescription": "{{title}} is already in the bus playlist.",
+    "alreadyInPlaylistToastDescription": "'{{title}}' is already in the bus playlist.",
     "addedToPlaylistToastTitle": "Added to Playlist",
-    "addedToPlaylistToastDescription": "{{title}} by {{artist}} has been added to the bus playlist.",
+    "addedToPlaylistToastDescription": "'{{title}}' by {{artist}} has been added to the bus playlist.",
     "cannotRemoveSongToastTitle": "Cannot Remove",
     "cannotRemoveSongToastDescription": "You can only remove songs you have added.",
     "songRemovedToastTitle": "Song Removed",
@@ -274,7 +274,7 @@
     "points": "Points",
     "noPointsHistory": "No Points History",
     "noPointsHistoryDescription": "Take a trip to start earning loyalty points.",
-    "loyaltyPointsAwarded": "Loyalty Points Awarded",
+    "loyaltyPointsAwarded": "Loyalty Points Awarded!",
     "loyaltyPointsAwardedDescription": "You earned {{points}} points from your last trip!",
     "shareMyTrip": "Share My Trip",
     "noActiveTripTitle": "No Active Trip",
@@ -304,5 +304,7 @@
     "linkCopied": "Trip link copied to clipboard!",
     "goToHome": "Go to Home",
     "tripInProgress": "Trip in progress. View ETA above.",
-    "arrivingAt": "Arriving at"
+    "arrivingAt": "Arriving at",
+    "signInToContinue": "Sign In to Continue",
+    "signInToAccessFeatures": "Please sign in to access all app features."
 }

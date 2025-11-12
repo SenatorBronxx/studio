@@ -8,6 +8,7 @@ import {
   Bell,
   Trash2,
   QrCode,
+  LogIn,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -25,6 +26,8 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import Image from 'next/image';
 import { Loader2 } from 'lucide-react';
 import { useLanguage } from '@/context/language-context';
+import { useUser } from '@/context/user-context';
+import { useRouter } from 'next/navigation';
 
 type Notification = {
     id: number;
@@ -36,6 +39,8 @@ type Notification = {
 export default function EritasPayPage() {
   const { balance, transactions, removeTransaction } = useWallet();
   const { t } = useLanguage();
+  const { user } = useUser();
+  const router = useRouter();
   const maxBalance = 400.00;
   const progressPercentage = (balance / maxBalance) * 100;
   
@@ -46,6 +51,18 @@ export default function EritasPayPage() {
   const [selectedSeat, setSelectedSeat] = useState<string | null>(null);
   const [showAllTransactions, setShowAllTransactions] = useState(false);
 
+  if (!user) {
+    return (
+        <div className="flex flex-col min-h-screen bg-background items-center justify-center text-center p-4">
+            <h1 className="text-xl font-bold">{t('signInToContinue')}</h1>
+            <p className='text-muted-foreground'>{t('signInToAccessFeatures')}</p>
+            <Button onClick={() => router.push('/')} className="mt-4">
+              <LogIn className="mr-2 h-4 w-4" />
+              {t('goToSignIn')}
+            </Button>
+        </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-background">

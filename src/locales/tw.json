@@ -62,7 +62,7 @@
     "seatBookedNotificationDescription": "Wɔagye w'akonnwa {{seat}} a ɛwɔ bɔs {{plate}} mu no atom.",
     "viewQrCode": "Hwɛ QR Koodu",
     "fareDeductedToastDescription": "Wɔayi akwantu ka GH₵{{fare}} afi wo sika so.",
-    "discountAppliedToast": "{{percentage}}% aniammɔnho ayɛ adwuma!",
+    "discountAppliedToast": "({{percentage}}% aniammɔnho ayɛ adwuma!)",
     "seatBookedToastTitle": "Akonnwa no Atɔ Yie!",
     "discountActivatedTitle": "{{percentage}}% Aniammɔnho Ayɛ Adwuma!",
     "viewSeats": "Hwɛ Akonnwa",
@@ -260,9 +260,9 @@
     "notOnBusToastTitle": "Wɔnni Bɔs no mu",
     "notOnBusToastDescription": "Ɛsɛ sɛ wowɔ bɔs mu ansa na wode nnwom aka playlist no ho.",
     "alreadyInPlaylistToastTitle": "Ɛwɔ Playlist no mu dedaw",
-    "alreadyInPlaylistToastDescription": "{{title}} wɔ bɔs no playlist no mu dedaw.",
+    "alreadyInPlaylistToastDescription": "'{{title}}' wɔ bɔs no playlist no mu dedaw.",
     "addedToPlaylistToastTitle": "Wɔde Aka Playlist no ho",
-    "addedToPlaylistToastDescription": "Wɔde {{title}} a {{artist}} na ɔtoo no aka bɔs no playlist no ho.",
+    "addedToPlaylistToastDescription": "'{{title}}' a {{artist}} na ɔtoo no, wɔde aka bɔs no playlist no ho.",
     "cannotRemoveSongToastTitle": "Worentumi Nyi",
     "cannotRemoveSongToastDescription": "Nnwom a wo ara wode aka ho no nkutoo na wubetumi ayi.",
     "songRemovedToastTitle": "Wɔayi Nnwom no",
@@ -274,7 +274,7 @@
     "points": "Nkontabuo",
     "noPointsHistory": "Nkontabuo Abakɔsɛm Nni hɔ",
     "noPointsHistoryDescription": "Fa akwantu na fi ase nya nkontabuo a wode bɛkyɛ.",
-    "loyaltyPointsAwarded": "Nkontabuo a Wɔde Kyɛ no Ayɛ Adwuma",
+    "loyaltyPointsAwarded": "Nkontabuo a Wɔde Kyɛ no Ayɛ Adwuma!",
     "loyaltyPointsAwardedDescription": "Woanya nkontabuo {{points}} afi w’akwantu a etwaam no mu!",
     "shareMyTrip": "Kyɛ M'akwantu",
     "noActiveTripTitle": "Akwantu Biara Nni Hɔ",
@@ -304,5 +304,7 @@
     "linkCopied": "Wɔakɔpi akwantu link no agu clipboard so!",
     "goToHome": "Kɔ Fie",
     "tripInProgress": "Akwantu rekɔ so. Hwɛ ETA wɔ soro hɔ.",
-    "arrivingAt": "Yɛrebedu"
+    "arrivingAt": "Yɛrebedu",
+    "signInToContinue": "Kɔ mu na Toa so",
+    "signInToAccessFeatures": "Yɛsrɛ wo, kɔ mu na nya hokwan kɔ app no afa horow nyinaa."
 }
