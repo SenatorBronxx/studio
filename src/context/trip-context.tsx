@@ -9,13 +9,18 @@ type BusData = {
     plate: string;
     driverImage?: string;
     // Add other relevant bus properties
+    seating: ({ id: string; isOccupied: boolean; } | null)[];
+    capacity: { current: number, max: number };
+    stops: { name: string; fare: number; }[];
+    finalDestination: { name: string; fare: number; };
 };
 
-type ActiveTrip = {
+export type ActiveTrip = {
     bus: BusData;
     from: string;
     destination: string;
     eta: number;
+    seat: string | null;
 };
 
 type TripContextType = {
@@ -23,6 +28,7 @@ type TripContextType = {
     setActiveTrip: (trip: ActiveTrip | null) => void;
     clearActiveTrip: () => void;
     setDynamicEta: (eta: number) => void;
+    updateActiveTripBus: (bus: BusData) => void;
     isHydrated: boolean;
 };
 
@@ -36,7 +42,11 @@ export function TripProvider({ children }: { children: ReactNode }) {
         try {
             const storedTrip = localStorage.getItem('eritas-active-trip');
             if (storedTrip) {
-                setActiveTripState(JSON.parse(storedTrip));
+                const parsedTrip = JSON.parse(storedTrip);
+                // Basic validation
+                if (parsedTrip && parsedTrip.bus && parsedTrip.destination) {
+                    setActiveTripState(parsedTrip);
+                }
             }
         } catch (error) {
             console.error("Failed to read active trip from localStorage", error);
@@ -64,7 +74,7 @@ export function TripProvider({ children }: { children: ReactNode }) {
     const setDynamicEta = useCallback((eta: number) => {
         setActiveTripState(prevTrip => {
             if (!prevTrip) return null;
-            const updatedTrip = { ...prevTrip, eta };
+            const updatedTrip = { ...prevTrip, eta: Math.max(0, eta) };
             try {
                 localStorage.setItem('eritas-active-trip', JSON.stringify(updatedTrip));
             } catch (error) {
@@ -74,16 +84,30 @@ export function TripProvider({ children }: { children: ReactNode }) {
         });
     }, []);
     
+    const updateActiveTripBus = useCallback((bus: BusData) => {
+        setActiveTripState(prevTrip => {
+            if (!prevTrip) return null;
+            const updatedTrip = { ...prevTrip, bus };
+            try {
+                localStorage.setItem('eritas-active-trip', JSON.stringify(updatedTrip));
+            } catch (error) {
+                console.error("Failed to write active trip to localStorage", error);
+            }
+            return updatedTrip;
+        });
+    }, []);
+
     const value = {
         activeTrip,
         setActiveTrip,
         clearActiveTrip,
         setDynamicEta,
+        updateActiveTripBus,
         isHydrated
     };
     
     if (!isHydrated) {
-        return null; // Or a loading spinner
+        return null;
     }
 
     return (

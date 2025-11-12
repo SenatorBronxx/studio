@@ -24,7 +24,7 @@ import { useMusic } from '@/context/music-context';
 import { NowPlayingIcon } from '@/components/icons/now-playing-icon';
 import { ListMusic } from 'lucide-react';
 import { useLanguage } from '@/context/language-context';
-import { useTrip } from '@/context/trip-context';
+import { useTrip, type ActiveTrip } from '@/context/trip-context';
 
 const initialBusData = [
     {
@@ -96,14 +96,13 @@ export default function SearchPage() {
     setIsOnBus,
     isOnBus,
   } = useMusic();
-  const { setActiveTrip, clearActiveTrip, setDynamicEta, activeTrip } = useTrip();
+  const { activeTrip, setActiveTrip, clearActiveTrip, setDynamicEta, isHydrated: isTripHydrated } = useTrip();
   const { t } = useLanguage();
   
   const [buses, setBuses] = useState(initialBusData);
   const [filteredBuses, setFilteredBuses] = useState<BusData[]>([]);
   const [selectedBus, setSelectedBus] = useState<BusData | null>(null);
   const [isBoarding, setIsBoarding] = useState(false);
-  const [boardedStop, setBoardedStop] = useState<string | null>(null);
   const [selectedSeat, setSelectedSeat] = useState<string | null>(null);
   const [isSeatSheetOpen, setIsSeatSheetOpen] = useState(false);
   const [isQrSheetOpen, setIsQrSheetOpen] = useState(false);
@@ -130,6 +129,17 @@ export default function SearchPage() {
     }
   }, [fromQuery, toQuery, buses, isHydrated]);
 
+  useEffect(() => {
+    if (isTripHydrated && activeTrip) {
+      const busData = buses.find(b => b.id === activeTrip.bus.id);
+      if (busData) {
+        // Sync selectedBus with activeTrip from context
+        setSelectedBus(busData);
+        setSelectedSeat(activeTrip.seat);
+      }
+    }
+  }, [isTripHydrated, activeTrip, buses]);
+
    useEffect(() => {
     let interval: NodeJS.Timeout;
     if (activeTrip && activeTrip.eta > 0) {
@@ -151,22 +161,25 @@ export default function SearchPage() {
   };
 
   const handleBusSelect = (bus: BusData) => {
+    if (activeTrip) {
+      toast({
+        variant: "destructive",
+        title: "Trip in Progress",
+        description: "You cannot select a new bus while a trip is in progress."
+      });
+      return;
+    }
     setSelectedBus(bus);
-    setBoardedStop(null);
     setSelectedSeat(null);
-    clearActiveTrip();
-    setIsOnBus(false);
   }
   
   const clearSelectedBus = () => {
     setSelectedBus(null);
-    setBoardedStop(null);
     setSelectedSeat(null);
-    clearActiveTrip();
-    setIsOnBus(false);
   }
 
   const handleBoard = (stop: {name: string, fare: number}) => {
+    if(!selectedBus || !selectedSeat) return;
     if (balance < stop.fare) {
       toast({
         variant: "destructive",
@@ -178,42 +191,51 @@ export default function SearchPage() {
 
     setIsBoarding(true);
     setTimeout(() => {
-        if (!selectedBus) return;
         setIsBoarding(false);
-        setBoardedStop(stop.name);
         deductBalance(stop.fare);
 
         const newTransaction = {
             id: uuidv4(),
             type: 'payment',
-            plate: selectedBus?.plate || 'N/A',
+            plate: selectedBus.plate || 'N/A',
             amount: -stop.fare,
         };
         addTransaction(newTransaction);
         
+        let updatedBus : BusData | undefined;
         const updatedBuses = buses.map(b => {
             if (b.id === selectedBus.id) {
                 const newSeating = b.seating.map(s => s && s.id === selectedSeat ? { ...s, isOccupied: true } : s);
-                const updatedBus = { ...b, seating: newSeating, capacity: { ...b.capacity, current: b.capacity.current + 1 }};
+                updatedBus = { ...b, seating: newSeating, capacity: { ...b.capacity, current: b.capacity.current + 1 }};
                 setSelectedBus(updatedBus);
-                setActiveTrip({ bus: updatedBus, from: stop.name, destination: updatedBus.finalDestination.name, eta: updatedBus.eta });
                 return updatedBus;
             }
             return b;
         });
         setBuses(updatedBuses);
         
+        if (updatedBus) {
+          const newTrip: ActiveTrip = {
+            bus: updatedBus,
+            from: stop.name,
+            destination: updatedBus.finalDestination.name,
+            eta: updatedBus.eta,
+            seat: selectedSeat,
+          };
+          setActiveTrip(newTrip);
+        }
+        
         const pointsEarned = Math.floor(stop.fare);
         addLoyaltyPoints(pointsEarned);
 
-        const qrData = { bus: selectedBus?.plate, seat: selectedSeat, from: stop.name, to: selectedBus?.finalDestination.name, fare: stop.fare, timestamp: new Date().toISOString() };
+        const qrData = { bus: selectedBus.plate, seat: selectedSeat, from: stop.name, to: selectedBus.finalDestination.name, fare: stop.fare, timestamp: new Date().toISOString() };
         const encodedQrData = encodeURIComponent(JSON.stringify(qrData));
         setQrCodeUrl(`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodedQrData}`);
         
         const newNotification: Notification = {
             id: Date.now(),
             title: t('seatBookedToastTitle'),
-            description: t('seatBookedNotificationDescription', { seat: selectedSeat, plate: selectedBus?.plate }),
+            description: t('seatBookedNotificationDescription', { seat: selectedSeat, plate: selectedBus.plate }),
             action: <Button variant="outline" size="sm" onClick={() => setIsQrSheetOpen(true)}><QrCode className="mr-2 h-4 w-4" />{t('viewQrCode')}</Button>
         }
         setNotifications(prev => [newNotification, ...prev]);
@@ -263,13 +285,15 @@ export default function SearchPage() {
     )
   }
   
-  if (!isHydrated) {
+  if (!isHydrated || !isTripHydrated) {
     return (
         <div className="flex flex-col min-h-screen bg-background items-center justify-center">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />
         </div>
     );
   }
+
+  const displayedBus = activeTrip?.bus || selectedBus;
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -307,29 +331,31 @@ export default function SearchPage() {
 
         <main className="flex-grow p-4 pb-24">
             <div className="max-w-md mx-auto">
-                {selectedBus ? (
+                {displayedBus ? (
                     <div className="space-y-3">
                         <Card>
                             <CardContent className="p-4 space-y-3">
                                 <div className="flex justify-between items-start">
                                     <div className="flex items-center gap-3">
                                         <Avatar>
-                                            {selectedBus.driverImage && <AvatarImage src={selectedBus.driverImage} alt={selectedBus.driver} />}
-                                            <AvatarFallback>{selectedBus.driver.charAt(0)}</AvatarFallback>
+                                            {displayedBus.driverImage && <AvatarImage src={displayedBus.driverImage} alt={displayedBus.driver} />}
+                                            <AvatarFallback>{displayedBus.driver.charAt(0)}</AvatarFallback>
                                         </Avatar>
                                         <div>
-                                            <h2 className="text-xl font-bold text-foreground">{selectedBus.driver}</h2>
-                                            <p className="text-sm text-muted-foreground font-mono">{selectedBus.plate}</p>
+                                            <h2 className="text-xl font-bold text-foreground">{displayedBus.driver}</h2>
+                                            <p className="text-sm text-muted-foreground font-mono">{displayedBus.plate}</p>
                                         </div>
                                     </div>
+                                    {!activeTrip && (
                                     <Button variant="ghost" size="icon" onClick={clearSelectedBus} className="h-8 w-8 -mt-1 -mr-2">
                                         <X className="h-5 w-5" />
                                     </Button>
+                                    )}
                                 </div>
 
                                 <Sheet open={isSeatSheetOpen} onOpenChange={setIsSeatSheetOpen}>
                                     <SheetTrigger asChild>
-                                        <Button variant="outline" className='w-full'>
+                                        <Button variant="outline" className='w-full' disabled={!!activeTrip}>
                                             <Armchair className="mr-2 h-5 w-5" />
                                             {selectedSeat ? t('seatSelected', { seat: selectedSeat }) : t('viewSeats')}
                                         </Button>
@@ -337,10 +363,10 @@ export default function SearchPage() {
                                     <SheetContent side="bottom" className="rounded-t-2xl">
                                         <SheetHeader><SheetTitle>{t('selectYourSeat')}</SheetTitle></SheetHeader>
                                         <BusSeatingChart 
-                                            seating={selectedBus.seating}
+                                            seating={displayedBus.seating}
                                             selectedSeat={selectedSeat}
                                             onSeatSelect={handleSeatSelect}
-                                            busPlate={selectedBus.plate}
+                                            busPlate={displayedBus.plate}
                                             onConfirm={handleConfirmSeat}
                                         />
                                     </SheetContent>
@@ -351,17 +377,17 @@ export default function SearchPage() {
                                 <div>
                                     <div className="flex justify-between items-center mb-1">
                                         <h3 className="text-sm font-semibold text-foreground/80 flex items-center gap-2"><Users className="h-4 w-4" />{t('busCapacity')}</h3>
-                                        <p className="text-sm font-mono text-muted-foreground">{selectedBus.capacity.current} / {selectedBus.capacity.max} {t('seats')}</p>
+                                        <p className="text-sm font-mono text-muted-foreground">{displayedBus.capacity.current} / {displayedBus.capacity.max} {t('seats')}</p>
                                     </div>
-                                    <Progress value={(selectedBus.capacity.current / selectedBus.capacity.max) * 100} className="h-2" />
+                                    <Progress value={(displayedBus.capacity.current / displayedBus.capacity.max) * 100} className="h-2" />
                                 </div>
 
                                 <div>
                                     <h3 className="text-sm font-semibold text-foreground/80 mb-2">{t('busFares')}:</h3>
-                                    <Accordion type="single" collapsible className="w-full">
-                                        {[...selectedBus.stops, { ...selectedBus.finalDestination, isFinal: true }].map((stop, index) => (
+                                    <Accordion type="single" collapsible className="w-full" disabled={!!activeTrip}>
+                                        {[...displayedBus.stops, { ...displayedBus.finalDestination, isFinal: true }].map((stop, index) => (
                                         <AccordionItem value={`item-${index}`} key={index} className="border-b-0">
-                                            <AccordionTrigger className="py-2 rounded-lg hover:bg-muted/50 px-2 data-[state=open]:bg-muted">
+                                            <AccordionTrigger className="py-2 rounded-lg hover:bg-muted/50 px-2 data-[state=open]:bg-muted" disabled={!!activeTrip}>
                                                 <div className="flex items-center justify-between gap-3 w-full">
                                                     <div className="flex items-center gap-3">
                                                         <div className={`h-5 w-5 rounded-full flex items-center justify-center ${stop.isFinal ? 'bg-primary/20' : 'bg-muted-foreground/20'}`}>
@@ -374,7 +400,7 @@ export default function SearchPage() {
                                             </AccordionTrigger>
                                             <AccordionContent>
                                                 <div className="px-3 pt-2 pb-2 text-center">
-                                                {boardedStop === stop.name ? (
+                                                {activeTrip && activeTrip.from === stop.name ? (
                                                     <div className="flex items-center justify-center gap-2 text-primary font-semibold p-2 bg-primary/10 rounded-md">
                                                         <Clock className="h-5 w-5" />
                                                          {activeTrip && activeTrip.eta > 0 ? (
@@ -383,8 +409,8 @@ export default function SearchPage() {
                                                             <span>{t('youAreOnTheBus')}</span>
                                                         )}
                                                     </div>
-                                                ) : selectedBus.capacity.current < selectedBus.capacity.max ? (
-                                                    <Button className='w-full' onClick={() => handleBoard(stop)} disabled={isBoarding || !selectedSeat}>
+                                                ) : displayedBus.capacity.current < displayedBus.capacity.max ? (
+                                                    <Button className='w-full' onClick={() => handleBoard(stop)} disabled={isBoarding || !selectedSeat || !!activeTrip}>
                                                         {isBoarding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : !selectedSeat ? t('selectBusSeatFirst') : t('board')}
                                                     </Button>
                                                 ) : (
@@ -460,7 +486,7 @@ export default function SearchPage() {
                     <div className="text-center space-y-1">
                         <p className="text-sm text-muted-foreground">{t('showQrToDriver')}</p>
                         <div className="flex items-center gap-4 justify-center">
-                            <Badge variant="outline">{selectedBus?.plate}</Badge>
+                            <Badge variant="outline">{displayedBus?.plate}</Badge>
                             <Badge>{t('seat')} {selectedSeat}</Badge>
                         </div>
                     </div>

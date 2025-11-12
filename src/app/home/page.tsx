@@ -41,7 +41,7 @@ import { useMusic } from '@/context/music-context';
 import { useNotificationSettings } from '@/context/notification-settings-context';
 import { useDiscount } from '@/context/discount-context';
 import { useLanguage } from '@/context/language-context';
-import { useTrip } from '@/context/trip-context';
+import { useTrip, type ActiveTrip } from '@/context/trip-context';
 
 const initialBusData = [
     {
@@ -96,7 +96,7 @@ export default function HomePage() {
   const { toast } = useToast();
   const { balance, deductBalance, addTransaction, addLoyaltyPoints } = useWallet();
   const { setIsOnBus } = useMusic();
-  const { setActiveTrip, clearActiveTrip, setDynamicEta, activeTrip } = useTrip();
+  const { activeTrip, setActiveTrip, clearActiveTrip, setDynamicEta, isHydrated: isTripHydrated, updateActiveTripBus } = useTrip();
   const { bookingAlerts } = useNotificationSettings();
   const { activeDiscount, isDiscountBannerDismissed, dismissDiscountBanner } = useDiscount();
   const { t } = useLanguage();
@@ -107,7 +107,6 @@ export default function HomePage() {
   const [buses, setBuses] = useState(initialBusData);
   const [selectedBus, setSelectedBus] = useState<BusData | null>(null);
   const [isBoarding, setIsBoarding] = useState(false);
-  const [boardedStop, setBoardedStop] = useState<string | null>(null);
   const [selectedSeat, setSelectedSeat] = useState<string | null>(null);
   const [isSeatSheetOpen, setIsSeatSheetOpen] = useState(false);
   const [isQrSheetOpen, setIsQrSheetOpen] = useState(false);
@@ -123,6 +122,16 @@ export default function HomePage() {
     }
   }, [activeDiscount, isDiscountBannerDismissed]);
 
+  useEffect(() => {
+    if (isTripHydrated && activeTrip) {
+      const busData = buses.find(b => b.id === activeTrip.bus.id);
+      if (busData) {
+        // Sync selectedBus with activeTrip from context
+        setSelectedBus(busData);
+        setSelectedSeat(activeTrip.seat);
+      }
+    }
+  }, [isTripHydrated, activeTrip, buses]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -145,22 +154,26 @@ export default function HomePage() {
   };
 
   const handleBusSelect = (bus: BusData) => {
+    if (activeTrip) {
+      toast({
+        variant: "destructive",
+        title: "Trip in Progress",
+        description: "You cannot select a new bus while a trip is in progress."
+      });
+      return;
+    }
     setSelectedBus(bus);
-    setBoardedStop(null); // Reset boarded stop when a new bus is selected
     setSelectedSeat(null); // Reset selected seat
-    clearActiveTrip(); // Clear any previous trip
-    setIsOnBus(false); // Reset on bus status
   }
   
   const clearSelectedBus = () => {
     setSelectedBus(null);
-    setBoardedStop(null);
     setSelectedSeat(null);
-    clearActiveTrip();
-    setIsOnBus(false); // Reset on bus status
   }
 
   const handleBoard = (stop: {name: string, fare: number}) => {
+    if (!selectedBus || !selectedSeat) return;
+
     let finalFare = stop.fare;
     if (activeDiscount) {
         finalFare = finalFare * (1 - activeDiscount.percentage / 100);
@@ -176,12 +189,8 @@ export default function HomePage() {
     }
 
     setIsBoarding(true);
-    // Simulate API call
     setTimeout(() => {
-        if (!selectedBus) return;
         setIsBoarding(false);
-        setBoardedStop(stop.name);
-        
         deductBalance(finalFare);
 
         const newTransaction = {
@@ -192,25 +201,32 @@ export default function HomePage() {
         };
         addTransaction(newTransaction);
         
-        // Update bus data
+        let updatedBus : BusData | undefined;
         const updatedBuses = buses.map(b => {
             if (b.id === selectedBus.id) {
                 const newSeating = b.seating.map(s => (s && s.id === selectedSeat) ? { ...s, isOccupied: true } : s);
-                const updatedBus = { ...b, seating: newSeating, capacity: { ...b.capacity, current: b.capacity.current + 1 }};
+                updatedBus = { ...b, seating: newSeating, capacity: { ...b.capacity, current: b.capacity.current + 1 }};
                 setSelectedBus(updatedBus);
-                setActiveTrip({ bus: updatedBus, from: stop.name, destination: updatedBus.finalDestination.name, eta: updatedBus.eta });
                 return updatedBus;
             }
             return b;
         });
         setBuses(updatedBuses);
 
-        // Add loyalty points (1 point per 1 GHS spent)
+        if(updatedBus){
+            const newTrip: ActiveTrip = {
+                bus: updatedBus,
+                from: stop.name,
+                destination: updatedBus.finalDestination.name,
+                eta: updatedBus.eta,
+                seat: selectedSeat
+            };
+            setActiveTrip(newTrip);
+        }
+
         const pointsEarned = Math.floor(finalFare);
         addLoyaltyPoints(pointsEarned);
 
-
-        // Generate QR code data
         const qrData = {
           bus: selectedBus.plate,
           seat: selectedSeat,
@@ -247,7 +263,6 @@ export default function HomePage() {
                 description: toastDescription,
             });
 
-             // Loyalty points toast
             if (pointsEarned > 0) {
                 toast({
                     title: t('loyaltyPointsAwarded'),
@@ -277,16 +292,15 @@ export default function HomePage() {
     setShowDiscountBanner(false);
   }
 
+  const displayedBus = activeTrip?.bus || selectedBus;
 
   return (
     <div className="relative min-h-screen w-full bg-background font-sans">
-      {/* Map Background */}
       <div className="absolute inset-0 h-full w-full">
         <Map />
         <div className="absolute inset-0 bg-background/20 pointer-events-none" />
       </div>
 
-      {/* Header */}
       <header className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-20">
         <ProfileSidebar />
         <Sheet>
@@ -341,8 +355,7 @@ export default function HomePage() {
         </Sheet>
       </header>
       
-       {/* Bus Icon Stickers */}
-        {buses.map((bus, index) => (
+       {buses.map((bus, index) => (
             <div 
                 key={bus.id}
                 className="absolute z-10 animate-float cursor-pointer"
@@ -357,13 +370,10 @@ export default function HomePage() {
             </div>
         ))}
 
-        {/* Map Pin Sticker */}
         <div className="absolute top-1/3 right-1/4 animate-float [animation-delay:-2s]">
           <MapPin className="h-12 w-12 text-red-500 opacity-70" />
         </div>
 
-
-      {/* Bottom Sheet - Search and Nav */}
       <div className="absolute bottom-0 left-0 right-0 z-10 p-2 sm:p-4">
         <div className="bg-background/80 backdrop-blur-sm rounded-t-2xl p-4 max-w-md mx-auto flex flex-col gap-4 shadow-lg">
             {showDiscountBanner && activeDiscount && (
@@ -380,27 +390,29 @@ export default function HomePage() {
                     </div>
                 </div>
             )}
-            {selectedBus ? (
+            {displayedBus && isTripHydrated ? (
               <div className="space-y-3">
                 <div className="flex justify-between items-start">
                     <div className="flex items-center gap-3">
                         <Avatar>
-                            {selectedBus.driverImage && <AvatarImage src={selectedBus.driverImage} alt={selectedBus.driver} />}
-                            <AvatarFallback>{selectedBus.driver.charAt(0)}</AvatarFallback>
+                            {displayedBus.driverImage && <AvatarImage src={displayedBus.driverImage} alt={displayedBus.driver} />}
+                            <AvatarFallback>{displayedBus.driver.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <div>
-                            <h2 className="text-xl font-bold text-foreground">{selectedBus.driver}</h2>
-                            <p className="text-sm text-muted-foreground font-mono">{selectedBus.plate}</p>
+                            <h2 className="text-xl font-bold text-foreground">{displayedBus.driver}</h2>
+                            <p className="text-sm text-muted-foreground font-mono">{displayedBus.plate}</p>
                         </div>
                     </div>
-                    <Button variant="ghost" size="icon" onClick={clearSelectedBus} className="h-8 w-8 -mt-1 -mr-2">
-                        <X className="h-5 w-5" />
-                    </Button>
+                    {!activeTrip && (
+                      <Button variant="ghost" size="icon" onClick={clearSelectedBus} className="h-8 w-8 -mt-1 -mr-2">
+                          <X className="h-5 w-5" />
+                      </Button>
+                    )}
                 </div>
 
                 <Sheet open={isSeatSheetOpen} onOpenChange={setIsSeatSheetOpen}>
                     <SheetTrigger asChild>
-                        <Button variant="outline" className='w-full'>
+                        <Button variant="outline" className='w-full' disabled={!!activeTrip}>
                             <Armchair className="mr-2 h-5 w-5" />
                             {selectedSeat ? t('seatSelected', { seat: selectedSeat }) : t('viewSeats')}
                         </Button>
@@ -410,10 +422,10 @@ export default function HomePage() {
                             <SheetTitle>{t('selectYourSeat')}</SheetTitle>
                         </SheetHeader>
                         <BusSeatingChart 
-                            seating={selectedBus.seating}
+                            seating={displayedBus.seating}
                             selectedSeat={selectedSeat}
                             onSeatSelect={handleSeatSelect}
-                            busPlate={selectedBus.plate}
+                            busPlate={displayedBus.plate}
                             onConfirm={handleConfirmSeat}
                         />
                     </SheetContent>
@@ -424,15 +436,15 @@ export default function HomePage() {
                  <div>
                     <div className="flex justify-between items-center mb-1">
                         <h3 className="text-sm font-semibold text-foreground/80 flex items-center gap-2"><Users className="h-4 w-4" />{t('busCapacity')}</h3>
-                        <p className="text-sm font-mono text-muted-foreground">{selectedBus.capacity.current} / {selectedBus.capacity.max} {t('seats')}</p>
+                        <p className="text-sm font-mono text-muted-foreground">{displayedBus.capacity.current} / {displayedBus.capacity.max} {t('seats')}</p>
                     </div>
-                    <Progress value={(selectedBus.capacity.current / selectedBus.capacity.max) * 100} className="h-2" />
+                    <Progress value={(displayedBus.capacity.current / displayedBus.capacity.max) * 100} className="h-2" />
                  </div>
 
                  <div>
                     <h3 className="text-sm font-semibold text-foreground/80 mb-2">{t('busFares')}:</h3>
-                     <Accordion type="single" collapsible className="w-full">
-                        {[...selectedBus.stops, { ...selectedBus.finalDestination, isFinal: true }].map((stop, index) => {
+                     <Accordion type="single" collapsible className="w-full" disabled={!!activeTrip}>
+                        {[...displayedBus.stops, { ...displayedBus.finalDestination, isFinal: true }].map((stop, index) => {
                              let fare = stop.fare;
                              if (activeDiscount) {
                                 fare = fare * (1 - activeDiscount.percentage / 100);
@@ -440,7 +452,7 @@ export default function HomePage() {
 
                             return (
                                <AccordionItem value={`item-${index}`} key={index} className="border-b-0">
-                                 <AccordionTrigger className="py-2 rounded-lg hover:bg-muted/50 px-2 data-[state=open]:bg-muted">
+                                 <AccordionTrigger className="py-2 rounded-lg hover:bg-muted/50 px-2 data-[state=open]:bg-muted" disabled={!!activeTrip}>
                                     <div className="flex items-center justify-between gap-3 w-full">
                                         <div className="flex items-center gap-3">
                                              <div className={`h-5 w-5 rounded-full flex items-center justify-center ${stop.isFinal ? 'bg-primary/20' : 'bg-muted-foreground/20'}`}>
@@ -456,7 +468,7 @@ export default function HomePage() {
                                  </AccordionTrigger>
                                  <AccordionContent>
                                     <div className="px-3 pt-2 pb-2 text-center">
-                                    {boardedStop === stop.name ? (
+                                    {activeTrip && activeTrip.from === stop.name ? (
                                         <div className="flex items-center justify-center gap-2 text-primary font-semibold p-2 bg-primary/10 rounded-md">
                                             <Clock className="h-5 w-5" />
                                             {activeTrip && activeTrip.eta > 0 ? (
@@ -465,11 +477,11 @@ export default function HomePage() {
                                                 <span>{t('youAreOnTheBus')}</span>
                                             )}
                                         </div>
-                                    ) : selectedBus.capacity.current < selectedBus.capacity.max ? (
+                                    ) : displayedBus.capacity.current < displayedBus.capacity.max ? (
                                         <Button 
                                             className='w-full' 
                                             onClick={() => handleBoard(stop)} 
-                                            disabled={isBoarding || !selectedSeat}
+                                            disabled={isBoarding || !selectedSeat || !!activeTrip}
                                         >
                                             {isBoarding ? (
                                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -545,7 +557,7 @@ export default function HomePage() {
                     <div className="text-center space-y-1">
                         <p className="text-sm text-muted-foreground">{t('showQrToDriver')}</p>
                         <div className="flex items-center gap-4 justify-center">
-                            <Badge variant="outline">{selectedBus?.plate}</Badge>
+                            <Badge variant="outline">{displayedBus?.plate}</Badge>
                             <Badge>{t('seat')} {selectedSeat}</Badge>
                         </div>
                     </div>
