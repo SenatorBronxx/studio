@@ -101,11 +101,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
         setSongProgress(prev => {
           const nextProgress = prev + 100 / durationInSeconds;
           if (nextProgress >= 100) {
-            // Trip over simulation
-            toast({ title: t('tripEndedTitle'), description: t('tripEndedDescription') });
-            setIsOnBus(false);
-            setNowPlaying(null);
-            clearActiveTrip();
+            clearInterval(interval);
             return 100;
           }
           return nextProgress;
@@ -113,7 +109,17 @@ export function MusicProvider({ children }: { children: ReactNode }) {
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [nowPlaying, playlist, isOnBus, toast, t, clearActiveTrip]);
+  }, [nowPlaying, isOnBus]);
+  
+  useEffect(() => {
+    if (songProgress >= 100 && isOnBus) {
+      toast({ title: t('tripEndedTitle'), description: t('tripEndedDescription') });
+      setIsOnBus(false);
+      setNowPlaying(null);
+      clearActiveTrip();
+      setSongProgress(0); // Reset progress after handling
+    }
+  }, [songProgress, isOnBus, toast, t, clearActiveTrip]);
 
   const addToPlaylist = (track: Track) => {
     if (!isOnBus) {
