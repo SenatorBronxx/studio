@@ -35,8 +35,8 @@ export default function RecentTripsPage() {
         <div className="max-w-md mx-auto">
           <Card>
             <CardHeader>
-                <CardTitle>Your Payment History</CardTitle>
-                <CardDescription>A log of all your bus ticket payments.</CardDescription>
+                <CardTitle>Your Trip History</CardTitle>
+                <CardDescription>A log of all your completed bus journeys.</CardDescription>
             </CardHeader>
             <CardContent>
                 {tripHistory.length > 0 ? (
@@ -50,12 +50,12 @@ export default function RecentTripsPage() {
                                     </AvatarFallback>
                                 </Avatar>
                                 <div className="flex-grow">
-                                    <p className="font-semibold">Bus Ticket Payment</p>
-                                    <p className="text-sm text-muted-foreground font-mono">{trip.plate}</p>
+                                    <p className="font-semibold">Trip on bus {trip.plate}</p>
+                                    <p className="text-sm text-muted-foreground">Journey details would appear here</p>
                                 </div>
                                 <div className="font-semibold text-right">
                                     <p>GH₵{Math.abs(trip.amount).toFixed(2)}</p>
-                                    <p className="text-xs text-muted-foreground font-normal">Paid with ERITAS Pay</p>
+                                    <p className="text-xs text-muted-foreground font-normal">Fare</p>
                                 </div>
                             </div>
                         ))}
