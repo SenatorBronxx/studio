@@ -4,6 +4,7 @@
 import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 import en from '@/locales/en.json';
 import tw from '@/locales/tw.json';
+import ka from '@/locales/ka.json';
 
 // Add other language imports here
 // import ga from '@/locales/ga.json';
@@ -16,7 +17,7 @@ const translations: Record<string, Record<string, string>> = {
   'ew': {}, // Placeholder
   'sf': {}, // Placeholder
   'ha': {}, // Placeholder
-  'ka': {}, // Placeholder
+  'ka': ka,
 };
 
 type LanguageContextType = {
