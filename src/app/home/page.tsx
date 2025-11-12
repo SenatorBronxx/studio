@@ -515,14 +515,15 @@ export default function HomePage() {
                                  </AccordionTrigger>
                                  <AccordionContent>
                                     <div className="px-3 pt-2 pb-2 text-center">
-                                    {activeTrip && activeTrip.destination === stop.name && isOnBus ? (
+                                    {activeTrip && isOnBus && activeTrip.destination === stop.name ? (
                                         <div className="p-3 bg-primary/10 rounded-lg text-center">
+                                            <p className='text-sm text-primary/80'>{t('arrivingAt')} <span className='font-bold'>{activeTrip.destination}</span></p>
                                             <div className="flex items-center justify-center gap-2 text-primary font-semibold text-lg">
                                                 <Clock className="h-5 w-5" />
                                                 {activeTrip.eta > 0 ? (
                                                     <span dangerouslySetInnerHTML={{ __html: t('arrivingIn', { minutes: activeTrip.eta }) }} />
                                                 ) : (
-                                                    <span>{t('youAreOnTheBus')}</span>
+                                                    <span>{t('youHaveArrived')}</span>
                                                 )}
                                             </div>
                                         </div>
@@ -618,5 +619,7 @@ export default function HomePage() {
     </div>
   );
 }
+
+    
 
     

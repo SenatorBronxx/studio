@@ -307,5 +307,8 @@
     "arrivingAt": "Arriving at",
     "busArrivingAtYourLocation": "Bus arriving at your location",
     "signInToContinue": "Sign In to Continue",
-    "signInToAccessFeatures": "Please sign in to access all app features."
+    "signInToAccessFeatures": "Please sign in to access all app features.",
+    "youHaveArrived": "You have arrived!"
 }
+
+    
