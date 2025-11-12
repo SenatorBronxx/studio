@@ -237,7 +237,7 @@ export default function SearchPage() {
     if (selectedBus) {
         const seat = selectedBus.seating.find(s => s?.id === seatId);
         if (seat && !seat.isOccupied) {
-            setSelectedSeat(prevSeat => prevSeat === seatId ? null : prevSeat);
+            setSelectedSeat(prevSeat => prevSeat === seatId ? null : seatId);
         }
     }
   }
