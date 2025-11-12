@@ -174,7 +174,7 @@
     "cardEndingIn": "{{type}} ending in {{last4}}",
     "expires": "Expires",
     "removeCardTitle": "Remove this card?",
-    "removeCardDescription": "Are you sure you want to remove the card ending in {{last4}}?",
+    "removeCardDescription": "Are you sure you want to remove the card ending in {{last44}}?",
     "remove": "Remove",
     "addNewCard": "Add New Card",
     "mobileMoney": "Mobile Money",
@@ -289,5 +289,17 @@
     "shareCancelledTitle": "Share Cancelled",
     "shareCancelledDescription": "Your trip details were not shared.",
     "tripEndedTitle": "Trip Ended",
-    "tripEndedDescription": "You have arrived at your destination. Hope you had a pleasant journey!"
+    "tripEndedDescription": "You have arrived at your destination. Hope you had a pleasant journey!",
+    "shareTripPageTitle": "Share Your Trip",
+    "tripDetails": "Trip Details",
+    "bus": "Bus",
+    "driver": "Driver",
+    "destination": "Destination",
+    "shareVia": "Share via...",
+    "phoneNumberForSharing": "Recipient's Phone Number (optional)",
+    "send": "Send",
+    "shareOnWhatsApp": "Share on WhatsApp",
+    "shareViaSms": "Share via SMS",
+    "copyLink": "Copy Link",
+    "linkCopied": "Trip link copied to clipboard!"
 }

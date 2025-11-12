@@ -58,7 +58,7 @@ import { useTrip } from '@/context/trip-context';
 const menuItems = [
     { id: 'settings', icon: Settings, labelKey: 'profileSettings', href: '/settings' },
     { id: 'trips', icon: History, labelKey: 'recentTrips', href: '/settings/recent-trips' },
-    { id: 'share', icon: Share2, labelKey: 'shareMyTrip' },
+    { id: 'share', icon: Share2, labelKey: 'shareMyTrip', href: '/share-trip' },
     { id: 'qr', icon: QrCode, labelKey: 'tripQrCodes' },
     {
         id: 'places',
@@ -122,7 +122,7 @@ export function ProfileSidebar() {
         }
     };
 
-    const handleShareTrip = async () => {
+    const handleShareTrip = () => {
         if (!activeTrip) {
             toast({
                 variant: 'destructive',
@@ -131,47 +131,7 @@ export function ProfileSidebar() {
             });
             return;
         }
-
-        if (!navigator.share) {
-            toast({
-                variant: 'destructive',
-                title: t('shareNotSupportedTitle'),
-                description: t('shareNotSupportedDescription'),
-            });
-            return;
-        }
-
-        const { bus, destination, eta } = activeTrip;
-        const shareText = t('shareTripText', {
-            driver: bus.driver,
-            plate: bus.plate,
-            destination: destination,
-            eta: eta,
-        });
-
-        const shareUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`;
-        
-        try {
-            await navigator.share({
-                title: t('shareTripTitle'),
-                text: `${shareText}\n\n${t('trackMyTrip')}:\n${shareUrl}`,
-                url: shareUrl,
-            });
-        } catch (error) {
-            if (error instanceof DOMException && (error.name === 'AbortError' || error.name === 'NotAllowedError')) {
-                toast({
-                    title: t('shareCancelledTitle'),
-                    description: t('shareCancelledDescription'),
-                });
-            } else {
-                console.error('Error sharing trip:', error);
-                toast({
-                    variant: 'destructive',
-                    title: t('shareFailedTitle'),
-                    description: t('shareFailedDescription'),
-                });
-            }
-        }
+        router.push('/share-trip');
     };
 
     const handleMenuClick = (item: (typeof menuItems)[0]) => {
@@ -421,5 +381,3 @@ export function ProfileSidebar() {
         </Sheet>
     );
 }
-
-    

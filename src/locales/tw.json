@@ -289,7 +289,17 @@
     "shareCancelledTitle": "Nkyɛmu no Awiei",
     "shareCancelledDescription": "Wɔankyɛ w’akwantu no ho nsɛm.",
     "tripEndedTitle": "Akwantu no Aba Awiei",
-    "tripEndedDescription": "Woadu beae a worekɔ no. Yɛwɔ anidaso sɛ w’akwantu no yɛɛ anigye!"
+    "tripEndedDescription": "Woadu beae a worekɔ no. Yɛwɔ anidaso sɛ w’akwantu no yɛɛ anigye!",
+    "shareTripPageTitle": "Kyɛ W'akwantu",
+    "tripDetails": "Akwantu Ho Nsɛm",
+    "bus": "Bɔs",
+    "driver": "Karkafoɔ",
+    "destination": "Beae a Worekɔ",
+    "shareVia": "Fa kyɛ wɔ...",
+    "phoneNumberForSharing": "Onipa a ɔregye no fon nɔma (sɛ wopɛ a)",
+    "send": "Mena",
+    "shareOnWhatsApp": "Kyɛ wɔ WhatsApp so",
+    "shareViaSms": "Fa SMS kyɛ",
+    "copyLink": "Kɔpi Link no",
+    "linkCopied": "Wɔakɔpi akwantu link no agu clipboard so!"
 }
-
-    
