@@ -2,9 +2,9 @@
 'use client';
 
 import { useOnlineStatus } from '@/hooks/use-online-status';
-import { SatelliteIcon } from '@/components/icons/satellite';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/context/language-context';
+import { LostBallIcon } from './icons/lost-ball';
 
 export function OfflineIndicator() {
   const isOnline = useOnlineStatus();
@@ -22,10 +22,8 @@ export function OfflineIndicator() {
       )}
     >
       <div className="relative h-48 w-48">
-        <div className="absolute inset-0 animate-satellite-orbit-outer">
-          <div className="h-full w-full animate-satellite-orbit-inner">
-            <SatelliteIcon className="h-full w-full text-primary" />
-          </div>
+        <div className="absolute inset-0 animate-float">
+            <LostBallIcon className="h-full w-full text-primary" />
         </div>
       </div>
 
