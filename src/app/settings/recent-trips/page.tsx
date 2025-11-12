@@ -35,8 +35,8 @@ export default function RecentTripsPage() {
         <div className="max-w-md mx-auto">
           <Card>
             <CardHeader>
-                <CardTitle>Your Trip History</CardTitle>
-                <CardDescription>A log of all your completed bus journeys.</CardDescription>
+                <CardTitle>Your Payment History</CardTitle>
+                <CardDescription>A log of all your bus ticket payments.</CardDescription>
             </CardHeader>
             <CardContent>
                 {tripHistory.length > 0 ? (
