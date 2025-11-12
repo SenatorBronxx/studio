@@ -88,9 +88,24 @@ export function ProfileSidebar() {
 
     const handleDeleteAccount = () => {
         // In a real app, this would trigger a backend process to delete the user.
-        console.log('Deleting user account...');
-        setUser(null);
-        router.push('/');
+        console.log('Deleting user account and all local data...');
+        
+        // Clear all app-related data from localStorage
+        // This is a more robust way than clearing everything, in case other apps on the same domain use localStorage.
+        Object.keys(localStorage).forEach(key => {
+            if (key.startsWith('eritas-')) {
+                localStorage.removeItem(key);
+            }
+        });
+        
+        setUser(null); // Clear user from context
+        
+        toast({
+            title: "Account Deleted",
+            description: "Your account and all local data have been removed."
+        });
+        
+        router.push('/'); // Redirect to the home/login page
     };
     
     const handleNavigate = (href?: string) => {
