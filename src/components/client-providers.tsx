@@ -10,6 +10,7 @@ import { SecuritySettingsProvider } from "@/context/security-settings-context";
 import { ReactNode, createContext, useContext } from "react";
 import { LanguageProvider } from "@/context/language-context";
 import { TripProvider } from "@/context/trip-context";
+import { PlacesProvider } from "@/context/places-context";
 
 type AppStateContextType = {
     clearAllData: () => void;
@@ -33,7 +34,7 @@ export function ClientProviders({ children }: { children: ReactNode }) {
         // specific to this application's user data, while preserving settings
         // like theme or language.
         Object.keys(localStorage).forEach(key => {
-            if (key.startsWith('eritas-') && key !== 'eritas-language') {
+            if (key.startsWith('eritas-') && key !== 'eritas-language' && key !== 'eritas-theme') {
                 localStorage.removeItem(key);
             }
         });
@@ -51,7 +52,9 @@ export function ClientProviders({ children }: { children: ReactNode }) {
                                 <NotificationSettingsProvider>
                                     <SecuritySettingsProvider>
                                         <DiscountProvider>
-                                            {children}
+                                            <PlacesProvider>
+                                                {children}
+                                            </PlacesProvider>
                                         </DiscountProvider>
                                     </SecuritySettingsProvider>
                                 </NotificationSettingsProvider>

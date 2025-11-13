@@ -10,7 +10,7 @@
     "savedPlaces": "Saved Places",
     "addHomeAddress": "Add home address",
     "addWorkAddress": "Add work address",
-    "addPlace": "Add place",
+    "addPlace": "Add a new place",
     "userDiscounts": "User Discounts",
     "loyaltyPoints": "Loyalty Points",
     "language": "Language",
@@ -305,10 +305,17 @@
     "goToHome": "Go to Home",
     "tripInProgress": "Trip in progress. View ETA above.",
     "arrivingAt": "Arriving at",
-    "busArrivingAtYourLocation": "Bus arriving at",
+    "busArrivingAtYourLocation": "Bus arriving at your location",
     "signInToContinue": "Sign In to Continue",
     "signInToAccessFeatures": "Please sign in to access all app features.",
-    "youHaveArrived": "You have arrived!"
+    "youHaveArrived": "You have arrived!",
+    "editSavedPlace": "Edit Saved Place",
+    "addANewPlace": "Add a New Place",
+    "saveAddressForQuickAccess": "Save this address for quick access in the future.",
+    "address": "Address",
+    "enterAddressPlaceholder": "e.g., 123 Main St, Accra",
+    "savePlace": "Save Place",
+    "placeSaved": "Place Saved",
+    "addressSavedSuccessfully": "The address has been successfully saved.",
+    "placeRemoved": "Place Removed"
 }
-
-    

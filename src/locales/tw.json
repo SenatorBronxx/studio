@@ -308,7 +308,14 @@
     "busArrivingAtYourLocation": "Bɔs redu wo baabi",
     "signInToContinue": "Kɔ mu na Toa so",
     "signInToAccessFeatures": "Yɛsrɛ wo, kɔ mu na nya hokwan kɔ app no afa horow nyinaa.",
-    "youHaveArrived": "Woadu!"
+    "youHaveArrived": "Woadu!",
+    "editSavedPlace": "Siesie Beae a Wɔakora",
+    "addANewPlace": "Fa Beae Foforo Ka ho",
+    "saveAddressForQuickAccess": "Sie adrɛs yi na wode adi dwuma ntɛmntɛm daakye.",
+    "address": "Adrɛs",
+    "enterAddressPlaceholder": "nhwɛso, 123 Main St, Accra",
+    "savePlace": "Sie Beae",
+    "placeSaved": "Beae a Wɔasie",
+    "addressSavedSuccessfully": "Wɔasie adrɛs no yiye.",
+    "placeRemoved": "Wɔayi Beae no"
 }
-
-    
