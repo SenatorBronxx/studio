@@ -26,6 +26,18 @@ import { ListMusic } from 'lucide-react';
 import { useLanguage } from '@/context/language-context';
 import { useTrip, type ActiveTrip } from '@/context/trip-context';
 import { cn } from '@/lib/utils';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { useDiscount } from '@/context/discount-context';
 
 const initialBusData = [
     {
@@ -86,7 +98,7 @@ export default function SearchPage() {
   const [isHydrated, setIsHydrated] = useState(false);
 
   const { toast } = useToast();
-  const { balance, deductBalance, addTransaction, addLoyaltyPoints } = useWallet();
+  const { balance, deductBalance, addTransaction, addLoyaltyPoints, addBalance: refundBalance } = useWallet();
   const { 
     playlist,
     nowPlaying,
@@ -97,8 +109,9 @@ export default function SearchPage() {
     setIsOnBus,
     isOnBus,
   } = useMusic();
-  const { activeTrip, setActiveTrip, setDynamicEta, isHydrated: isTripHydrated } = useTrip();
+  const { activeTrip, setActiveTrip, setDynamicEta, isHydrated: isTripHydrated, clearActiveTrip } = useTrip();
   const { t } = useLanguage();
+  const { activeDiscount } = useDiscount();
   
   const [buses, setBuses] = useState(initialBusData);
   const [filteredBuses, setFilteredBuses] = useState<BusData[]>([]);
@@ -193,7 +206,13 @@ export default function SearchPage() {
 
   const handleBoard = (stop: {name: string, fare: number, eta: number}) => {
     if(!selectedBus || !selectedSeat) return;
-    if (balance < stop.fare) {
+    
+    let finalFare = stop.fare;
+    if (activeDiscount) {
+        finalFare *= (1 - activeDiscount.percentage / 100);
+    }
+
+    if (balance < finalFare) {
       toast({
         variant: "destructive",
         title: t('insufficientBalanceToastTitle'),
@@ -205,13 +224,13 @@ export default function SearchPage() {
     setIsBoarding(true);
     setTimeout(() => {
         setIsBoarding(false);
-        deductBalance(stop.fare);
+        deductBalance(finalFare);
 
         const newTransaction = {
             id: uuidv4(),
             type: 'payment',
             plate: selectedBus.plate || 'N/A',
-            amount: -stop.fare,
+            amount: -finalFare,
         };
         addTransaction(newTransaction);
         
@@ -242,7 +261,7 @@ export default function SearchPage() {
         const pointsEarned = Math.floor(stop.fare);
         addLoyaltyPoints(pointsEarned);
 
-        const qrData = { bus: selectedBus.plate, seat: selectedSeat, from: stop.name, to: selectedBus.finalDestination.name, fare: stop.fare, timestamp: new Date().toISOString() };
+        const qrData = { bus: selectedBus.plate, seat: selectedSeat, from: stop.name, to: selectedBus.finalDestination.name, fare: finalFare, timestamp: new Date().toISOString() };
         const encodedQrData = encodeURIComponent(JSON.stringify(qrData));
         setQrCodeUrl(`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodedQrData}`);
         
@@ -254,9 +273,14 @@ export default function SearchPage() {
         }
         setNotifications(prev => [newNotification, ...prev]);
 
+        let toastDescription = t('fareDeductedToastDescription', { fare: finalFare.toFixed(2) });
+        if (activeDiscount) {
+            toastDescription += ` (${t('discountAppliedToast', { percentage: activeDiscount.percentage })})`
+        }
+
         toast({
             title: t('seatBookedToastTitle'),
-            description: t('fareDeductedToastDescription', { fare: stop.fare.toFixed(2) }),
+            description: toastDescription,
         });
         
         if (pointsEarned > 0) {
@@ -268,6 +292,41 @@ export default function SearchPage() {
 
     }, 1500);
   }
+
+  const handleCancelTrip = () => {
+    if (!activeTrip) return;
+
+    const allStops = [...activeTrip.bus.stops, activeTrip.bus.finalDestination];
+    const destinationStop = allStops.find(s => s.name === activeTrip.destination);
+    if (!destinationStop) return;
+
+    let fareToRefund = destinationStop.fare;
+     if (activeDiscount) {
+      fareToRefund *= (1 - activeDiscount.percentage / 100);
+    }
+    
+    refundBalance(fareToRefund);
+    addTransaction({ type: 'top-up', plate: `Refund for ${activeTrip.bus.plate}`, amount: fareToRefund });
+
+    const updatedBuses = buses.map(b => {
+      if (b.id === activeTrip.bus.id) {
+        const newSeating = b.seating.map(s => (s && s.id === activeTrip.seat) ? { ...s, isOccupied: false } : s);
+        return { ...b, seating: newSeating, capacity: { ...b.capacity, current: b.capacity.current - 1 }};
+      }
+      return b;
+    });
+    setBuses(updatedBuses);
+
+    clearActiveTrip();
+    setSelectedBus(null);
+    setSelectedSeat(null);
+    setIsOnBus(false);
+
+    toast({
+      title: t('tripCancelled'),
+      description: t('tripCancelledDescription', { fare: fareToRefund.toFixed(2) }),
+    });
+  };
   
   const handleSeatSelect = (seatId: string) => {
     if (selectedBus) {
@@ -365,6 +424,33 @@ export default function SearchPage() {
                                         <X className="h-5 w-5" />
                                     </Button>
                                     )}
+                                     {activeTrip && !isOnBus && (
+                                        <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button variant="destructive" size="sm" className="bg-purple-600 hover:bg-purple-700 text-white">
+                                                <X className="mr-2 h-4 w-4" />
+                                                {t('cancel')}
+                                            </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                            <AlertDialogTitle>{t('cancelTripConfirmationTitle')}</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                {t('cancelTripConfirmationDescription')}
+                                            </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                            <AlertDialogCancel>{t('goBack')}</AlertDialogCancel>
+                                            <AlertDialogAction
+                                                onClick={handleCancelTrip}
+                                                className="bg-destructive hover:bg-destructive/90"
+                                            >
+                                                {t('confirmCancellation')}
+                                            </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                        </AlertDialog>
+                                    )}
                                 </div>
 
                                 {activeTrip ? (
@@ -422,6 +508,10 @@ export default function SearchPage() {
                                     <h3 className="text-sm font-semibold text-foreground/80 mb-2">{t('busFares')}:</h3>
                                     <Accordion type="single" collapsible className="w-full">
                                         {[...displayedBus.stops, { ...displayedBus.finalDestination, isFinal: true }].map((stop, index) => {
+                                             let fare = stop.fare;
+                                             if (activeDiscount) {
+                                                fare *= (1 - activeDiscount.percentage / 100);
+                                             }
                                             return (
                                                 <AccordionItem value={`item-${index}`} key={index} className="border-b-0">
                                                     <AccordionTrigger className="py-2 rounded-lg hover:bg-muted/50 px-2 data-[state=open]:bg-muted">
@@ -432,7 +522,10 @@ export default function SearchPage() {
                                                                 </div>
                                                                 <p className={`text-sm ${stop.isFinal ? 'font-semibold text-primary' : 'text-foreground'}`}>{stop.name} {stop.isFinal && `(${t('final')})`}</p>
                                                             </div>
-                                                            <p className={`font-mono text-sm ${stop.isFinal ? 'font-semibold text-primary' : 'text-foreground'}`}>GH₵{stop.fare.toFixed(2)}</p>
+                                                             <div className='flex items-center gap-2'>
+                                                                {activeDiscount && <Badge variant="destructive">-{activeDiscount.percentage}%</Badge>}
+                                                                <p className={`font-mono text-sm ${stop.isFinal ? 'font-semibold text-primary' : 'text-foreground'}`}>GH₵{fare.toFixed(2)}</p>
+                                                            </div>
                                                         </div>
                                                     </AccordionTrigger>
                                                     <AccordionContent>

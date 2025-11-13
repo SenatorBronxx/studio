@@ -70,8 +70,13 @@ export function TripProvider({ children }: { children: ReactNode }) {
     }, []);
 
     const clearActiveTrip = useCallback(() => {
-        setActiveTrip(null);
-    }, [setActiveTrip]);
+        setActiveTripState(null);
+         try {
+            localStorage.removeItem('eritas-active-trip');
+        } catch (error) {
+            console.error("Failed to clear active trip from localStorage", error);
+        }
+    }, []);
 
     const setDynamicEta = useCallback((eta: number) => {
         setActiveTripState(prevTrip => {

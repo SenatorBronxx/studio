@@ -317,5 +317,11 @@
     "savePlace": "Sie Beae",
     "placeSaved": "Beae a Wɔasie",
     "addressSavedSuccessfully": "Wɔasie adrɛs no yiye.",
-    "placeRemoved": "Wɔayi Beae no"
+    "placeRemoved": "Wɔayi Beae no",
+    "tripCancelled": "Akwantu no Atwa",
+    "tripCancelledDescription": "Wɔatwa w’akwantu no na wɔde GH₵{{fare}} asan agu wo bɔtɔm.",
+    "cancelTripConfirmationTitle": "Woawie pɛyɛ sɛ wopɛ sɛ wotwa mu?",
+    "cancelTripConfirmationDescription": "Wɔbɛyi w’akonnwa no na wɔde ka no asan agu wo ERITAS Pay bɔtɔm.",
+    "goBack": "San W'akyi",
+    "confirmCancellation": "Yiw, twa mu"
 }

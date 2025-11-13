@@ -317,5 +317,11 @@
     "savePlace": "Save Place",
     "placeSaved": "Place Saved",
     "addressSavedSuccessfully": "The address has been successfully saved.",
-    "placeRemoved": "Place Removed"
+    "placeRemoved": "Place Removed",
+    "tripCancelled": "Trip Cancelled",
+    "tripCancelledDescription": "Your trip has been cancelled and GH₵{{fare}} has been refunded to your wallet.",
+    "cancelTripConfirmationTitle": "Are you sure you want to cancel?",
+    "cancelTripConfirmationDescription": "Your seat will be released and the fare will be refunded to your ERITAS Pay wallet.",
+    "goBack": "Go Back",
+    "confirmCancellation": "Yes, Cancel Trip"
 }

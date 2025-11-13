@@ -46,6 +46,18 @@ import { useLanguage } from '@/context/language-context';
 import { useTrip, type ActiveTrip } from '@/context/trip-context';
 import { useUser } from '@/context/user-context';
 import { cn } from '@/lib/utils';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+
 
 const initialBusData = [
     {
@@ -98,9 +110,9 @@ export default function HomePage() {
   const router = useRouter();
   const { user } = useUser();
   const { toast } = useToast();
-  const { balance, deductBalance, addTransaction, addLoyaltyPoints } = useWallet();
+  const { balance, deductBalance, addTransaction, addLoyaltyPoints, addBalance: refundBalance } = useWallet();
   const { setIsOnBus, isOnBus } = useMusic();
-  const { activeTrip, setActiveTrip, isHydrated: isTripHydrated, setDynamicEta } = useTrip();
+  const { activeTrip, setActiveTrip, isHydrated: isTripHydrated, setDynamicEta, clearActiveTrip } = useTrip();
   const { bookingAlerts } = useNotificationSettings();
   const { activeDiscount, isDiscountBannerDismissed, dismissDiscountBanner } = useDiscount();
   const { t } = useLanguage();
@@ -296,6 +308,47 @@ export default function HomePage() {
 
     }, 1500);
   }
+
+   const handleCancelTrip = () => {
+    if (!activeTrip) return;
+
+    // Find the original fare
+    const allStops = [...activeTrip.bus.stops, activeTrip.bus.finalDestination];
+    const destinationStop = allStops.find(s => s.name === activeTrip.destination);
+    if (!destinationStop) return; // Should not happen
+
+    let fareToRefund = destinationStop.fare;
+    if (activeDiscount) {
+      fareToRefund *= (1 - activeDiscount.percentage / 100);
+    }
+    
+    // 1. Refund the user
+    refundBalance(fareToRefund);
+    addTransaction({ type: 'top-up', plate: `Refund for ${activeTrip.bus.plate}`, amount: fareToRefund });
+
+    // 2. Free up the seat
+    const updatedBuses = buses.map(b => {
+      if (b.id === activeTrip.bus.id) {
+        const newSeating = b.seating.map(s => (s && s.id === activeTrip.seat) ? { ...s, isOccupied: false } : s);
+        return { ...b, seating: newSeating, capacity: { ...b.capacity, current: b.capacity.current - 1 }};
+      }
+      return b;
+    });
+    setBuses(updatedBuses);
+
+    // 3. Clear trip state
+    clearActiveTrip();
+    setSelectedBus(null);
+    setSelectedSeat(null);
+    setIsOnBus(false);
+
+    // 4. Notify user
+    toast({
+      title: t('tripCancelled'),
+      description: t('tripCancelledDescription', { fare: fareToRefund.toFixed(2) }),
+    });
+  };
+
   
   const handleSeatSelect = (seatId: string) => {
     if (selectedBus) {
@@ -440,10 +493,37 @@ export default function HomePage() {
                             <p className="text-sm text-muted-foreground font-mono">{displayedBus.plate}</p>
                         </div>
                     </div>
-                    {!activeTrip && (
+                     {!activeTrip && (
                       <Button variant="ghost" size="icon" onClick={clearSelectedBus} className="h-8 w-8 -mt-1 -mr-2">
                           <X className="h-5 w-5" />
                       </Button>
+                    )}
+                    {activeTrip && !isOnBus && (
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="destructive" size="sm" className="bg-purple-600 hover:bg-purple-700 text-white">
+                                <X className="mr-2 h-4 w-4" />
+                                {t('cancel')}
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>{t('cancelTripConfirmationTitle')}</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                {t('cancelTripConfirmationDescription')}
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>{t('goBack')}</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={handleCancelTrip}
+                                className="bg-destructive hover:bg-destructive/90"
+                              >
+                                {t('confirmCancellation')}
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                     )}
                 </div>
 
