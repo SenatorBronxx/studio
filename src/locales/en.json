@@ -73,7 +73,7 @@
     "busFares": "Bus Fares:",
     "final": "Final",
     "arrivingIn": "Arriving in <strong>{{minutes}} min</strong>",
-    "youAreOnTheBus": "You are on the bus!",
+    "busHasArrived": "Bus has arrived!",
     "selectBusSeatFirst": "Select bus seat first",
     "board": "BOARD",
     "busIsFull": "This bus is full.",
@@ -305,7 +305,7 @@
     "goToHome": "Go to Home",
     "tripInProgress": "Trip in progress. View ETA above.",
     "arrivingAt": "Arriving at",
-    "busArrivingAtYourLocation": "Bus arriving at your location",
+    "busArrivingAtYourLocation": "Bus arriving at",
     "signInToContinue": "Sign In to Continue",
     "signInToAccessFeatures": "Please sign in to access all app features.",
     "youHaveArrived": "You have arrived!"

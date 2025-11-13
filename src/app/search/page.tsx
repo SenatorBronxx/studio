@@ -25,6 +25,7 @@ import { NowPlayingIcon } from '@/components/icons/now-playing-icon';
 import { ListMusic } from 'lucide-react';
 import { useLanguage } from '@/context/language-context';
 import { useTrip, type ActiveTrip } from '@/context/trip-context';
+import { cn } from '@/lib/utils';
 
 const initialBusData = [
     {
@@ -108,6 +109,7 @@ export default function SearchPage() {
   const [isQrSheetOpen, setIsQrSheetOpen] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   useEffect(() => {
     setIsHydrated(true);
@@ -150,16 +152,19 @@ export default function SearchPage() {
         setDynamicEta(activeTrip.eta - 1);
       }, 60 * 1000); // Decrease every minute
     } else if (activeTrip && activeTrip.eta <= 0 && !isOnBus) {
-        setIsOnBus(true);
-        // Switch to destination ETA
-        const destinationStop = [...activeTrip.bus.stops, activeTrip.bus.finalDestination].find(s => s.name === activeTrip.destination);
-        if (destinationStop) {
-            setDynamicEta(destinationStop.eta);
-        }
-        toast({
-            title: t('onTheBusToastTitle'),
-            description: t('onTheBusToastDescription'),
-        });
+        setIsTransitioning(true);
+        setTimeout(() => {
+            setIsOnBus(true);
+            const destinationStop = [...activeTrip.bus.stops, activeTrip.bus.finalDestination].find(s => s.name === activeTrip.destination);
+            if (destinationStop) {
+                setDynamicEta(destinationStop.eta);
+            }
+            toast({
+                title: t('onTheBusToastTitle'),
+                description: t('onTheBusToastDescription'),
+            });
+            setIsTransitioning(false);
+        }, 2000); // Animation duration
     }
     return () => clearInterval(interval);
   }, [activeTrip, isOnBus, setIsOnBus, setDynamicEta, toast, t]);
@@ -225,7 +230,7 @@ export default function SearchPage() {
         if (updatedBus) {
           const newTrip: ActiveTrip = {
             bus: updatedBus,
-            from: fromLocation || "Your Location",
+            from: "Your Location",
             destination: stop.name,
             eta: updatedBus.eta,
             seat: selectedSeat,
@@ -363,17 +368,23 @@ export default function SearchPage() {
                                 </div>
 
                                 {activeTrip ? (
-                                    <div className="p-3 bg-primary/10 rounded-lg text-center">
-                                        <p className='text-sm text-primary/80'>
-                                            {isOnBus ? t('arrivingAt') : t('busArrivingAtYourLocation')} <span className='font-bold'>{isOnBus ? activeTrip.destination : activeTrip.from}</span>
-                                        </p>
-                                        <div className="flex items-center justify-center gap-2 text-primary font-semibold text-lg">
-                                            <Clock className="h-5 w-5" />
-                                            {activeTrip.eta > 0 ? (
-                                                <span dangerouslySetInnerHTML={{ __html: t('arrivingIn', { minutes: activeTrip.eta }) }} />
-                                            ) : (
-                                                <span>{isOnBus ? t('youHaveArrived') : t('youAreOnTheBus')}</span>
-                                            )}
+                                    <div className="relative p-3 bg-primary/10 rounded-lg text-center overflow-hidden">
+                                        <Bus className={cn(
+                                            "absolute top-1/2 -translate-y-1/2 h-8 w-8 text-primary/50",
+                                            isTransitioning ? 'animate-slide-across' : '-left-12'
+                                        )} />
+                                        <div className={cn("transition-opacity duration-500", isTransitioning ? 'opacity-0' : 'opacity-100')}>
+                                            <p className='text-sm text-primary/80'>
+                                                {isOnBus ? t('arrivingAt') : t('busArrivingAtYourLocation')} <span className='font-bold'>{isOnBus ? activeTrip.destination : activeTrip.from}</span>
+                                            </p>
+                                            <div className="flex items-center justify-center gap-2 text-primary font-semibold text-lg">
+                                                <Clock className="h-5 w-5" />
+                                                {activeTrip.eta > 0 ? (
+                                                    <span dangerouslySetInnerHTML={{ __html: t('arrivingIn', { minutes: activeTrip.eta }) }} />
+                                                ) : (
+                                                    <span>{isOnBus ? t('youHaveArrived') : t('busHasArrived')}</span>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 ) : (

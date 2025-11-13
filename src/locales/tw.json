@@ -73,7 +73,7 @@
     "busFares": "Bɔs Ka:",
     "final": "Awiei",
     "arrivingIn": "Ɔredu simma <strong>{{minutes}}</strong> mu",
-    "youAreOnTheBus": "Wowɔ bɔs no mu!",
+    "busHasArrived": "Bɔs no adu!",
     "selectBusSeatFirst": "Di kan paw bɔs akonnwa ansa",
     "board": "FORO",
     "busIsFull": "Saa bɔs yi ayɛ ma.",
