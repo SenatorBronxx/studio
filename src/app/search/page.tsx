@@ -321,11 +321,19 @@ export default function SearchPage() {
     setSelectedBus(null);
     setSelectedSeat(null);
     setIsOnBus(false);
+    setQrCodeUrl(null); // Invalidate QR Code
 
     toast({
       title: t('tripCancelled'),
       description: t('tripCancelledDescription', { fare: fareToRefund.toFixed(2) }),
     });
+
+    const newNotification: Notification = {
+        id: Date.now(),
+        title: "Trip Cancelled",
+        description: "Your QR code for this trip has been terminated."
+    };
+    setNotifications(prev => [newNotification, ...prev]);
   };
   
   const handleSeatSelect = (seatId: string) => {
@@ -696,13 +704,5 @@ export default function SearchPage() {
     </div>
   );
 }
-
-    
-
-    
-
-    
-
-    
 
     
