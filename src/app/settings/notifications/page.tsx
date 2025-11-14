@@ -24,7 +24,7 @@ export default function NotificationsPage() {
   
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm p-4">
+      <header className="sticky top-0 z-10 bg-background/75 backdrop-blur-sm p-4">
         <div className="max-w-md mx-auto flex items-center relative">
           <Button
             variant="ghost"

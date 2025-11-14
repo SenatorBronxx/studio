@@ -65,7 +65,7 @@ export function UserPreferences() {
   }, [state, toast, t]);
 
   return (
-    <Card className="w-full max-w-md bg-card/80 backdrop-blur-sm border-white/20 text-card-foreground lg:bg-card/80 lg:text-card-foreground lg:border-white/20">
+    <Card className="w-full max-w-md bg-card/75 backdrop-blur-sm border-white/20 text-card-foreground lg:bg-card/75 lg:text-card-foreground lg:border-white/20">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-white lg:text-white">
           <Save />

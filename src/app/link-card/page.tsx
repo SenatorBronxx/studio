@@ -106,7 +106,7 @@ export default function LinkCardPage() {
 
     return (
         <div className="flex flex-col min-h-screen bg-background">
-            <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm p-4">
+            <header className="sticky top-0 z-10 bg-background/75 backdrop-blur-sm p-4">
                 <div className="max-w-md mx-auto flex items-center">
                     <Button variant="ghost" size="icon" onClick={() => router.back()}>
                         <ArrowLeft className="h-5 w-5" />
@@ -246,4 +246,3 @@ export default function LinkCardPage() {
         </div>
     );
 }
-

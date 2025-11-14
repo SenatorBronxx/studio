@@ -353,7 +353,7 @@ export default function SearchPage() {
     if (!nowPlaying) return null;
 
     return (
-        <div className="bg-background/80 backdrop-blur-sm p-2 max-w-md mx-auto" onClick={() => setIsPlaylistOpen(true)}>
+        <div className="bg-background/75 backdrop-blur-sm p-2 max-w-md mx-auto" onClick={() => setIsPlaylistOpen(true)}>
              <div className="p-2 bg-secondary rounded-lg flex items-center gap-4 cursor-pointer">
                 <Image src={nowPlaying.image} alt={nowPlaying.title} width={40} height={40} className="rounded-md" />
                 <div className="flex-grow">
@@ -378,7 +378,7 @@ export default function SearchPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-        <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-sm p-4 shadow-sm">
+        <header className="sticky top-0 z-20 bg-background/75 backdrop-blur-sm p-4 shadow-sm">
             <div className="max-w-md mx-auto space-y-2">
                 <div className='flex items-center gap-2'>
                     <div className='relative flex-1'>
@@ -435,7 +435,7 @@ export default function SearchPage() {
                                      {activeTrip && !isOnBus && (
                                         <AlertDialog>
                                         <AlertDialogTrigger asChild>
-                                            <Button variant="destructive" size="sm" className="bg-purple-600 hover:bg-purple-700 text-white">
+                                            <Button variant="destructive" size="sm">
                                                 <X className="mr-2 h-4 w-4" />
                                                 {t('cancel')}
                                             </Button>

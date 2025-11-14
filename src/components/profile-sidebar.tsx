@@ -87,7 +87,7 @@ export function ProfileSidebar() {
     const { language, setLanguage, t } = useLanguage();
     const { activeTrip } = useTrip();
     const { places, removePlace } = usePlaces();
-    const [dialogState, setDialogState] = useState<{ isOpen: boolean; action: PlaceAction; place?: SavedPlace }>({ isOpen: false, action: 'add' });
+    const [dialogState, setDialogState] = useState<{ isOpen: boolean; action: PlaceAction; place?: SavedPlace | { type: 'home' | 'work' | 'other' } }>({ isOpen: false, action: 'add' });
 
 
     const handleLogout = () => {
@@ -150,7 +150,7 @@ export function ProfileSidebar() {
         });
     }
     
-    const openDialog = (action: PlaceAction, place?: SavedPlace) => {
+    const openDialog = (action: PlaceAction, place?: SavedPlace | { type: 'home' | 'work' | 'other' }) => {
         setDialogState({ isOpen: true, action, place });
     }
 
@@ -165,7 +165,7 @@ export function ProfileSidebar() {
                 <Button
                     variant="default"
                     size="icon"
-                    className="bg-background/80 backdrop-blur-sm rounded-full shadow-md hover:bg-card text-foreground"
+                    className="bg-background/75 backdrop-blur-sm rounded-full shadow-md hover:bg-card text-foreground"
                 >
                     <User className="h-5 w-5" />
                 </Button>

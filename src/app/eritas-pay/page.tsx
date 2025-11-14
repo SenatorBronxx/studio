@@ -67,7 +67,7 @@ export default function EritasPayPage() {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm p-4">
+      <header className="sticky top-0 z-10 bg-background/75 backdrop-blur-sm p-4">
         <div className="max-w-md mx-auto flex justify-between items-center">
             <ProfileSidebar />
             <Sheet>
@@ -75,7 +75,7 @@ export default function EritasPayPage() {
                     <Button
                         variant="default"
                         size="icon"
-                        className="bg-background/80 backdrop-blur-sm rounded-full shadow-md hover:bg-card text-foreground relative"
+                        className="bg-background/75 backdrop-blur-sm rounded-full shadow-md hover:bg-card text-foreground relative"
                     >
                         <Bell className="h-5 w-5" />
                         {notifications.length > 0 && (

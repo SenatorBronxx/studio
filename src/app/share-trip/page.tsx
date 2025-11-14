@@ -63,7 +63,7 @@ export default function ShareTripPage() {
 
     return (
         <div className="flex flex-col min-h-screen bg-background">
-            <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm p-4">
+            <header className="sticky top-0 z-10 bg-background/75 backdrop-blur-sm p-4">
                 <div className="max-w-md mx-auto flex items-center relative">
                     <Button variant="ghost" size="icon" onClick={() => router.back()} className="absolute left-0">
                         <ArrowLeft className="h-5 w-5" />

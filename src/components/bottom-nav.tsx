@@ -26,7 +26,7 @@ export function BottomNav() {
   }
 
   return (
-    <div className="bg-background/80 backdrop-blur-sm p-2 max-w-md mx-auto shadow-lg border-t border-border/50">
+    <div className="bg-background/75 backdrop-blur-sm p-2 max-w-md mx-auto shadow-lg border-t border-border/50">
       <div className="flex justify-around items-center">
         {navItems.map((item) => {
           const Icon = item.icon;

@@ -406,7 +406,7 @@ export default function HomePage() {
                  <Button
                     variant="default"
                     size="icon"
-                    className="bg-background/80 backdrop-blur-sm rounded-full shadow-md hover:bg-card text-foreground relative"
+                    className="bg-background/75 backdrop-blur-sm rounded-full shadow-md hover:bg-card text-foreground relative"
                 >
                     <Bell className="h-5 w-5" />
                     {notifications.length > 0 && (
@@ -473,7 +473,7 @@ export default function HomePage() {
         </div>
 
       <div className="absolute bottom-0 left-0 right-0 z-10 p-2 sm:p-4">
-        <div className="bg-background/80 backdrop-blur-sm rounded-t-2xl p-4 max-w-md mx-auto flex flex-col gap-4 shadow-lg">
+        <div className="bg-background/75 backdrop-blur-sm rounded-t-2xl p-4 max-w-md mx-auto flex flex-col gap-4 shadow-lg">
             {showDiscountBanner && activeDiscount && (
                  <div className="relative bg-primary/10 border-l-4 border-primary text-primary-foreground p-4 rounded-lg animate-in fade-in-50 slide-in-from-bottom-5">
                     <Button variant="ghost" size="icon" className="absolute top-1 right-1 h-6 w-6 text-primary hover:bg-primary/20" onClick={handleDismissBanner}>
@@ -509,7 +509,7 @@ export default function HomePage() {
                     {activeTrip && !isOnBus && (
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <Button variant="destructive" size="sm" className="bg-purple-600 hover:bg-purple-700 text-white">
+                            <Button variant="destructive" size="sm">
                                 <X className="mr-2 h-4 w-4" />
                                 {t('cancel')}
                             </Button>

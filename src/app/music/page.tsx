@@ -73,7 +73,7 @@ export default function MusicPage() {
         if (!nowPlaying) return null;
 
         return (
-            <div className="bg-background/80 backdrop-blur-sm p-2 max-w-md mx-auto" onClick={() => setIsPlaylistOpen(true)}>
+            <div className="bg-background/75 backdrop-blur-sm p-2 max-w-md mx-auto" onClick={() => setIsPlaylistOpen(true)}>
                  <div className="p-2 bg-secondary rounded-lg flex items-center gap-4 cursor-pointer">
                     <Image src={nowPlaying.image} alt={nowPlaying.title} width={40} height={40} className="rounded-md" />
                     <div className="flex-grow">
@@ -102,7 +102,7 @@ export default function MusicPage() {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm p-4 space-y-4">
+      <header className="sticky top-0 z-10 bg-background/75 backdrop-blur-sm p-4 space-y-4">
         <div className="max-w-md mx-auto flex justify-between items-center">
             <h1 className="text-2xl font-bold">{t('browse')}</h1>
             <Sheet open={isPlaylistOpen} onOpenChange={setIsPlaylistOpen}>
