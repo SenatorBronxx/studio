@@ -19,6 +19,7 @@ import {
   Ticket,
   LogIn,
   Bus,
+  UserCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
@@ -707,5 +708,7 @@ export default function HomePage() {
     </div>
   );
 }
+
+    
 
     
