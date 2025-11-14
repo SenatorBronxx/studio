@@ -167,7 +167,7 @@ export function ProfileSidebar() {
                     size="icon"
                     className="bg-background/75 backdrop-blur-sm rounded-full shadow-md hover:bg-card text-foreground"
                 >
-                    <User className="h-5 w-5" />
+                    <Home className="h-5 w-5" />
                 </Button>
             </SheetTrigger>
             <SheetContent>
@@ -416,3 +416,5 @@ export function ProfileSidebar() {
         </>
     );
 }
+
+    
