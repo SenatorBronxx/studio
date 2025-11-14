@@ -94,6 +94,15 @@ export default function LinkCardPage() {
         }, 1500);
     };
 
+    const formatCardNumber = (num: string) => {
+        if (num.length < 4) {
+            return num.padEnd(16, '•').replace(/(.{4})/g, '$1 ').trim();
+        }
+        const firstTwo = num.slice(0, 2);
+        const lastTwo = num.slice(-2);
+        return `${firstTwo}${'*'.repeat(12)}${lastTwo}`.replace(/(.{4})/g, '$1 ').trim();
+    };
+
 
     return (
         <div className="flex flex-col min-h-screen bg-background">
@@ -112,21 +121,21 @@ export default function LinkCardPage() {
                         <div className="absolute inset-0 opacity-10">
                             <CardPattern />
                         </div>
-                        <CardContent className="p-6 relative">
-                            <div className="flex justify-between items-start mb-8">
-                                <div className='space-y-1'>
-                                    <p className="text-xs text-foreground/70">{t('cardBalance')}</p>
-                                    {isCardLinked ? (
-                                        <p className="text-2xl font-bold text-foreground animate-in fade-in">GH₵ 5,840.12</p>
-                                    ) : (
-                                        <p className="text-2xl font-bold text-foreground">GH₵ ****.**</p>
-                                    )}
-                                </div>
-                                <VisaIcon className="w-20" />
+                        <CardContent className="p-6 relative flex flex-col justify-between min-h-[200px]">
+                           <div className="flex justify-end items-start">
+                                <VisaIcon className="w-24" />
                             </div>
-                            <div className='space-y-1'>
-                                <p className="text-sm font-mono tracking-widest text-foreground/80">{cardNumber.padEnd(16, '•').replace(/(.{4})/g, '$1 ').trim()}</p>
-                                <p className="text-xs text-foreground/70 uppercase">{cardHolder || t('cardholderNamePlaceholder')}</p>
+                            <div className='space-y-2 mt-auto'>
+                                <p className="text-xl font-mono tracking-widest text-foreground/80">
+                                  {formatCardNumber(cardNumber)}
+                                </p>
+                                <div className="flex justify-between items-end">
+                                  <p className="text-sm text-foreground/70 uppercase">{cardHolder || t('cardholderNamePlaceholder')}</p>
+                                  <div className="text-right">
+                                    <p className="text-xs text-foreground/70">Expires</p>
+                                    <p className="text-sm font-mono text-foreground/80">{expiryDate || 'MM/YY'}</p>
+                                  </div>
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
@@ -237,3 +246,4 @@ export default function LinkCardPage() {
         </div>
     );
 }
+
