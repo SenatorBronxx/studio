@@ -22,6 +22,7 @@ import { useUser } from "@/context/user-context";
 import { useLanguage } from "@/context/language-context";
 import Image from "next/image";
 import { GoogleIcon } from "./icons/google";
+import { useAppState } from "./client-providers";
 
 // Schemas
 const signInSchema = z.object({
@@ -51,6 +52,7 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
   const { toast } = useToast();
   const { setUser } = useUser();
   const { t } = useLanguage();
+  const { handleGoogleSignIn } = useAppState();
   
   const signInForm = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
@@ -132,6 +134,22 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
         setIsSubmitting(false);
     }, 1500);
   }
+  
+  const onGoogleLogin = async () => {
+    try {
+      const user = await handleGoogleSignIn();
+      if (user) {
+        onSignInSuccess?.();
+      }
+    } catch (error) {
+      console.error(error);
+      toast({
+        variant: "destructive",
+        title: "Google Sign-In Failed",
+        description: (error as Error).message || "An unexpected error occurred.",
+      });
+    }
+  };
 
   return (
     <Tabs defaultValue="sign-in" className="w-full">
@@ -276,7 +294,7 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
         </div>
       </div>
       <div className="mt-6 grid grid-cols-2 gap-4">
-        <Button variant="outline" disabled>
+        <Button variant="outline" onClick={onGoogleLogin} disabled={isSubmitting}>
           <GoogleIcon className="mr-2 h-4 w-4" />
           Google
         </Button>

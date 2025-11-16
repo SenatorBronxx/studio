@@ -17,6 +17,7 @@ import { GoogleAuthProvider, signInWithPopup, User } from "firebase/auth";
 
 type AppStateContextType = {
     clearAllData: () => void;
+    handleGoogleSignIn: () => Promise<User | null>;
 };
 
 export const AppStateContext = createContext<AppStateContextType | undefined>(undefined);
@@ -44,9 +45,24 @@ export function ClientProviders({ children }: { children: ReactNode }) {
         
         window.location.assign('/');
     };
+    
+    const handleGoogleSignIn = useCallback(async () => {
+        if (!auth) {
+            throw new Error("Firebase Auth is not initialized.");
+        }
+        const provider = new GoogleAuthProvider();
+        try {
+            const result = await signInWithPopup(auth, provider);
+            return result.user;
+        } catch (error) {
+            console.error("Google Sign-In Error:", error);
+            // Let the calling component handle UI updates
+            throw error;
+        }
+    }, [auth]);
 
     return (
-        <AppStateContext.Provider value={{ clearAllData }}>
+        <AppStateContext.Provider value={{ clearAllData, handleGoogleSignIn }}>
             <LanguageProvider>
                 <UserProvider>
                     <WalletProvider>

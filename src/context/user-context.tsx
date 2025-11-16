@@ -4,8 +4,9 @@
 import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 import { useAppState } from '@/components/client-providers';
 import { useUser as useFirebaseUser } from '@/firebase';
+import type { User as FirebaseUser } from 'firebase/auth';
 
-type User = {
+type AppUser = {
   name: string;
   email: string;
   phone: string;
@@ -13,25 +14,25 @@ type User = {
 };
 
 type UserContextType = {
-  user: User | null;
-  setUser: (user: User | null) => void;
+  user: AppUser | null;
+  setUser: (user: AppUser | null) => void;
   isHydrated: boolean;
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: ReactNode }) {
-  const [user, setUserState] = useState<User | null>(null);
+  const [user, setUserState] = useState<AppUser | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
   const appState = useAppState();
+  const { user: firebaseUser, loading: firebaseLoading } = useFirebaseUser();
 
-  // Effect to hydrate user from localStorage
+  // Effect to hydrate user from localStorage on initial load
   useEffect(() => {
     try {
       const storedUser = localStorage.getItem('eritas-user');
       if (storedUser) {
-        const parsedUser = JSON.parse(storedUser);
-        // Basic validation
+        const parsedUser: AppUser = JSON.parse(storedUser);
         if (parsedUser && parsedUser.uid) {
             setUserState(parsedUser);
         }
@@ -41,14 +42,26 @@ export function UserProvider({ children }: { children: ReactNode }) {
     }
     setIsHydrated(true);
   }, []);
+  
+  // Effect to sync FirebaseUser to our AppUser state
+  useEffect(() => {
+    if (!firebaseLoading && firebaseUser) {
+        const newUser: AppUser = {
+            uid: firebaseUser.uid,
+            name: firebaseUser.displayName || 'Anonymous User',
+            email: firebaseUser.email || '',
+            phone: firebaseUser.phoneNumber || '',
+        };
+        setUser(newUser);
+    }
+  }, [firebaseUser, firebaseLoading]);
 
 
-  const setUser = useCallback((newUser: User | null) => {
+  const setUser = useCallback((newUser: AppUser | null) => {
     setUserState(newUser);
     if (isHydrated) {
       try {
         if (newUser) {
-          // If a new user is set and it's different from the one in storage, clear data
           const storedUserJson = localStorage.getItem('eritas-user');
           if (storedUserJson) {
             const storedUser = JSON.parse(storedUserJson);
@@ -68,7 +81,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   }, [isHydrated, appState]);
   
   if (!isHydrated) {
-      return null; // Or a loading spinner
+      return null;
   }
 
   return (
