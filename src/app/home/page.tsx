@@ -426,70 +426,66 @@ export default function HomePage() {
       </div>
 
       <header className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-20 bg-background/75 backdrop-blur-sm">
-        <div className="flex-1">
-          <ProfileSidebar />
-        </div>
-        <div className="flex-1 flex justify-center">
-            <Image
-                src="https://i.imgur.com/Avu0y2Y.png"
-                alt="Eritas Transport Company Logo"
-                width={120}
-                height={60}
-                priority
-                className="object-contain"
-            />
-        </div>
-        <div className="flex-1 flex justify-end">
-        <Sheet>
-            <SheetTrigger asChild>
-                 <Button
-                    variant="default"
-                    size="icon"
-                    className="bg-background/75 backdrop-blur-sm rounded-full shadow-md hover:bg-card text-foreground"
-                >
-                    <Bell className="h-5 w-5" />
-                    {notifications.length > 0 && (
-                        <span className="absolute -top-1 -right-1 flex h-4 w-4">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-4 w-4 bg-primary text-primary-foreground text-xs items-center justify-center">
-                                {notifications.length}
+        <Image
+            src="https://i.imgur.com/Avu0y2Y.png"
+            alt="Eritas Transport Company Logo"
+            width={120}
+            height={60}
+            priority
+            className="object-contain"
+        />
+        <div className="flex items-center gap-2">
+            <ProfileSidebar />
+            <Sheet>
+                <SheetTrigger asChild>
+                    <Button
+                        variant="default"
+                        size="icon"
+                        className="bg-background/75 backdrop-blur-sm rounded-full shadow-md hover:bg-card text-foreground"
+                    >
+                        <Bell className="h-5 w-5" />
+                        {notifications.length > 0 && (
+                            <span className="absolute -top-1 -right-1 flex h-4 w-4">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-4 w-4 bg-primary text-primary-foreground text-xs items-center justify-center">
+                                    {notifications.length}
+                                </span>
                             </span>
-                        </span>
-                    )}
-                </Button>
-            </SheetTrigger>
-            <SheetContent>
-                <SheetHeader>
-                    <SheetTitle>{t('notifications')}</SheetTitle>
-                </SheetHeader>
-                <div className="py-4 h-full flex flex-col">
-                    {notifications.length > 0 ? (
-                        <>
-                            <div className="flex-grow space-y-4 overflow-y-auto">
-                                {notifications.map(notification => (
-                                    <Card key={notification.id}>
-                                        <CardContent className='p-4 space-y-2'>
-                                            <h3 className="font-semibold">{notification.title}</h3>
-                                            <p className="text-sm text-muted-foreground">{notification.description}</p>
-                                            {notification.action && <div className='pt-2'>{notification.action}</div>}
-                                        </CardContent>
-                                    </Card>
-                                ))}
+                        )}
+                    </Button>
+                </SheetTrigger>
+                <SheetContent>
+                    <SheetHeader>
+                        <SheetTitle>{t('notifications')}</SheetTitle>
+                    </SheetHeader>
+                    <div className="py-4 h-full flex flex-col">
+                        {notifications.length > 0 ? (
+                            <>
+                                <div className="flex-grow space-y-4 overflow-y-auto">
+                                    {notifications.map(notification => (
+                                        <Card key={notification.id}>
+                                            <CardContent className='p-4 space-y-2'>
+                                                <h3 className="font-semibold">{notification.title}</h3>
+                                                <p className="text-sm text-muted-foreground">{notification.description}</p>
+                                                {notification.action && <div className='pt-2'>{notification.action}</div>}
+                                            </CardContent>
+                                        </Card>
+                                    ))}
+                                </div>
+                                <Button variant="outline" className="mt-4" onClick={() => setNotifications([])}>
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    {t('clearAll')}
+                                </Button>
+                            </>
+                        ) : (
+                            <div className="flex flex-col items-center justify-center text-center h-full text-muted-foreground">
+                                <Bell className="h-12 w-12 mb-4" />
+                                <p>{t('noNewNotifications')}</p>
                             </div>
-                            <Button variant="outline" className="mt-4" onClick={() => setNotifications([])}>
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                {t('clearAll')}
-                            </Button>
-                        </>
-                    ) : (
-                        <div className="flex flex-col items-center justify-center text-center h-full text-muted-foreground">
-                            <Bell className="h-12 w-12 mb-4" />
-                            <p>{t('noNewNotifications')}</p>
-                        </div>
-                    )}
-                </div>
-            </SheetContent>
-        </Sheet>
+                        )}
+                    </div>
+                </SheetContent>
+            </Sheet>
         </div>
       </header>
       
@@ -759,3 +755,6 @@ export default function HomePage() {
 
     
 
+
+
+    
