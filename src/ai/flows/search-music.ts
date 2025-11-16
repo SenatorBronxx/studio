@@ -9,6 +9,7 @@
  */
 
 import { ai } from '@/ai/genkit';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { z } from 'genkit';
 
 const MusicSearchInputSchema = z.string();
@@ -41,7 +42,6 @@ const searchMusicFlow = ai.defineFlow(
   async (query) => {
     const prompt = `You are a music search engine. Find 5 songs that match the query: "${query}".
     For each song, provide the title, artist, and a duration.
-    Also, for each song, generate a compelling and abstract image description for its cover art. The description should be suitable for an image generation model.
     `;
 
     const llmResponse = await ai.generate({
@@ -55,7 +55,6 @@ const searchMusicFlow = ai.defineFlow(
               title: z.string(),
               artist: z.string(),
               duration: z.string(),
-              imageDescription: z.string(),
             })
           ),
         }),
@@ -63,22 +62,15 @@ const searchMusicFlow = ai.defineFlow(
     });
 
     const songs = llmResponse.output?.songs || [];
+    const fallbackImage = PlaceHolderImages.find(p => p.id === 'music-art-1')?.imageUrl || '';
 
-    const imagePromises = songs.map(async (song) => {
-      const { media } = await ai.generate({
-        model: 'googleai/imagen-4.0-fast-generate-001',
-        prompt: `A vibrant, abstract cover art for a song titled "${song.title}". Style: ${song.imageDescription}`,
-      });
-      return {
-        ...song,
-        image: media.url!,
-      };
+    const songsWithImages = songs.map((song) => {
+        return {
+            ...song,
+            image: fallbackImage,
+        };
     });
-
-    const songsWithImages = await Promise.all(imagePromises);
 
     return { songs: songsWithImages };
   }
 );
-
-    
