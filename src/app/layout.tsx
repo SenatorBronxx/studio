@@ -4,7 +4,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
 import { ClientProviders } from "@/components/client-providers";
 import { OfflineIndicator } from "@/components/offline-indicator";
-import { FirebaseClientProvider } from "@/firebase";
 
 export const metadata: Metadata = {
   title: "Eritas Gateway",
@@ -28,13 +27,11 @@ export default function RootLayout({
         />
       </head>
       <body className={cn("h-full font-body antialiased", "bg-background")}>
-        <FirebaseClientProvider>
-          <ClientProviders>
-            <OfflineIndicator />
-            {children}
-            <Toaster />
-          </ClientProviders>
-        </FirebaseClientProvider>
+        <ClientProviders>
+          <OfflineIndicator />
+          {children}
+          <Toaster />
+        </ClientProviders>
       </body>
     </html>
   );

@@ -22,7 +22,6 @@ import { useUser } from "@/context/user-context";
 import { useLanguage } from "@/context/language-context";
 import Image from "next/image";
 import { GoogleIcon } from "./icons/google";
-import { useAppState } from "./client-providers";
 
 // Schemas
 const signInSchema = z.object({
@@ -52,7 +51,6 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
   const { toast } = useToast();
   const { setUser } = useUser();
   const { t } = useLanguage();
-  const { handleGoogleSignIn } = useAppState();
   
   const signInForm = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
@@ -97,8 +95,7 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
         const newUser = {
             name: `${values.firstName} ${values.lastName}`,
             email: values.email || '',
-            phone: values.phone,
-            uid: ''
+            phone: values.phone
         };
         
         localStorage.setItem('eritas-last-signup', JSON.stringify(newUser));
@@ -113,7 +110,7 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
     }, 1500);
   };
   
-  const handleSocialLogin = async (provider: 'Apple') => {
+  const handleSocialLogin = async (provider: 'Apple' | 'Google') => {
     setIsSubmitting(true);
     
     setTimeout(() => {
@@ -121,8 +118,7 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
         const mockSocialUser = {
             name: 'Jane Smith',
             email: 'jane.s@email.com',
-            phone: '+233 55 555 5555',
-            uid: ''
+            phone: '+233 55 555 5555'
         };
         setUser(mockSocialUser);
         
@@ -134,22 +130,6 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
         setIsSubmitting(false);
     }, 1500);
   }
-  
-  const onGoogleLogin = async () => {
-    try {
-      const user = await handleGoogleSignIn();
-      if (user) {
-        onSignInSuccess?.();
-      }
-    } catch (error) {
-      console.error(error);
-      toast({
-        variant: "destructive",
-        title: "Google Sign-In Failed",
-        description: (error as Error).message || "An unexpected error occurred.",
-      });
-    }
-  };
 
   return (
     <Tabs defaultValue="sign-in" className="w-full">
@@ -294,7 +274,7 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
         </div>
       </div>
       <div className="mt-6 grid grid-cols-2 gap-4">
-        <Button variant="outline" onClick={onGoogleLogin} disabled={isSubmitting}>
+        <Button variant="outline" onClick={() => handleSocialLogin('Google')} disabled={isSubmitting}>
           <GoogleIcon className="mr-2 h-4 w-4" />
           Google
         </Button>
