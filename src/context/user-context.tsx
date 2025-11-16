@@ -2,11 +2,14 @@
 'use client';
 
 import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
+import { useAppState } from '@/components/client-providers';
+import { useUser as useFirebaseUser } from '@/firebase';
 
 type User = {
   name: string;
   email: string;
   phone: string;
+  uid: string;
 };
 
 type UserContextType = {
@@ -20,12 +23,19 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 export function UserProvider({ children }: { children: ReactNode }) {
   const [user, setUserState] = useState<User | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
+  const { user: firebaseUser, loading: firebaseLoading } = useFirebaseUser();
+  const appState = useAppState();
 
+  // Effect to hydrate user from localStorage
   useEffect(() => {
     try {
       const storedUser = localStorage.getItem('eritas-user');
       if (storedUser) {
-        setUserState(JSON.parse(storedUser));
+        const parsedUser = JSON.parse(storedUser);
+        // Basic validation
+        if (parsedUser && parsedUser.uid) {
+            setUserState(parsedUser);
+        }
       }
     } catch (error) {
       console.error("Failed to read user from localStorage", error);
@@ -33,27 +43,60 @@ export function UserProvider({ children }: { children: ReactNode }) {
     setIsHydrated(true);
   }, []);
 
-  const setUser = useCallback((user: User | null) => {
-    setUserState(user);
+  // Effect to sync firebase user to our user state
+  useEffect(() => {
+    if (!firebaseLoading && firebaseUser) {
+      const currentUser = user ? JSON.parse(localStorage.getItem('eritas-user') || '{}') : null;
+
+      // If a different user signs in via Firebase, clear data
+      if (currentUser && currentUser.uid !== firebaseUser.uid) {
+        if(appState) appState.clearAllData();
+      }
+
+      const newUser: User = {
+        uid: firebaseUser.uid,
+        name: firebaseUser.displayName || 'Anonymous',
+        email: firebaseUser.email || '',
+        phone: firebaseUser.phoneNumber || ''
+      };
+      setUserState(newUser);
+      localStorage.setItem('eritas-user', JSON.stringify(newUser));
+    } else if (!firebaseLoading && !firebaseUser) {
+      // Handle logout
+       if (user) { // If there was a user logged in
+            setUser(null);
+       }
+    }
+  }, [firebaseUser, firebaseLoading, appState, user]);
+
+
+  const setUser = useCallback((newUser: User | null) => {
+    setUserState(newUser);
     if (isHydrated) {
       try {
-        if (user) {
-          localStorage.setItem('eritas-user', JSON.stringify(user));
-        } else {
-          // On logout, clear all app-specific data except theme/language
-          Object.keys(localStorage).forEach(key => {
-            if (key.startsWith('eritas-') && key !== 'eritas-language' && key !== 'eritas-theme') {
-              localStorage.removeItem(key);
+        if (newUser) {
+          // If a new user is set and it's different from the one in storage, clear data
+          const storedUserJson = localStorage.getItem('eritas-user');
+          if (storedUserJson) {
+            const storedUser = JSON.parse(storedUserJson);
+            if (storedUser.uid !== newUser.uid) {
+              if (appState) appState.clearAllData();
             }
-          });
-          // A reload might be necessary to fully reset all context states
-          // window.location.reload(); 
+          }
+          localStorage.setItem('eritas-user', JSON.stringify(newUser));
+        } else {
+          // On explicit logout (setUser(null))
+          if (appState) appState.clearAllData();
         }
       } catch (error) {
         console.error("Failed to write user to localStorage", error);
       }
     }
-  }, [isHydrated]);
+  }, [isHydrated, appState]);
+  
+  if (!isHydrated) {
+      return null; // Or a loading spinner
+  }
 
   return (
     <UserContext.Provider value={{ user, setUser, isHydrated }}>

@@ -22,6 +22,7 @@ import { useUser } from "@/context/user-context";
 import { useLanguage } from "@/context/language-context";
 import Image from "next/image";
 import { useAppState } from "./client-providers";
+import { GoogleIcon } from "./icons/google";
 
 // Schemas
 const signInSchema = z.object({
@@ -51,6 +52,7 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
   const { toast } = useToast();
   const { setUser } = useUser();
   const { t } = useLanguage();
+  const { handleGoogleSignIn, clearAllData } = useAppState();
   
   const signInForm = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
@@ -66,7 +68,6 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
     setIsSubmitting(true);
     console.log("Sign in with:", values);
     
-    // Simulate retrieving the last signed-up user
     const storedUser = localStorage.getItem('eritas-last-signup');
     const lastSignedUpUser = storedUser ? JSON.parse(storedUser) : { name: 'John Doe', email: 'john.d@email.com' };
 
@@ -95,7 +96,7 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
         email: values.email || '',
         phone: values.phone
     };
-    // Store this user as the "last signed up" for the mock sign-in
+    
     localStorage.setItem('eritas-last-signup', JSON.stringify(newUser));
     setUser(newUser);
 
@@ -110,7 +111,7 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
   
   const handleSocialLogin = async (provider: 'Apple') => {
     setIsSubmitting(true);
-    // Mock Apple Sign in
+    
     console.log(`Signing in with ${provider}`);
     const mockSocialUser = {
         name: 'Jane Smith',
@@ -125,6 +126,29 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
     });
     onSignInSuccess?.();
     setIsSubmitting(false);
+  }
+
+  const handleGoogleLogin = async () => {
+    setIsSubmitting(true);
+    try {
+      const user = await handleGoogleSignIn();
+      if(user) {
+        toast({
+          title: t('socialSignInToastTitle', { provider: "Google" }),
+          description: t('welcome'),
+        });
+        onSignInSuccess?.();
+      }
+    } catch(error) {
+      console.error("Google Sign in failed", error);
+      toast({
+        variant: "destructive",
+        title: "Google Sign-In Failed",
+        description: (error as Error).message || "An unexpected error occurred."
+      })
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -269,7 +293,11 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
           </span>
         </div>
       </div>
-      <div className="mt-6 grid grid-cols-1 gap-4">
+      <div className="mt-6 grid grid-cols-2 gap-4">
+        <Button variant="outline" onClick={handleGoogleLogin} disabled={isSubmitting}>
+          <GoogleIcon className="mr-2 h-4 w-4" />
+          Google
+        </Button>
         <Button variant="outline" onClick={() => handleSocialLogin('Apple')} disabled={isSubmitting}>
           <Image src="https://cdn-icons-png.flaticon.com/512/0/747.png" alt="Apple" width={16} height={16} className="mr-2 h-4 w-4" />
           Apple

@@ -7,13 +7,17 @@ import { UserProvider } from "@/context/user-context";
 import { NotificationSettingsProvider } from "@/context/notification-settings-context";
 import { DiscountProvider } from "@/context/discount-context";
 import { SecuritySettingsProvider } from "@/context/security-settings-context";
-import { ReactNode, createContext, useContext } from "react";
+import { ReactNode, createContext, useContext, useCallback } from "react";
 import { LanguageProvider } from "@/context/language-context";
 import { TripProvider } from "@/context/trip-context";
 import { PlacesProvider } from "@/context/places-context";
+import { useAuth } from "@/firebase";
+import { GoogleAuthProvider, signInWithPopup, User } from "firebase/auth";
+
 
 type AppStateContextType = {
     clearAllData: () => void;
+    handleGoogleSignIn: () => Promise<User | null>;
 };
 
 export const AppStateContext = createContext<AppStateContextType | undefined>(undefined);
@@ -27,23 +31,35 @@ export function useAppState() {
 }
 
 export function ClientProviders({ children }: { children: ReactNode }) {
+    const auth = useAuth();
     
     const clearAllData = () => {
         console.log('Clearing all user-specific data from localStorage...');
-        // This function iterates over all keys in localStorage and removes the ones
-        // specific to this application's user data, while preserving settings
-        // like theme or language.
-        Object.keys(localStorage).forEach(key => {
-            if (key.startsWith('eritas-') && key !== 'eritas-language' && key !== 'eritas-theme') {
-                localStorage.removeItem(key);
-            }
-        });
-        // We reload the window to ensure all contexts and states are reset cleanly.
-        window.location.reload();
+        const language = localStorage.getItem('eritas-language');
+        const theme = localStorage.getItem('eritas-theme');
+        
+        localStorage.clear();
+
+        if (language) localStorage.setItem('eritas-language', language);
+        if (theme) localStorage.setItem('eritas-theme', theme);
+        
+        window.location.assign('/');
     };
 
+    const handleGoogleSignIn = useCallback(async (): Promise<User | null> => {
+        const provider = new GoogleAuthProvider();
+        try {
+            const result = await signInWithPopup(auth, provider);
+            return result.user;
+        } catch (error) {
+            console.error("Google Sign in failed", error);
+            // Let the calling component handle UI updates (e.g., toast)
+            throw error;
+        }
+    }, [auth]);
+
     return (
-        <AppStateContext.Provider value={{ clearAllData }}>
+        <AppStateContext.Provider value={{ clearAllData, handleGoogleSignIn }}>
             <LanguageProvider>
                 <UserProvider>
                     <WalletProvider>
