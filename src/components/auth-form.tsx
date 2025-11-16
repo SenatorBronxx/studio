@@ -79,7 +79,6 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
     // @ts-ignore
     setUser(mockUserData);
 
-    await new Promise((resolve) => setTimeout(resolve, 1000));
     toast({
       title: t('signInSuccessfulToastTitle'),
       description: t('signInSuccessfulToastDescription'),
@@ -102,7 +101,6 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
     localStorage.setItem('eritas-last-signup', JSON.stringify(newUser));
     setUser(newUser);
 
-    await new Promise((resolve) => setTimeout(resolve, 1000));
     toast({
       title: t('signUpSuccessfulToastTitle'),
       description: t('signUpSuccessfulToastDescription'),
@@ -122,7 +120,7 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
         uid: ''
     };
     setUser(mockSocialUser);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    
     toast({
         title: t('socialSignInToastTitle', { provider }),
         description: t('welcome'),
