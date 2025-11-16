@@ -91,12 +91,12 @@ export default function Home() {
                 <div className="relative p-8 w-full">
                     <UserPreferences />
                 </div>
+                 <footer className="relative p-4 text-center text-xs text-white/70">
+                    © 2026 Eritas Transport Company. All rights reserved. Secure and fast bus booking for your journey
+                </footer>
             </div>
         </div>
       </div>
-       <footer className="col-span-2 p-8 text-center text-sm text-muted-foreground">
-        © 2026 Eritas Transport Company. All rights reserved. Secure and fast bus booking for your journey
-      </footer>
     </div>
   );
 }
