@@ -49,6 +49,7 @@ export default function Home() {
                   alt="Eritas Transport Company Logo"
                   width={200}
                   height={100}
+                  priority
                 />
               </div>
               <p className="text-balance text-muted-foreground">
