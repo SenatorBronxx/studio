@@ -21,6 +21,7 @@ import { Loader2 } from "lucide-react";
 import { useUser } from "@/context/user-context";
 import { useLanguage } from "@/context/language-context";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 // Schemas
 const signInSchema = z.object({
@@ -50,6 +51,7 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
   const { toast } = useToast();
   const { setUser } = useUser();
   const { t } = useLanguage();
+  const router = useRouter();
   
   const signInForm = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
@@ -125,8 +127,9 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
             title: t('socialSignInToastTitle', { provider }),
             description: t('welcome'),
         });
-        onSignInSuccess?.();
+        
         setIsSubmitting(false);
+        router.push('/home');
     }, 1500);
   }
 
