@@ -425,7 +425,7 @@ export default function HomePage() {
         <div className="absolute inset-0 bg-background/20 pointer-events-none" />
       </div>
 
-      <header className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-20">
+      <header className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-20 bg-background/75 backdrop-blur-sm">
         <div className="flex-1">
           <ProfileSidebar />
         </div>
@@ -758,3 +758,4 @@ export default function HomePage() {
     
 
     
+
