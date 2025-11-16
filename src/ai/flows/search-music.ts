@@ -60,7 +60,7 @@ const searchMusicFlow = ai.defineFlow(
       },
     });
 
-    const songs = llmResponse.output()?.songs || [];
+    const songs = llmResponse.output?.songs || [];
     
     // We are not generating images to avoid billing errors, but the description is ready.
     const songsWithPlaceholders = songs.map(song => ({
