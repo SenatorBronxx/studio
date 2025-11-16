@@ -63,7 +63,7 @@ const menuItems = [
     { id: 'settings', icon: Settings, labelKey: 'profileSettings', href: '/settings' },
     { id: 'trips', icon: History, labelKey: 'recentTrips', href: '/settings/recent-trips' },
     { id: 'share', icon: Share2, labelKey: 'shareMyTrip' },
-    { id: 'qr', icon: QrCode, labelKey: 'tripQrCodes' },
+    { id: 'qr', icon: QrCode, labelKey: 'tripQrCodes', href: '/settings/trip-qrs' },
     {
         id: 'places',
         icon: MapPin,

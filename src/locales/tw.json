@@ -334,5 +334,9 @@
     "shareTripPickupText": "Yɛsrɛ wo, kɔ ERITAS gyinabea biara a ɛwɔ hɔ na wɔmmɛfa wo: {{stops}}.",
     "seatsReservedForOthers": "Akonnwa a Wɔakora",
     "seatsReservedForOthersDescription": "Woakora akonnwa pii. Wubetumi akyɛ akwantu no ho nsɛm akyerɛ wɔn a wɔbɛgye no.",
-    "sendToRecipient": "Mena kɔma nea ɔbɛgye no"
+    "sendToRecipient": "Mena kɔma nea ɔbɛgye no",
+    "tripQrCodesTitle": "W'akwantu QR Mfonini Ahorow",
+    "tripQrCodesDescription": "W'akwantu a atwam ne ne QR mfonini ahorow ho abakɔsɛm.",
+    "noTripQrs": "Yɛnhunu QR Mfonini Biara",
+    "noTripQrsDescription": "Wo nwiee akwantu biara a wobɛhwɛ QR mfonini ahorow."
 }

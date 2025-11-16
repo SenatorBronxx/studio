@@ -335,5 +335,9 @@
     "shareTripPickupText": "Please be at any of these official ERITAS checkpoints for pickup: {{stops}}.",
     "seatsReservedForOthers": "Seats Reserved",
     "seatsReservedForOthersDescription": "You have reserved multiple seats. You can share the trip details with the recipients.",
-    "sendToRecipient": "Send to Recipient"
+    "sendToRecipient": "Send to Recipient",
+    "tripQrCodesTitle": "Your Trip QR Codes",
+    "tripQrCodesDescription": "A history of your recent trips and their QR codes.",
+    "noTripQrs": "No QR Codes Found",
+    "noTripQrsDescription": "You haven't completed any trips yet to see QR codes."
 }
