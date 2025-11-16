@@ -45,7 +45,7 @@ export default function Home() {
             <div className="grid gap-2 text-center">
               <div className="flex justify-center">
                 <Image
-                  src="/eritas-logo.png"
+                  src="https://jklylnqjwfrmjrsqfzys.supabase.co/storage/v1/object/public/images/eritas-logo-1763266142727.png"
                   alt="Eritas Transport Company Logo"
                   width={200}
                   height={100}
