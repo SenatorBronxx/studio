@@ -18,10 +18,10 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { AppleIcon } from "@/components/icons/apple";
-import { GoogleIcon } from "@/components/icons/google";
 import { Loader2 } from "lucide-react";
 import { useUser } from "@/context/user-context";
 import { useLanguage } from "@/context/language-context";
+import Image from "next/image";
 
 // Schemas
 const signInSchema = z.object({
@@ -273,7 +273,7 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
       </div>
       <div className="mt-6 grid grid-cols-2 gap-4">
         <Button variant="outline" onClick={() => handleSocialLogin('Google')} disabled={isSubmitting}>
-          <GoogleIcon className="mr-2 h-4 w-4" />
+          <Image src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/768px-Google_%22G%22_logo.svg.png" alt="Google" width={16} height={16} className="mr-2 h-4 w-4" />
           Google
         </Button>
         <Button variant="outline" onClick={() => handleSocialLogin('Apple')} disabled={isSubmitting}>
