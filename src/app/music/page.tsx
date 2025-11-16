@@ -18,10 +18,10 @@ import { useMusic, type Track, PlaylistItem } from '@/context/music-context';
 import { useLanguage } from '@/context/language-context';
 import { useUser } from '@/context/user-context';
 import { useRouter } from 'next/navigation';
-import { searchMusic } from '@/ai/flows/search-music';
 import { useDebounce } from '@/hooks/use-debounce';
 
 const musicArtworks = PlaceHolderImages.filter(p => p.id.startsWith('music-art-'));
+const fallbackImage = PlaceHolderImages.find(p => p.id === 'music-art-1')?.imageUrl || '';
 
 const genres = [
   { name: 'Highlife', image: musicArtworks[0]?.imageUrl || '' },
@@ -29,6 +29,14 @@ const genres = [
   { name: 'Afrobeat', image: musicArtworks[2]?.imageUrl || '' },
   { name: 'Gospel', image: musicArtworks[3]?.imageUrl || '' },
 ];
+
+function formatDuration(ms: number) {
+    const totalSeconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+}
+
 
 export default function MusicPage() {
     const { 
@@ -57,13 +65,22 @@ export default function MusicPage() {
         }
         setIsSearching(true);
         try {
-            const results = await searchMusic(query);
-            // Add a unique ID to each result for key purposes
-            const tracksWithIds = results.songs.map(song => ({
-                ...song,
-                id: Math.random() * 10000, 
-            }));
-            setSearchResults(tracksWithIds);
+            const response = await fetch(`https://www.theaudiodb.com/api/v1/json/123/search.php?s=${query}`);
+            const data = await response.json();
+            
+            if (data && data.track) {
+                 const tracks: Track[] = data.track.map((song: any) => ({
+                    id: parseInt(song.idTrack, 10),
+                    title: song.strTrack,
+                    artist: song.strArtist,
+                    image: song.strTrackThumb || fallbackImage,
+                    duration: song.intDuration ? formatDuration(song.intDuration) : '0:00',
+                }));
+                setSearchResults(tracks);
+            } else {
+                setSearchResults([]);
+            }
+
         } catch (error) {
             console.error("Error searching music:", error);
             setSearchResults([]);
@@ -296,5 +313,3 @@ export default function MusicPage() {
     </div>
   );
 }
-
-    
