@@ -2,7 +2,6 @@
 'use client';
 
 import { createContext, useContext, useState, ReactNode, useEffect, useCallback, useRef } from 'react';
-import { useAppState } from '@/components/client-providers';
 
 type User = {
   name: string;
@@ -18,10 +17,21 @@ type UserContextType = {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
+// A simple function to clear user-specific data from localStorage
+const clearUserData = () => {
+    console.log('Clearing all user-specific data from localStorage...');
+    Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('eritas-') && key !== 'eritas-language' && key !== 'eritas-theme') {
+            localStorage.removeItem(key);
+        }
+    });
+    window.location.reload(); // Reload to reset all states
+};
+
+
 export function UserProvider({ children }: { children: ReactNode }) {
   const [user, setUserState] = useState<User | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
-  const { clearAllData } = useAppState();
   const previousUserRef = useRef<User | null>(null);
 
   useEffect(() => {
@@ -40,28 +50,29 @@ export function UserProvider({ children }: { children: ReactNode }) {
   
   const setUser = useCallback((newUser: User | null) => {
     const previousUser = previousUserRef.current;
-
-    // Check if logging out (newUser is null and there was a previous user)
-    // or if logging in as a different user (phone number is a good unique identifier)
+    
     const isLogout = !newUser && previousUser;
-    const isDifferentUser = newUser && previousUser && newUser.phone !== previousUser.phone;
+    const isDifferentUser = newUser && previousUser && newUser.email !== previousUser.email;
 
     if (isLogout || isDifferentUser) {
-      clearAllData();
+        // Clear all contexts by clearing localStorage and reloading
+        clearUserData();
     } else {
         setUserState(newUser);
         previousUserRef.current = newUser;
-        try {
-          if (newUser) {
-            localStorage.setItem('eritas-user', JSON.stringify(newUser));
-          } else {
-            localStorage.removeItem('eritas-user');
-          }
-        } catch (error) {
-          console.error("Failed to write user to localStorage", error);
+        if (isHydrated) {
+            try {
+              if (newUser) {
+                localStorage.setItem('eritas-user', JSON.stringify(newUser));
+              } else {
+                localStorage.removeItem('eritas-user');
+              }
+            } catch (error) {
+              console.error("Failed to write user to localStorage", error);
+            }
         }
     }
-  }, [clearAllData]);
+  }, [isHydrated]);
 
   return (
     <UserContext.Provider value={{ user, setUser, isHydrated }}>
