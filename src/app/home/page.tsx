@@ -281,7 +281,7 @@ export default function HomePage() {
         if (bookingAlerts) {
             const newNotification: Notification = {
                 id: Date.now(),
-                title: t('seatBookedNotificationTitle'),
+                title: t('seatBookedToastTitle'),
                 description: t('seatBookedNotificationDescription', { seat: primarySeat, plate: selectedBus.plate }),
                 action: (
                      <Button variant="outline" size="sm" onClick={() => setIsQrSheetOpen(true)}>
@@ -739,3 +739,6 @@ export default function HomePage() {
     
 
 
+
+
+    
