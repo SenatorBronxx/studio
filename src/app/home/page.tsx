@@ -426,7 +426,20 @@ export default function HomePage() {
       </div>
 
       <header className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-20">
-        <ProfileSidebar />
+        <div className="flex-1">
+          <ProfileSidebar />
+        </div>
+        <div className="flex-1 flex justify-center">
+            <Image
+                src="https://jklylnqjwfrmjrsqfzys.supabase.co/storage/v1/object/public/images/eritas-logo-1763267730211.png"
+                alt="Eritas Transport Company Logo"
+                width={120}
+                height={60}
+                priority
+                className="object-contain"
+            />
+        </div>
+        <div className="flex-1 flex justify-end">
         <Sheet>
             <SheetTrigger asChild>
                  <Button
@@ -477,6 +490,7 @@ export default function HomePage() {
                 </div>
             </SheetContent>
         </Sheet>
+        </div>
       </header>
       
        {buses.map((bus, index) => (
@@ -740,5 +754,7 @@ export default function HomePage() {
 
 
 
+
+    
 
     
