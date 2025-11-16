@@ -2,7 +2,7 @@
 'use client';
 
 import Image from 'next/image';
-import { Bus, MapPin, Ticket } from 'lucide-react';
+import { Bus, MapPin, Ticket, Check } from 'lucide-react';
 import { AuthForm } from '@/components/auth-form';
 import { UserPreferences } from '@/components/user-preferences';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
@@ -48,6 +48,7 @@ export default function Home() {
             <Bus className="absolute top-10 right-12 h-12 w-12 text-muted-foreground/20 animate-float-slow" />
             <Ticket className="absolute bottom-4 left-4 h-16 w-16 text-accent/15 rotate-6 animate-float" />
             <MapPin className="absolute bottom-1/3 -left-4 h-12 w-12 text-primary/20 animate-float-slower" />
+            <Check className="absolute top-1/4 left-1/4 h-12 w-12 text-primary/20 animate-float" />
 
 
           <div className="mx-auto grid w-[380px] gap-6 z-10">
