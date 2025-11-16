@@ -46,7 +46,7 @@ const searchMusicFlow = ai.defineFlow(
 
     const llmResponse = await ai.generate({
       prompt: prompt,
-      model: 'gemini-2.5-flash',
+      model: 'googleai/gemini-2.5-flash',
       tools: [],
       output: {
         schema: z.object({
