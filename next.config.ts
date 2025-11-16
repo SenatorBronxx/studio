@@ -67,12 +67,6 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'cdn-icons-png.flaticon.com',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
         hostname: 'i.imgur.com',
         port: '',
         pathname: '/**',
@@ -80,6 +74,12 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'upload.wikimedia.org',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn-icons-png.flaticon.com',
         port: '',
         pathname: '/**',
       }
