@@ -52,6 +52,12 @@ const nextConfig: NextConfig = {
         hostname: 'momodeveloper.mtn.com',
         port: '',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'play.telecel.com.gh',
+        port: '',
+        pathname: '/**',
       }
     ],
   },

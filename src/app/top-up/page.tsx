@@ -16,7 +16,7 @@ import Image from 'next/image';
 
 const mobileMoneyNetworks = [
     { id: 'mtn', name: 'MTN Mobile Money', logo: "https://momodeveloper.mtn.com/content/momo_mtnb.png" },
-    { id: 'telecel', name: 'Telecel Cash', logo: null },
+    { id: 'telecel', name: 'Telecel Cash', logo: 'https://play.telecel.com.gh/static/Rede-5f0f780acc6c05a6539d7e3229ac508c.webp' },
     { id: 'airteltigo', name: 'AirtelTigo Money', logo: null },
 ];
 
