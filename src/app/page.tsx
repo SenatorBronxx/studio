@@ -2,7 +2,7 @@
 'use client';
 
 import Image from 'next/image';
-import { Bus, MapPin } from 'lucide-react';
+import { Bus, MapPin, Ticket } from 'lucide-react';
 import { AuthForm } from '@/components/auth-form';
 import { UserPreferences } from '@/components/user-preferences';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
@@ -40,8 +40,14 @@ export default function Home() {
   return (
     <div className="w-full">
       <div className="lg:grid lg:grid-cols-2">
-        <div className="flex flex-col items-center justify-center p-6 sm:p-12">
-          <div className="mx-auto grid w-[380px] gap-6">
+        <div className="relative flex flex-col items-center justify-center p-6 sm:p-12 overflow-hidden">
+            {/* Floating Icons */}
+            <Ticket className="absolute -top-8 -left-10 h-32 w-32 text-primary/10 rotate-12 animate-float-slow" />
+            <Bus className="absolute -bottom-12 -right-8 h-40 w-40 text-primary/5 animate-float-slower" />
+            <MapPin className="absolute top-1/2 -right-4 h-24 w-24 text-accent/10 -rotate-12 animate-float" />
+            <Bus className="absolute top-10 right-10 h-16 w-16 text-muted-foreground/10 animate-float-slow" />
+
+          <div className="mx-auto grid w-[380px] gap-6 z-10">
             <div className="grid gap-2 text-center">
               <div className="flex justify-center">
                 <Image
