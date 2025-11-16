@@ -21,7 +21,6 @@ import { Loader2 } from "lucide-react";
 import { useUser } from "@/context/user-context";
 import { useLanguage } from "@/context/language-context";
 import Image from "next/image";
-import { useAppState } from "./client-providers";
 import { GoogleIcon } from "./icons/google";
 
 // Schemas
@@ -52,7 +51,6 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
   const { toast } = useToast();
   const { setUser } = useUser();
   const { t } = useLanguage();
-  const { clearAllData } = useAppState();
   
   const signInForm = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
@@ -68,65 +66,71 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
     setIsSubmitting(true);
     console.log("Sign in with:", values);
     
-    const storedUser = localStorage.getItem('eritas-last-signup');
-    const lastSignedUpUser = storedUser ? JSON.parse(storedUser) : { name: 'John Doe', email: 'john.d@email.com' };
+    setTimeout(() => {
+        const storedUser = localStorage.getItem('eritas-last-signup');
+        const lastSignedUpUser = storedUser ? JSON.parse(storedUser) : { name: 'John Doe', email: 'john.d@email.com' };
 
-    const mockUserData = {
-        name: lastSignedUpUser.name,
-        email: lastSignedUpUser.email,
-        phone: values.phone
-    };
-    // @ts-ignore
-    setUser(mockUserData);
+        const mockUserData = {
+            name: lastSignedUpUser.name,
+            email: lastSignedUpUser.email,
+            phone: values.phone
+        };
+        // @ts-ignore
+        setUser(mockUserData);
 
-    toast({
-      title: t('signInSuccessfulToastTitle'),
-      description: t('signInSuccessfulToastDescription'),
-    });
-    setIsSubmitting(false);
-    onSignInSuccess?.();
+        toast({
+        title: t('signInSuccessfulToastTitle'),
+        description: t('signInSuccessfulToastDescription'),
+        });
+        setIsSubmitting(false);
+        onSignInSuccess?.();
+    }, 1500);
   };
 
   const handleSignUp = async (values: z.infer<typeof signUpSchema>) => {
     setIsSubmitting(true);
     console.log("Sign up with:", values);
     
-    const newUser = {
-        name: `${values.firstName} ${values.lastName}`,
-        email: values.email || '',
-        phone: values.phone,
-        uid: ''
-    };
-    
-    localStorage.setItem('eritas-last-signup', JSON.stringify(newUser));
-    setUser(newUser);
+    setTimeout(() => {
+        const newUser = {
+            name: `${values.firstName} ${values.lastName}`,
+            email: values.email || '',
+            phone: values.phone,
+            uid: ''
+        };
+        
+        localStorage.setItem('eritas-last-signup', JSON.stringify(newUser));
+        setUser(newUser);
 
-    toast({
-      title: t('signUpSuccessfulToastTitle'),
-      description: t('signUpSuccessfulToastDescription'),
-    });
-    setIsSubmitting(false);
-    onSignUpSuccess?.(values.firstName);
+        toast({
+        title: t('signUpSuccessfulToastTitle'),
+        description: t('signUpSuccessfulToastDescription'),
+        });
+        setIsSubmitting(false);
+        onSignUpSuccess?.(values.firstName);
+    }, 1500);
   };
   
   const handleSocialLogin = async (provider: 'Apple') => {
     setIsSubmitting(true);
     
-    console.log(`Signing in with ${provider}`);
-    const mockSocialUser = {
-        name: 'Jane Smith',
-        email: 'jane.s@email.com',
-        phone: '+233 55 555 5555',
-        uid: ''
-    };
-    setUser(mockSocialUser);
-    
-    toast({
-        title: t('socialSignInToastTitle', { provider }),
-        description: t('welcome'),
-    });
-    onSignInSuccess?.();
-    setIsSubmitting(false);
+    setTimeout(() => {
+        console.log(`Signing in with ${provider}`);
+        const mockSocialUser = {
+            name: 'Jane Smith',
+            email: 'jane.s@email.com',
+            phone: '+233 55 555 5555',
+            uid: ''
+        };
+        setUser(mockSocialUser);
+        
+        toast({
+            title: t('socialSignInToastTitle', { provider }),
+            description: t('welcome'),
+        });
+        onSignInSuccess?.();
+        setIsSubmitting(false);
+    }, 1500);
   }
 
   return (
@@ -272,7 +276,7 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
         </div>
       </div>
       <div className="mt-6 grid grid-cols-2 gap-4">
-        <Button variant="outline">
+        <Button variant="outline" disabled>
           <GoogleIcon className="mr-2 h-4 w-4" />
           Google
         </Button>
