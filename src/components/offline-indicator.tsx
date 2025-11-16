@@ -4,7 +4,7 @@
 import { useOnlineStatus } from '@/hooks/use-online-status';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/context/language-context';
-import Image from 'next/image';
+import { SatelliteIcon } from './icons/satellite';
 
 export function OfflineIndicator() {
   const isOnline = useOnlineStatus();
@@ -22,7 +22,14 @@ export function OfflineIndicator() {
       )}
     >
       <div className="relative h-48 w-48 flex items-center justify-center">
-         <Image src="https://cdn-icons-png.flaticon.com/512/10479/10479796.png" alt="No internet connection" width={160} height={160} className="opacity-70" />
+        <div className="absolute inset-0 animate-satellite-orbit-outer">
+          <div className="absolute h-full w-full animate-satellite-orbit-inner">
+            <SatelliteIcon className="absolute -top-4 left-1/2 -translate-x-1/2 h-8 w-8 text-primary" />
+          </div>
+        </div>
+         <div className="h-28 w-28 rounded-full bg-primary/10 flex items-center justify-center">
+            <div className="h-20 w-20 rounded-full bg-primary/20"></div>
+         </div>
       </div>
 
       <div className="max-w-xs space-y-2">
