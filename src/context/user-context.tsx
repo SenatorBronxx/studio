@@ -23,7 +23,6 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 export function UserProvider({ children }: { children: ReactNode }) {
   const [user, setUserState] = useState<User | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
-  const { user: firebaseUser, loading: firebaseLoading } = useFirebaseUser();
   const appState = useAppState();
 
   // Effect to hydrate user from localStorage
@@ -42,32 +41,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
     }
     setIsHydrated(true);
   }, []);
-
-  // Effect to sync firebase user to our user state
-  useEffect(() => {
-    if (!firebaseLoading && firebaseUser) {
-      const currentUser = user ? JSON.parse(localStorage.getItem('eritas-user') || '{}') : null;
-
-      // If a different user signs in via Firebase, clear data
-      if (currentUser && currentUser.uid !== firebaseUser.uid) {
-        if(appState) appState.clearAllData();
-      }
-
-      const newUser: User = {
-        uid: firebaseUser.uid,
-        name: firebaseUser.displayName || 'Anonymous',
-        email: firebaseUser.email || '',
-        phone: firebaseUser.phoneNumber || ''
-      };
-      setUserState(newUser);
-      localStorage.setItem('eritas-user', JSON.stringify(newUser));
-    } else if (!firebaseLoading && !firebaseUser) {
-      // Handle logout
-       if (user) { // If there was a user logged in
-            setUser(null);
-       }
-    }
-  }, [firebaseUser, firebaseLoading, appState, user]);
 
 
   const setUser = useCallback((newUser: User | null) => {

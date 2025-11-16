@@ -52,7 +52,7 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
   const { toast } = useToast();
   const { setUser } = useUser();
   const { t } = useLanguage();
-  const { handleGoogleSignIn, clearAllData } = useAppState();
+  const { clearAllData } = useAppState();
   
   const signInForm = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
@@ -76,6 +76,7 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
         email: lastSignedUpUser.email,
         phone: values.phone
     };
+    // @ts-ignore
     setUser(mockUserData);
 
     await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -94,7 +95,8 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
     const newUser = {
         name: `${values.firstName} ${values.lastName}`,
         email: values.email || '',
-        phone: values.phone
+        phone: values.phone,
+        uid: ''
     };
     
     localStorage.setItem('eritas-last-signup', JSON.stringify(newUser));
@@ -116,7 +118,8 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
     const mockSocialUser = {
         name: 'Jane Smith',
         email: 'jane.s@email.com',
-        phone: '+233 55 555 5555'
+        phone: '+233 55 555 5555',
+        uid: ''
     };
     setUser(mockSocialUser);
     await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -126,29 +129,6 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
     });
     onSignInSuccess?.();
     setIsSubmitting(false);
-  }
-
-  const handleGoogleLogin = async () => {
-    setIsSubmitting(true);
-    try {
-      const user = await handleGoogleSignIn();
-      if(user) {
-        toast({
-          title: t('socialSignInToastTitle', { provider: "Google" }),
-          description: t('welcome'),
-        });
-        onSignInSuccess?.();
-      }
-    } catch(error) {
-      console.error("Google Sign in failed", error);
-      toast({
-        variant: "destructive",
-        title: "Google Sign-In Failed",
-        description: (error as Error).message || "An unexpected error occurred."
-      })
-    } finally {
-      setIsSubmitting(false);
-    }
   }
 
   return (
@@ -294,7 +274,7 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
         </div>
       </div>
       <div className="mt-6 grid grid-cols-2 gap-4">
-        <Button variant="outline" onClick={handleGoogleLogin} disabled={isSubmitting}>
+        <Button variant="outline">
           <GoogleIcon className="mr-2 h-4 w-4" />
           Google
         </Button>

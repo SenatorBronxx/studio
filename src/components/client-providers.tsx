@@ -17,7 +17,6 @@ import { GoogleAuthProvider, signInWithPopup, User } from "firebase/auth";
 
 type AppStateContextType = {
     clearAllData: () => void;
-    handleGoogleSignIn: () => Promise<User | null>;
 };
 
 export const AppStateContext = createContext<AppStateContextType | undefined>(undefined);
@@ -46,20 +45,8 @@ export function ClientProviders({ children }: { children: ReactNode }) {
         window.location.assign('/');
     };
 
-    const handleGoogleSignIn = useCallback(async (): Promise<User | null> => {
-        const provider = new GoogleAuthProvider();
-        try {
-            const result = await signInWithPopup(auth, provider);
-            return result.user;
-        } catch (error) {
-            console.error("Google Sign in failed", error);
-            // Let the calling component handle UI updates (e.g., toast)
-            throw error;
-        }
-    }, [auth]);
-
     return (
-        <AppStateContext.Provider value={{ clearAllData, handleGoogleSignIn }}>
+        <AppStateContext.Provider value={{ clearAllData }}>
             <LanguageProvider>
                 <UserProvider>
                     <WalletProvider>
