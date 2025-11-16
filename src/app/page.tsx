@@ -94,6 +94,9 @@ export default function Home() {
             </div>
         </div>
       </div>
+       <footer className="col-span-2 p-8 text-center text-sm text-muted-foreground">
+        © 2026 Eritas Transport Company. All rights reserved. Secure and fast bus booking for your journey
+      </footer>
     </div>
   );
 }
