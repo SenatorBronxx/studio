@@ -46,7 +46,7 @@ export default function MusicPage() {
     const { user } = useUser();
     const router = useRouter();
     const [searchQuery, setSearchQuery] = useState('');
-    const debouncedSearchQuery = useDebounce(searchQuery, 300);
+    const debouncedSearchQuery = useDebounce(searchQuery, 500);
     const [searchResults, setSearchResults] = useState<Track[]>([]);
     const [isSearching, setIsSearching] = useState(false);
 
