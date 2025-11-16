@@ -8,7 +8,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useWallet } from '@/context/wallet-context';
 import { VisaIcon } from '@/components/icons/visa';
 import { MastercardIcon } from '@/components/icons/mastercard';
-import { MtnMomoIcon } from '@/components/icons/mtn-momo';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,6 +21,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import Link from 'next/link';
 import { useLanguage } from '@/context/language-context';
+import Image from 'next/image';
 
 const linkedCards = [
     { id: 1, type: 'visa', last4: '4589', expiry: '08/26' },
@@ -152,7 +152,7 @@ export default function PaymentMethodsPage() {
             <CardContent className="space-y-4">
                {mobileMoneyAccounts.map((account) => (
                     <div key={account.id} className="flex items-center gap-4 p-3 border rounded-lg">
-                        <MtnMomoIcon className="w-20" />
+                        <Image src="https://momodeveloper.mtn.com/content/momo_mtnb.png" alt="MTN Mobile Money" width={80} height={40} className="object-contain" />
                         <div className="flex-grow">
                             <p className="font-semibold capitalize">{account.provider}</p>
                             <p className="text-sm text-muted-foreground font-mono">{account.number}</p>

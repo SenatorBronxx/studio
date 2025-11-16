@@ -11,11 +11,11 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useWallet } from '@/context/wallet-context';
 import { useToast } from '@/hooks/use-toast';
-import { MtnMomoIcon } from '@/components/icons/mtn-momo';
 import { useLanguage } from '@/context/language-context';
+import Image from 'next/image';
 
 const mobileMoneyNetworks = [
-    { id: 'mtn', name: 'MTN Mobile Money', logo: MtnMomoIcon },
+    { id: 'mtn', name: 'MTN Mobile Money', logo: "https://momodeveloper.mtn.com/content/momo_mtnb.png" },
     { id: 'telecel', name: 'Telecel Cash', logo: null },
     { id: 'airteltigo', name: 'AirtelTigo Money', logo: null },
 ];
@@ -87,12 +87,11 @@ export default function TopUpPage() {
                     <CardContent>
                         <RadioGroup value={network} onValueChange={setNetwork} className="space-y-4">
                             {mobileMoneyNetworks.map((net) => {
-                                const LogoComponent = net.logo;
                                 return (
                                 <Label key={net.id} htmlFor={net.id} className="flex items-center justify-between p-4 border rounded-lg cursor-pointer has-[:checked]:bg-primary/10 has-[:checked]:border-primary">
                                     <div className="flex items-center gap-4">
-                                        {LogoComponent ? (
-                                            <LogoComponent className={net.id === 'mtn' ? 'w-20 h-auto' : 'w-10 h-10 object-contain'} />
+                                        {net.logo ? (
+                                            <Image src={net.logo} alt={`${net.name} logo`} width={80} height={40} className='object-contain h-auto' />
                                         ) : (
                                             <div className='w-10 h-10 flex items-center justify-center'>
                                                 <Wallet className='h-6 w-6 text-muted-foreground' />
