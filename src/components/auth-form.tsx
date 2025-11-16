@@ -51,8 +51,7 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
   const { toast } = useToast();
   const { setUser } = useUser();
   const { t } = useLanguage();
-  const { handleGoogleSignIn } = useAppState();
-
+  
   const signInForm = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
     defaultValues: { phone: "", password: "" },
@@ -109,44 +108,22 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
     onSignUpSuccess?.(values.firstName);
   };
   
-  const handleSocialLogin = async (provider: 'Google' | 'Apple') => {
+  const handleSocialLogin = async (provider: 'Apple') => {
     setIsSubmitting(true);
-    if (provider === 'Google') {
-        const user = await handleGoogleSignIn();
-        if (user) {
-            setUser({
-                name: user.displayName || 'Google User',
-                email: user.email || '',
-                phone: user.phoneNumber || ''
-            });
-            toast({
-                title: t('socialSignInToastTitle', { provider }),
-                description: t('welcome'),
-            });
-            onSignInSuccess?.();
-        } else {
-            toast({
-                variant: 'destructive',
-                title: 'Sign In Failed',
-                description: 'Could not sign in with Google. Please try again.',
-            });
-        }
-    } else {
-        // Mock Apple Sign in
-        console.log(`Signing in with ${provider}`);
-        const mockSocialUser = {
-            name: 'Jane Smith',
-            email: 'jane.s@email.com',
-            phone: '+233 55 555 5555'
-        };
-        setUser(mockSocialUser);
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        toast({
-            title: t('socialSignInToastTitle', { provider }),
-            description: t('welcome'),
-        });
-        onSignInSuccess?.();
-    }
+    // Mock Apple Sign in
+    console.log(`Signing in with ${provider}`);
+    const mockSocialUser = {
+        name: 'Jane Smith',
+        email: 'jane.s@email.com',
+        phone: '+233 55 555 5555'
+    };
+    setUser(mockSocialUser);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    toast({
+        title: t('socialSignInToastTitle', { provider }),
+        description: t('welcome'),
+    });
+    onSignInSuccess?.();
     setIsSubmitting(false);
   }
 
@@ -292,11 +269,7 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
           </span>
         </div>
       </div>
-      <div className="mt-6 grid grid-cols-2 gap-4">
-        <Button variant="outline" onClick={() => handleSocialLogin('Google')} disabled={isSubmitting}>
-          <Image src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/768px-Google_%22G%22_logo.svg.png" alt="Google" width={16} height={16} className="mr-2 h-4 w-4" />
-          Google
-        </Button>
+      <div className="mt-6 grid grid-cols-1 gap-4">
         <Button variant="outline" onClick={() => handleSocialLogin('Apple')} disabled={isSubmitting}>
           <Image src="https://cdn-icons-png.flaticon.com/512/0/747.png" alt="Apple" width={16} height={16} className="mr-2 h-4 w-4" />
           Apple

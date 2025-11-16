@@ -11,12 +11,9 @@ import { ReactNode, createContext, useContext } from "react";
 import { LanguageProvider } from "@/context/language-context";
 import { TripProvider } from "@/context/trip-context";
 import { PlacesProvider } from "@/context/places-context";
-import { Auth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { useAuth } from '@/firebase';
 
 type AppStateContextType = {
     clearAllData: () => void;
-    handleGoogleSignIn: () => Promise<any>;
 };
 
 export const AppStateContext = createContext<AppStateContextType | undefined>(undefined);
@@ -30,7 +27,6 @@ export function useAppState() {
 }
 
 export function ClientProviders({ children }: { children: ReactNode }) {
-    const auth = useAuth();
     
     const clearAllData = () => {
         console.log('Clearing all user-specific data from localStorage...');
@@ -46,19 +42,8 @@ export function ClientProviders({ children }: { children: ReactNode }) {
         window.location.reload();
     };
 
-    const handleGoogleSignIn = async () => {
-        const provider = new GoogleAuthProvider();
-        try {
-            const result = await signInWithPopup(auth, provider);
-            return result.user;
-        } catch (error) {
-            console.error("Google sign-in error:", error);
-            return null;
-        }
-    };
-
     return (
-        <AppStateContext.Provider value={{ clearAllData, handleGoogleSignIn }}>
+        <AppStateContext.Provider value={{ clearAllData }}>
             <LanguageProvider>
                 <UserProvider>
                     <WalletProvider>
