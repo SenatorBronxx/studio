@@ -1,12 +1,12 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ListMusic, ListVideo, Plus, X, Search, Bus, LogIn } from 'lucide-react';
+import { ListMusic, ListVideo, Plus, X, Search, Bus, LogIn, Loader2 } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { BottomNav } from '@/components/bottom-nav';
@@ -14,11 +14,12 @@ import { Separator } from '@/components/ui/separator';
 import { NowPlayingIcon } from '@/components/icons/now-playing-icon';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
-import { useMusic, type Track } from '@/context/music-context';
+import { useMusic, type Track, PlaylistItem } from '@/context/music-context';
 import { useLanguage } from '@/context/language-context';
 import { useUser } from '@/context/user-context';
 import { useRouter } from 'next/navigation';
-
+import { searchMusic } from '@/ai/flows/search-music';
+import { useDebounce } from '@/hooks/use-debounce';
 
 const musicArtworks = PlaceHolderImages.filter(p => p.id.startsWith('music-art-'));
 
@@ -28,14 +29,6 @@ const genres = [
   { name: 'Afrobeat', image: musicArtworks[2]?.imageUrl || '' },
   { name: 'Gospel', image: musicArtworks[3]?.imageUrl || '' },
 ];
-
-const newTracks: Track[] = [
-  { id: 1, title: 'Morning Rise', artist: 'Synth Weaver', image: musicArtworks[4]?.imageUrl || '', duration: '3:45' },
-  { id: 2, title: 'Coastal Drive', artist: 'Groove Rider', image: musicArtworks[0]?.imageUrl || '', duration: '2:55' },
-  { id: 3, title: 'City Lights', artist: 'Digital Nomad', image: musicArtworks[1]?.imageUrl || '', duration: '4:10' },
-  { id: 4, title: 'Starlight Echo', artist: 'Astro Beats', image: musicArtworks[2]?.imageUrl || '', duration: '3:20' },
-];
-
 
 export default function MusicPage() {
     const { 
@@ -53,20 +46,35 @@ export default function MusicPage() {
     const { user } = useUser();
     const router = useRouter();
     const [searchQuery, setSearchQuery] = useState('');
-    const [filteredTracks, setFilteredTracks] = useState(newTracks);
+    const debouncedSearchQuery = useDebounce(searchQuery, 300);
+    const [searchResults, setSearchResults] = useState<Track[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
+
+    const handleSearch = useCallback(async (query: string) => {
+        if (query.trim() === '') {
+            setSearchResults([]);
+            return;
+        }
+        setIsSearching(true);
+        try {
+            const results = await searchMusic(query);
+            // Add a unique ID to each result for key purposes
+            const tracksWithIds = results.songs.map(song => ({
+                ...song,
+                id: Math.random() * 10000, 
+            }));
+            setSearchResults(tracksWithIds);
+        } catch (error) {
+            console.error("Error searching music:", error);
+            setSearchResults([]);
+        } finally {
+            setIsSearching(false);
+        }
+    }, []);
 
     useEffect(() => {
-        if (searchQuery.trim() === '') {
-            setFilteredTracks(newTracks);
-        } else {
-            const lowercasedQuery = searchQuery.toLowerCase();
-            const results = newTracks.filter(track =>
-                track.title.toLowerCase().includes(lowercasedQuery) ||
-                track.artist.toLowerCase().includes(lowercasedQuery)
-            );
-            setFilteredTracks(results);
-        }
-    }, [searchQuery]);
+        handleSearch(debouncedSearchQuery);
+    }, [debouncedSearchQuery, handleSearch]);
 
 
     const NowPlayingBar = () => {
@@ -75,7 +83,7 @@ export default function MusicPage() {
         return (
             <div className="bg-background/75 backdrop-blur-sm p-2 max-w-md mx-auto" onClick={() => setIsPlaylistOpen(true)}>
                  <div className="p-2 bg-secondary rounded-lg flex items-center gap-4 cursor-pointer">
-                    <Image src={nowPlaying.image} alt={nowPlaying.title} width={40} height={40} className="rounded-md" />
+                    <Image src={nowPlaying.image} alt={nowPlaying.title} width={40} height={40} className="rounded-md object-cover" />
                     <div className="flex-grow">
                         <p className="font-semibold text-sm">{nowPlaying.title}</p>
                         <p className="text-xs text-muted-foreground">{nowPlaying.artist}</p>
@@ -130,7 +138,7 @@ export default function MusicPage() {
                                     <div className='mb-4 space-y-3'>
                                         <p className="text-sm font-medium text-muted-foreground">{t('nowPlaying')}</p>
                                         <div className="flex items-center gap-4 p-3 bg-primary/10 rounded-lg">
-                                            <Image src={nowPlaying.image} alt={nowPlaying.title} width={48} height={48} className="rounded-md" />
+                                            <Image src={nowPlaying.image} alt={nowPlaying.title} width={48} height={48} className="rounded-md object-cover" />
                                             <div className="flex-grow space-y-2">
                                                 <div>
                                                     <p className="font-semibold">{nowPlaying.title}</p>
@@ -154,9 +162,9 @@ export default function MusicPage() {
                                  <>
                                     <p className="text-sm font-medium text-muted-foreground mb-2">{t('upNext')}</p>
                                     <div className="space-y-3">
-                                    {playlist.filter(p => p.id !== nowPlaying?.id).map(track => (
+                                    {playlist.filter(p => p.id !== nowPlaying?.id).map((track: PlaylistItem) => (
                                         <div key={track.id} className="flex items-center gap-4 group">
-                                            <Image src={track.image} alt={track.title} width={48} height={48} className="rounded-md" />
+                                            <Image src={track.image} alt={track.title} width={48} height={48} className="rounded-md object-cover" />
                                             <div className="flex-grow">
                                                 <p className="font-semibold">{track.title}</p>
                                                 <div className="flex text-sm text-muted-foreground">
@@ -239,38 +247,44 @@ export default function MusicPage() {
                         </div>
                     </TabsContent>
                 </Tabs>
-            ) : null }
-
-            <div>
-                <h2 className="text-lg font-semibold mb-2">{searchQuery.trim() === '' ? t('newTracks') : t('searchResultsFor', { query: searchQuery })}</h2>
-                <div className="space-y-2">
-                    {filteredTracks.length > 0 ? (
-                        filteredTracks.map(track => (
-                            <Card key={track.id}>
-                                <CardContent className="p-2 flex items-center gap-4">
-                                    <Image src={track.image} alt={track.title} width={48} height={48} className="rounded-md" />
-                                    <div className="flex-grow">
-                                        <p className="font-semibold">{track.title}</p>
-                                        <div className="flex text-sm text-muted-foreground">
-                                            <span>{track.artist}</span>
-                                            <span className="mx-2">•</span>
-                                            <span>{track.duration}</span>
-                                        </div>
-
-                                    </div>
-                                    <Button size="icon" variant="ghost" onClick={() => addToPlaylist(track)}>
-                                        <Plus className="h-5 w-5"/>
-                                    </Button>
-                                </CardContent>
-                            </Card>
-                        ))
+            ) : (
+                <div>
+                    <h2 className="text-lg font-semibold mb-2">{t('searchResultsFor', { query: debouncedSearchQuery })}</h2>
+                    {isSearching ? (
+                        <div className="flex justify-center items-center py-12">
+                            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                        </div>
                     ) : (
-                        <div className="text-center text-muted-foreground py-12">
-                            <p>{t('noTracksFound')}</p>
+                        <div className="space-y-2">
+                            {searchResults.length > 0 ? (
+                                searchResults.map(track => (
+                                    <Card key={track.id}>
+                                        <CardContent className="p-2 flex items-center gap-4">
+                                            <Image src={track.image} alt={track.title} width={48} height={48} className="rounded-md object-cover" />
+                                            <div className="flex-grow">
+                                                <p className="font-semibold">{track.title}</p>
+                                                <div className="flex text-sm text-muted-foreground">
+                                                    <span>{track.artist}</span>
+                                                    <span className="mx-2">•</span>
+                                                    <span>{track.duration}</span>
+                                                </div>
+
+                                            </div>
+                                            <Button size="icon" variant="ghost" onClick={() => addToPlaylist(track)}>
+                                                <Plus className="h-5 w-5"/>
+                                            </Button>
+                                        </CardContent>
+                                    </Card>
+                                ))
+                            ) : (
+                                <div className="text-center text-muted-foreground py-12">
+                                    <p>{t('noTracksFound')}</p>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
-            </div>
+            )}
         </div>
       </main>
 
@@ -282,3 +296,5 @@ export default function MusicPage() {
     </div>
   );
 }
+
+    
