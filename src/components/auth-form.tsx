@@ -21,6 +21,7 @@ import { Loader2 } from "lucide-react";
 import { useUser } from "@/context/user-context";
 import { useLanguage } from "@/context/language-context";
 import Image from "next/image";
+import { useAppState } from "./client-providers";
 
 // Schemas
 const signInSchema = z.object({
@@ -50,6 +51,7 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
   const { toast } = useToast();
   const { setUser } = useUser();
   const { t } = useLanguage();
+  const { handleGoogleSignIn } = useAppState();
 
   const signInForm = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
@@ -107,25 +109,45 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
     onSignUpSuccess?.(values.firstName);
   };
   
-  const handleSocialLogin = (provider: 'Google' | 'Apple') => {
+  const handleSocialLogin = async (provider: 'Google' | 'Apple') => {
     setIsSubmitting(true);
-    console.log(`Signing in with ${provider}`);
-
-     const mockSocialUser = {
-        name: 'Jane Smith',
-        email: 'jane.s@email.com',
-        phone: '+233 55 555 5555'
-    };
-    setUser(mockSocialUser);
-    
-    setTimeout(() => {
+    if (provider === 'Google') {
+        const user = await handleGoogleSignIn();
+        if (user) {
+            setUser({
+                name: user.displayName || 'Google User',
+                email: user.email || '',
+                phone: user.phoneNumber || ''
+            });
+            toast({
+                title: t('socialSignInToastTitle', { provider }),
+                description: t('welcome'),
+            });
+            onSignInSuccess?.();
+        } else {
+            toast({
+                variant: 'destructive',
+                title: 'Sign In Failed',
+                description: 'Could not sign in with Google. Please try again.',
+            });
+        }
+    } else {
+        // Mock Apple Sign in
+        console.log(`Signing in with ${provider}`);
+        const mockSocialUser = {
+            name: 'Jane Smith',
+            email: 'jane.s@email.com',
+            phone: '+233 55 555 5555'
+        };
+        setUser(mockSocialUser);
+        await new Promise((resolve) => setTimeout(resolve, 1000));
         toast({
             title: t('socialSignInToastTitle', { provider }),
             description: t('welcome'),
         });
-        setIsSubmitting(false);
         onSignInSuccess?.();
-    }, 1000);
+    }
+    setIsSubmitting(false);
   }
 
   return (
@@ -172,7 +194,7 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
       </TabsContent>
       <TabsContent value="sign-up">
         <Form {...signUpForm}>
-          <form onSubmit={signUpForm.handleSubmit(handleSignUp)} className="space-y-4 mt-4">
+          <form onSubmit={signUpForm. handleSubmit(handleSignUp)} className="space-y-4 mt-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                 control={signUpForm.control}
