@@ -13,6 +13,7 @@ import { VisaIcon } from '@/components/icons/visa';
 import { CardPattern } from '@/components/icons/card-pattern';
 import { useWallet } from '@/context/wallet-context';
 import { useLanguage } from '@/context/language-context';
+import Image from 'next/image';
 
 export default function LinkCardPage() {
     const router = useRouter();
@@ -123,7 +124,7 @@ export default function LinkCardPage() {
                         </div>
                         <CardContent className="p-6 relative flex flex-col justify-between min-h-[200px]">
                            <div className="flex justify-end items-start">
-                                <VisaIcon className="w-24" />
+                                <Image src="https://upload.wikimedia.org/wikipedia/commons/4/41/Visa_Logo.png" alt="Visa Logo" width={80} height={26} />
                             </div>
                             <div className='space-y-2 mt-auto'>
                                 <p className="text-xl font-mono tracking-widest text-foreground/80">
