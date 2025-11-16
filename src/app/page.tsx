@@ -50,6 +50,7 @@ export default function Home() {
                   width={200}
                   height={100}
                   priority
+                  className="object-contain"
                 />
               </div>
               <p className="text-balance text-muted-foreground">
