@@ -266,12 +266,13 @@ export default function HomePage() {
         const pointsEarned = Math.floor(totalFare);
         addLoyaltyPoints(pointsEarned);
 
+        const primarySeat = selectedSeats[0];
         const qrData = {
           bus: selectedBus.plate,
-          seats: selectedSeats,
+          seat: primarySeat,
           from: stop.name,
           to: selectedBus.finalDestination.name,
-          fare: totalFare,
+          fare: totalFare / selectedSeats.length, // Fare per seat
           timestamp: new Date().toISOString(),
         };
         const encodedQrData = encodeURIComponent(JSON.stringify(qrData));
@@ -281,7 +282,7 @@ export default function HomePage() {
             const newNotification: Notification = {
                 id: Date.now(),
                 title: t('seatBookedNotificationTitle'),
-                description: t('seatBookedNotificationDescription', { seat: selectedSeats.join(', '), plate: selectedBus.plate }),
+                description: t('seatBookedNotificationDescription', { seat: primarySeat, plate: selectedBus.plate }),
                 action: (
                      <Button variant="outline" size="sm" onClick={() => setIsQrSheetOpen(true)}>
                         <QrCode className="mr-2 h-4 w-4" />
@@ -401,6 +402,7 @@ export default function HomePage() {
   }
 
   const displayedBus = activeTrip?.bus || selectedBus;
+  const primarySeat = activeTrip?.seats[0] || selectedSeats[0];
 
   if (!user) {
     return (
@@ -722,7 +724,7 @@ export default function HomePage() {
                         <p className="text-sm text-muted-foreground">{t('showQrToDriver')}</p>
                         <div className="flex items-center gap-4 justify-center">
                             <Badge variant="outline">{displayedBus?.plate}</Badge>
-                            <Badge>{t('seatCount', { count: selectedSeats.length })}: {selectedSeats.join(', ')}</Badge>
+                            <Badge>{t('seat')}: {primarySeat}</Badge>
                         </div>
                     </div>
                 </div>
@@ -735,4 +737,5 @@ export default function HomePage() {
     
 
     
+
 

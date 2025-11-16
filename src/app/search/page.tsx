@@ -262,14 +262,15 @@ export default function SearchPage() {
         const pointsEarned = Math.floor(stop.fare);
         addLoyaltyPoints(pointsEarned);
 
-        const qrData = { bus: selectedBus.plate, seats: selectedSeats, from: stop.name, to: selectedBus.finalDestination.name, fare: totalFare, timestamp: new Date().toISOString() };
+        const primarySeat = selectedSeats[0];
+        const qrData = { bus: selectedBus.plate, seat: primarySeat, from: stop.name, to: selectedBus.finalDestination.name, fare: totalFare / selectedSeats.length, timestamp: new Date().toISOString() };
         const encodedQrData = encodeURIComponent(JSON.stringify(qrData));
         setQrCodeUrl(`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodedQrData}`);
         
         const newNotification: Notification = {
             id: Date.now(),
             title: t('seatBookedToastTitle'),
-            description: t('seatBookedNotificationDescription', { seat: selectedSeats.join(', '), plate: selectedBus.plate }),
+            description: t('seatBookedNotificationDescription', { seat: primarySeat, plate: selectedBus.plate }),
             action: <Button variant="outline" size="sm" onClick={() => setIsQrSheetOpen(true)}><QrCode className="mr-2 h-4 w-4" />{t('viewQrCode')}</Button>
         }
         setNotifications(prev => [newNotification, ...prev]);
@@ -397,6 +398,7 @@ export default function SearchPage() {
   }
 
   const displayedBus = activeTrip?.bus || selectedBus;
+  const primarySeat = activeTrip?.seats[0] || selectedSeats[0];
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -641,7 +643,7 @@ export default function SearchPage() {
                         <p className="text-sm text-muted-foreground">{t('showQrToDriver')}</p>
                         <div className="flex items-center gap-4 justify-center">
                             <Badge variant="outline">{displayedBus?.plate}</Badge>
-                            <Badge>{t('seatCount', { count: selectedSeats.length })}: {selectedSeats.join(', ')}</Badge>
+                            <Badge>{t('seat')}: {primarySeat}</Badge>
                         </div>
                     </div>
                 </div>
