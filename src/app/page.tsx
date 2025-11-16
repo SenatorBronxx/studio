@@ -24,9 +24,7 @@ export default function Home() {
   };
   
   const handleSignInSuccess = () => {
-    // For sign-in, we don't have the name immediately, so we'll pass a default.
-    // In a real app, you'd fetch the user's name from your backend.
-    router.push(`/home?name=${encodeURIComponent(t('friend'))}`);
+    router.push('/home');
   };
 
   const handleSlideshowFinish = () => {
