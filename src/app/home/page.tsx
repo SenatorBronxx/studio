@@ -425,7 +425,7 @@ export default function HomePage() {
         <div className="absolute inset-0 bg-background/20 pointer-events-none" />
       </div>
 
-      <header className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-20 bg-background/75 backdrop-blur-sm">
+      <header className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-20">
         <Image
             src="https://i.imgur.com/Avu0y2Y.png"
             alt="Eritas Transport Company Logo"
@@ -441,7 +441,7 @@ export default function HomePage() {
                     <Button
                         variant="default"
                         size="icon"
-                        className="bg-background/75 backdrop-blur-sm rounded-full shadow-md hover:bg-card text-foreground"
+                        className="bg-background rounded-full shadow-md hover:bg-card text-foreground"
                     >
                         <Bell className="h-5 w-5" />
                         {notifications.length > 0 && (
@@ -756,5 +756,7 @@ export default function HomePage() {
     
 
 
+
+    
 
     
