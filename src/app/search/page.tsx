@@ -403,7 +403,17 @@ export default function SearchPage() {
   return (
     <div className="flex flex-col min-h-screen bg-background">
         <header className="sticky top-0 z-20 bg-background/75 backdrop-blur-sm p-4 shadow-sm">
-            <div className="max-w-md mx-auto space-y-2">
+            <div className="max-w-md mx-auto space-y-4">
+                 <div className="flex justify-center">
+                    <Image
+                        src="https://i.imgur.com/Avu0y2Y.png"
+                        alt="Eritas Transport Company Logo"
+                        width={120}
+                        height={60}
+                        priority
+                        className="object-contain"
+                    />
+                </div>
                 <div className='flex items-center gap-2'>
                     <div className='relative flex-1'>
                         <BusFront className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -731,5 +741,7 @@ export default function SearchPage() {
 
     
 
+
+    
 
     
