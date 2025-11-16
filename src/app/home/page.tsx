@@ -430,7 +430,7 @@ export default function HomePage() {
                  <Button
                     variant="default"
                     size="icon"
-                    className="bg-background/75 backdrop-blur-sm rounded-full shadow-md hover:bg-card text-foreground relative"
+                    className="bg-background/75 backdrop-blur-sm rounded-full shadow-md hover:bg-card text-foreground"
                 >
                     <Bell className="h-5 w-5" />
                     {notifications.length > 0 && (
@@ -735,3 +735,4 @@ export default function HomePage() {
     
 
     
+

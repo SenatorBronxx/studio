@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Bus, User, MapPin, Copy, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useTrip } from '@/context/trip-context';
@@ -161,10 +161,4 @@ export default function ShareTripPage() {
             </main>
         </div>
     );
-}
-
-// Add a placeholder for goToHome if it doesn't exist
-useLanguage.prototype.t = useLanguage.prototype.t || function(key: string) {
-    if (key === 'goToHome') return 'Go to Home';
-    return key;
 }
