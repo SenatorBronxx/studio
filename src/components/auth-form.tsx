@@ -17,7 +17,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { AppleIcon } from "@/components/icons/apple";
 import { Loader2 } from "lucide-react";
 import { useUser } from "@/context/user-context";
 import { useLanguage } from "@/context/language-context";
@@ -277,7 +276,7 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
           Google
         </Button>
         <Button variant="outline" onClick={() => handleSocialLogin('Apple')} disabled={isSubmitting}>
-          <AppleIcon className="mr-2 h-4 w-4" />
+          <Image src="https://cdn-icons-png.flaticon.com/512/0/747.png" alt="Apple" width={16} height={16} className="mr-2 h-4 w-4" />
           Apple
         </Button>
       </div>

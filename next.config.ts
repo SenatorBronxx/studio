@@ -64,6 +64,12 @@ const nextConfig: NextConfig = {
         hostname: 'www.bayfrontgardens.com',
         port: '',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn-icons-png.flaticon.com',
+        port: '',
+        pathname: '/**',
       }
     ],
   },
