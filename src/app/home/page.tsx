@@ -431,7 +431,7 @@ export default function HomePage() {
         </div>
         <div className="flex-1 flex justify-center">
             <Image
-                src="https://jklylnqjwfrmjrsqfzys.supabase.co/storage/v1/object/public/images/eritas-logo-1763267730211.png"
+                src="https://i.imgur.com/Avu0y2Y.png"
                 alt="Eritas Transport Company Logo"
                 width={120}
                 height={60}
