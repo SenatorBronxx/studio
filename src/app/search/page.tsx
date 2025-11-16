@@ -3,7 +3,7 @@
 
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowRight, Search, BusFront, X, Flag, Users, Loader2, Clock, Armchair, QrCode, Bell, Trash2, MapPin, Bus } from 'lucide-react';
+import { ArrowRight, Search, BusFront, X, Flag, Users, Loader2, Clock, Armchair, QrCode, Bell, Trash2, MapPin, Bus, Send } from 'lucide-react';
 import { BottomNav } from '@/components/bottom-nav';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -117,7 +117,7 @@ export default function SearchPage() {
   const [filteredBuses, setFilteredBuses] = useState<BusData[]>([]);
   const [selectedBus, setSelectedBus] = useState<BusData | null>(null);
   const [isBoarding, setIsBoarding] = useState(false);
-  const [selectedSeat, setSelectedSeat] = useState<string | null>(null);
+  const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
   const [isSeatSheetOpen, setIsSeatSheetOpen] = useState(false);
   const [isQrSheetOpen, setIsQrSheetOpen] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
@@ -150,11 +150,11 @@ export default function SearchPage() {
       if (busData) {
         // Sync selectedBus with activeTrip from context
         setSelectedBus(busData);
-        setSelectedSeat(activeTrip.seat);
+        setSelectedSeats(activeTrip.seats);
       }
     } else if (isTripHydrated && !activeTrip) {
       setSelectedBus(null);
-      setSelectedSeat(null);
+      setSelectedSeats([]);
     }
   }, [isTripHydrated, activeTrip, buses]);
 
@@ -196,23 +196,24 @@ export default function SearchPage() {
       return;
     }
     setSelectedBus(bus);
-    setSelectedSeat(null);
+    setSelectedSeats([]);
   }
   
   const clearSelectedBus = () => {
     setSelectedBus(null);
-    setSelectedSeat(null);
+    setSelectedSeats([]);
   }
 
   const handleBoard = (stop: {name: string, fare: number, eta: number}) => {
-    if(!selectedBus || !selectedSeat) return;
+    if(!selectedBus || selectedSeats.length === 0) return;
     
-    let finalFare = stop.fare;
+    let farePerSeat = stop.fare;
     if (activeDiscount) {
-        finalFare *= (1 - activeDiscount.percentage / 100);
+        farePerSeat *= (1 - activeDiscount.percentage / 100);
     }
+    const totalFare = farePerSeat * selectedSeats.length;
 
-    if (balance < finalFare) {
+    if (balance < totalFare) {
       toast({
         variant: "destructive",
         title: t('insufficientBalanceToastTitle'),
@@ -224,21 +225,21 @@ export default function SearchPage() {
     setIsBoarding(true);
     setTimeout(() => {
         setIsBoarding(false);
-        deductBalance(finalFare);
+        deductBalance(totalFare);
 
         const newTransaction = {
             id: uuidv4(),
             type: 'payment',
             plate: selectedBus.plate || 'N/A',
-            amount: -finalFare,
+            amount: -totalFare,
         };
         addTransaction(newTransaction);
         
         let updatedBus : BusData | undefined;
         const updatedBuses = buses.map(b => {
             if (b.id === selectedBus.id) {
-                const newSeating = b.seating.map(s => s && s.id === selectedSeat ? { ...s, isOccupied: true } : s);
-                updatedBus = { ...b, seating: newSeating, capacity: { ...b.capacity, current: b.capacity.current + 1 }};
+                const newSeating = b.seating.map(s => s && selectedSeats.includes(s.id) ? { ...s, isOccupied: true } : s);
+                updatedBus = { ...b, seating: newSeating, capacity: { ...b.capacity, current: b.capacity.current + selectedSeats.length }};
                 setSelectedBus(updatedBus);
                 return updatedBus;
             }
@@ -252,7 +253,7 @@ export default function SearchPage() {
             from: "Your Location",
             destination: stop.name,
             eta: updatedBus.eta,
-            seat: selectedSeat,
+            seats: selectedSeats,
             destinationEta: stop.eta,
           };
           setActiveTrip(newTrip);
@@ -261,19 +262,34 @@ export default function SearchPage() {
         const pointsEarned = Math.floor(stop.fare);
         addLoyaltyPoints(pointsEarned);
 
-        const qrData = { bus: selectedBus.plate, seat: selectedSeat, from: stop.name, to: selectedBus.finalDestination.name, fare: finalFare, timestamp: new Date().toISOString() };
+        const qrData = { bus: selectedBus.plate, seats: selectedSeats, from: stop.name, to: selectedBus.finalDestination.name, fare: totalFare, timestamp: new Date().toISOString() };
         const encodedQrData = encodeURIComponent(JSON.stringify(qrData));
         setQrCodeUrl(`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodedQrData}`);
         
         const newNotification: Notification = {
             id: Date.now(),
             title: t('seatBookedToastTitle'),
-            description: t('seatBookedNotificationDescription', { seat: selectedSeat, plate: selectedBus.plate }),
+            description: t('seatBookedNotificationDescription', { seat: selectedSeats.join(', '), plate: selectedBus.plate }),
             action: <Button variant="outline" size="sm" onClick={() => setIsQrSheetOpen(true)}><QrCode className="mr-2 h-4 w-4" />{t('viewQrCode')}</Button>
         }
         setNotifications(prev => [newNotification, ...prev]);
 
-        let toastDescription = t('fareDeductedToastDescription', { fare: finalFare.toFixed(2) });
+        if (selectedSeats.length > 1) {
+            const reservedSeatsNotification: Notification = {
+                id: Date.now() + 1,
+                title: t('seatsReservedForOthers'),
+                description: t('seatsReservedForOthersDescription'),
+                action: (
+                    <Button variant="default" size="sm" onClick={() => router.push('/share-trip')}>
+                        <Send className="mr-2 h-4 w-4" />
+                        {t('sendToRecipient')}
+                    </Button>
+                )
+            }
+            setNotifications(prev => [reservedSeatsNotification, ...prev]);
+        }
+
+        let toastDescription = t('fareDeductedToastDescription', { fare: totalFare.toFixed(2) });
         if (activeDiscount) {
             toastDescription += ` (${t('discountAppliedToast', { percentage: activeDiscount.percentage })})`
         }
@@ -300,7 +316,7 @@ export default function SearchPage() {
     const destinationStop = allStops.find(s => s.name === activeTrip.destination);
     if (!destinationStop) return;
 
-    let fareToRefund = destinationStop.fare;
+    let fareToRefund = destinationStop.fare * activeTrip.seats.length;
      if (activeDiscount) {
       fareToRefund *= (1 - activeDiscount.percentage / 100);
     }
@@ -310,8 +326,8 @@ export default function SearchPage() {
 
     const updatedBuses = buses.map(b => {
       if (b.id === activeTrip.bus.id) {
-        const newSeating = b.seating.map(s => (s && s.id === activeTrip.seat) ? { ...s, isOccupied: false } : s);
-        return { ...b, seating: newSeating, capacity: { ...b.capacity, current: b.capacity.current - 1 }};
+        const newSeating = b.seating.map(s => (s && activeTrip.seats.includes(s.id)) ? { ...s, isOccupied: false } : s);
+        return { ...b, seating: newSeating, capacity: { ...b.capacity, current: b.capacity.current - activeTrip.seats.length }};
       }
       return b;
     });
@@ -319,7 +335,7 @@ export default function SearchPage() {
 
     clearActiveTrip();
     setSelectedBus(null);
-    setSelectedSeat(null);
+    setSelectedSeats([]);
     setIsOnBus(false);
     setQrCodeUrl(null); // Invalidate QR Code
 
@@ -340,7 +356,13 @@ export default function SearchPage() {
     if (selectedBus) {
         const seat = selectedBus.seating.find(s => s?.id === seatId);
         if (seat && !seat.isOccupied) {
-            setSelectedSeat(prevSeat => prevSeat === seatId ? null : seatId);
+            setSelectedSeats(prevSeats => {
+                if (prevSeats.includes(seatId)) {
+                    return prevSeats.filter(s => s !== seatId);
+                } else {
+                    return [...prevSeats, seatId];
+                }
+            });
         }
     }
   }
@@ -486,14 +508,14 @@ export default function SearchPage() {
                                         <SheetTrigger asChild>
                                             <Button variant="outline" className='w-full'>
                                                 <Armchair className="mr-2 h-5 w-5" />
-                                                {selectedSeat ? t('seatSelected', { seat: selectedSeat }) : t('viewSeats')}
+                                                {selectedSeats.length > 0 ? t('seatsSelected', { count: selectedSeats.length }) : t('viewSeats')}
                                             </Button>
                                         </SheetTrigger>
                                         <SheetContent side="bottom" className="rounded-t-2xl">
                                             <SheetHeader><SheetTitle>{t('selectYourSeat')}</SheetTitle></SheetHeader>
                                             <BusSeatingChart 
                                                 seating={displayedBus.seating}
-                                                selectedSeat={selectedSeat}
+                                                selectedSeats={selectedSeats}
                                                 onSeatSelect={handleSeatSelect}
                                                 busPlate={displayedBus.plate}
                                                 onConfirm={handleConfirmSeat}
@@ -532,7 +554,7 @@ export default function SearchPage() {
                                                             </div>
                                                              <div className='flex items-center gap-2'>
                                                                 {activeDiscount && <Badge variant="destructive">-{activeDiscount.percentage}%</Badge>}
-                                                                <p className={`font-mono text-sm ${stop.isFinal ? 'font-semibold text-primary' : 'text-foreground'}`}>GH₵{fare.toFixed(2)}</p>
+                                                                <p className={`font-mono text-sm ${stop.isFinal ? 'font-semibold text-primary' : 'text-foreground'}`}>{t('farePerSeat', { fare: fare.toFixed(2) })}</p>
                                                             </div>
                                                         </div>
                                                     </AccordionTrigger>
@@ -540,12 +562,12 @@ export default function SearchPage() {
                                                         <div className="px-3 pt-2 pb-2 text-center">
                                                         {activeTrip ? (
                                                             <p className='text-sm text-muted-foreground'>{t('tripInProgress')}</p>
-                                                        ) : displayedBus.capacity.current < displayedBus.capacity.max ? (
-                                                            <Button className='w-full' onClick={() => handleBoard(stop)} disabled={isBoarding || !selectedSeat || !!activeTrip}>
-                                                                {isBoarding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : !selectedSeat ? t('selectBusSeatFirst') : t('board')}
-                                                            </Button>
+                                                        ) : displayedBus.capacity.current + selectedSeats.length > displayedBus.capacity.max ? (
+                                                            <p className="text-sm text-destructive font-medium p-2 bg-destructive/10 rounded-md">{t('notEnoughSeats')}</p>
                                                         ) : (
-                                                            <p className="text-sm text-destructive font-medium p-2 bg-destructive/10 rounded-md">{t('busIsFull')}</p>
+                                                            <Button className='w-full' onClick={() => handleBoard(stop)} disabled={isBoarding || selectedSeats.length === 0 || !!activeTrip}>
+                                                                {isBoarding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : selectedSeats.length === 0 ? t('selectBusSeatFirst') : t('board')}
+                                                            </Button>
                                                         )}
                                                         </div>
                                                     </AccordionContent>
@@ -619,7 +641,7 @@ export default function SearchPage() {
                         <p className="text-sm text-muted-foreground">{t('showQrToDriver')}</p>
                         <div className="flex items-center gap-4 justify-center">
                             <Badge variant="outline">{displayedBus?.plate}</Badge>
-                            <Badge>{t('seat')} {selectedSeat}</Badge>
+                            <Badge>{t('seatCount', { count: selectedSeats.length })}: {selectedSeats.join(', ')}</Badge>
                         </div>
                     </div>
                 </div>

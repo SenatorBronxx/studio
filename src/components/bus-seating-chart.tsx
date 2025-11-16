@@ -1,7 +1,7 @@
 
 'use client';
 
-import { Armchair, BusFront } from 'lucide-react';
+import { Armchair, BusFront, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -14,14 +14,16 @@ type Seat = {
 
 type BusSeatingChartProps = {
     seating: Seat[];
-    selectedSeat: string | null;
+    selectedSeats: string[];
     onSeatSelect: (seatId: string) => void;
     busPlate: string;
     onConfirm: () => void;
 };
 
-export function BusSeatingChart({ seating, selectedSeat, onSeatSelect, busPlate, onConfirm }: BusSeatingChartProps) {
+export function BusSeatingChart({ seating, selectedSeats, onSeatSelect, busPlate, onConfirm }: BusSeatingChartProps) {
     const { t } = useLanguage();
+    const primarySeat = selectedSeats[0];
+    
     return (
         <div className="p-4 space-y-6">
             <div className="bg-muted p-4 rounded-lg flex flex-col items-center justify-center gap-4">
@@ -39,7 +41,8 @@ export function BusSeatingChart({ seating, selectedSeat, onSeatSelect, busPlate,
                             return <div key={`aisle-${index}`} className="col-span-1"></div>;
                         }
 
-                        const isSelected = selectedSeat === seat.id;
+                        const isSelected = selectedSeats.includes(seat.id);
+                        const isPrimary = primarySeat === seat.id;
                         
                         return (
                             <button
@@ -52,10 +55,11 @@ export function BusSeatingChart({ seating, selectedSeat, onSeatSelect, busPlate,
                                     seat.isOccupied
                                         ? "bg-muted text-muted-foreground cursor-not-allowed"
                                         : "bg-primary/20 text-primary hover:bg-primary/30",
-                                    isSelected && "bg-primary text-primary-foreground ring-2 ring-offset-2 ring-primary ring-offset-background"
+                                    isSelected && "bg-primary/60 text-primary-foreground",
+                                    isPrimary && "bg-primary text-primary-foreground ring-2 ring-offset-2 ring-primary ring-offset-background"
                                 )}
                             >
-                                <Armchair className="w-6 h-6" />
+                                {isPrimary ? <User className="w-5 h-5" /> : <Armchair className="w-6 h-6" />}
                                 <span className="absolute text-[8px] font-bold text-white top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                                     {seat.id}
                                 </span>
@@ -65,13 +69,17 @@ export function BusSeatingChart({ seating, selectedSeat, onSeatSelect, busPlate,
                 </div>
             </div>
             <div className="flex justify-around text-sm">
-                <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded bg-primary/20 border border-primary"></div>
+                 <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded bg-primary/20 border border-primary flex items-center justify-center"><Armchair className="w-3 h-3 text-primary" /></div>
                     <span>{t('available')}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded bg-primary text-primary-foreground border border-primary"></div>
-                    <span>{t('selected')}</span>
+                    <div className="w-4 h-4 rounded bg-primary/60 border border-primary flex items-center justify-center"><Armchair className="w-3 h-3 text-primary-foreground" /></div>
+                    <span>{t('reserved')}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded bg-primary border border-primary flex items-center justify-center"><User className="w-3 h-3 text-primary-foreground" /></div>
+                    <span>{t('primary')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="w-4 h-4 rounded bg-muted border border-muted-foreground"></div>
@@ -79,8 +87,8 @@ export function BusSeatingChart({ seating, selectedSeat, onSeatSelect, busPlate,
                 </div>
             </div>
 
-            <Button className='w-full' disabled={!selectedSeat} onClick={onConfirm}>
-                {t('confirmSeat')} {selectedSeat}
+            <Button className='w-full' disabled={selectedSeats.length === 0} onClick={onConfirm}>
+                {selectedSeats.length > 0 ? t('confirmSeats', { count: selectedSeats.length }) : t('confirmSeat')}
             </Button>
         </div>
     );

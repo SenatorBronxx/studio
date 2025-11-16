@@ -31,15 +31,30 @@ export default function ShareTripPage() {
         );
     }
     
-    const { bus, destination, eta } = activeTrip;
-    const shareText = t('shareTripText', {
+    const { bus, destination, eta, seats } = activeTrip;
+    
+    const primarySeat = seats[0];
+    const reservedSeats = seats.slice(1);
+    const busStops = bus.stops.map(s => s.name).join(', ');
+
+    const baseText = t('shareTripText', {
         driver: bus.driver,
         plate: bus.plate,
         destination: destination,
         eta: eta,
     });
+
+    let reservedSeatsText = '';
+    if (reservedSeats.length > 0) {
+        reservedSeatsText = `\n\n${t('shareTripReservedSeatsText', {
+            count: reservedSeats.length,
+            seats: reservedSeats.join(', '),
+        })}`;
+    }
+
+    const pickupText = `\n\n${t('shareTripPickupText', { stops: busStops })}`;
     const shareUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(destination)}`;
-    const fullMessage = `${shareText}\n\n${t('trackMyTrip')}:\n${shareUrl}`;
+    const fullMessage = `${baseText}${reservedSeatsText}${pickupText}\n\n${t('trackMyTrip')}:\n${shareUrl}`;
 
     const handleShare = (platform: 'whatsapp' | 'sms') => {
         const encodedMessage = encodeURIComponent(fullMessage);
@@ -83,6 +98,16 @@ export default function ShareTripPage() {
                                 <span className="text-muted-foreground flex items-center gap-2"><Bus className="h-4 w-4" /> {t('bus')}</span>
                                 <span className="font-mono font-semibold">{bus.plate}</span>
                             </div>
+                             <div className="flex items-center justify-between">
+                                <span className="text-muted-foreground flex items-center gap-2"><Bus className="h-4 w-4" /> {t('yourSeat')}</span>
+                                <span className="font-mono font-semibold">{primarySeat}</span>
+                            </div>
+                            {reservedSeats.length > 0 && (
+                                <div className="flex items-center justify-between">
+                                    <span className="text-muted-foreground flex items-center gap-2"><Bus className="h-4 w-4" /> {t('reservedSeats')}</span>
+                                    <span className="font-mono font-semibold">{reservedSeats.join(', ')}</span>
+                                </div>
+                            )}
                             <div className="flex items-center justify-between">
                                 <span className="text-muted-foreground flex items-center gap-2"><User className="h-4 w-4" /> {t('driver')}</span>
                                 <span className="font-semibold">{bus.driver}</span>

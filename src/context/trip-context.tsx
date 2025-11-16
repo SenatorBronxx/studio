@@ -21,7 +21,7 @@ export type ActiveTrip = {
     from: string;
     destination: string;
     eta: number; // This will now dynamically hold the current relevant ETA
-    seat: string | null;
+    seats: string[];
     destinationEta: number; // ETA from boarding stop to destination
 };
 

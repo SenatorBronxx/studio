@@ -20,6 +20,7 @@ import {
   LogIn,
   Bus,
   UserCircle,
+  Send,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
@@ -123,7 +124,7 @@ export default function HomePage() {
   const [buses, setBuses] = useState(initialBusData);
   const [selectedBus, setSelectedBus] = useState<BusData | null>(null);
   const [isBoarding, setIsBoarding] = useState(false);
-  const [selectedSeat, setSelectedSeat] = useState<string | null>(null);
+  const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
   const [isSeatSheetOpen, setIsSeatSheetOpen] = useState(false);
   const [isQrSheetOpen, setIsQrSheetOpen] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
@@ -144,11 +145,11 @@ export default function HomePage() {
       const busData = buses.find(b => b.id === activeTrip.bus.id);
       if (busData) {
         setSelectedBus(busData);
-        setSelectedSeat(activeTrip.seat);
+        setSelectedSeats(activeTrip.seats);
       }
     } else if (isTripHydrated && !activeTrip) {
       setSelectedBus(null);
-      setSelectedSeat(null);
+      setSelectedSeats([]);
     }
   }, [isTripHydrated, activeTrip, buses]);
 
@@ -198,23 +199,25 @@ export default function HomePage() {
       return;
     }
     setSelectedBus(bus);
-    setSelectedSeat(null); 
+    setSelectedSeats([]); 
   }
   
   const clearSelectedBus = () => {
     setSelectedBus(null);
-    setSelectedSeat(null);
+    setSelectedSeats([]);
   }
 
   const handleBoard = (stop: {name: string, fare: number, eta: number}) => {
-    if (!selectedBus || !selectedSeat) return;
+    if (!selectedBus || selectedSeats.length === 0) return;
 
-    let finalFare = stop.fare;
+    let farePerSeat = stop.fare;
     if (activeDiscount) {
-        finalFare = finalFare * (1 - activeDiscount.percentage / 100);
+        farePerSeat = farePerSeat * (1 - activeDiscount.percentage / 100);
     }
+    const totalFare = farePerSeat * selectedSeats.length;
 
-    if (balance < finalFare) {
+
+    if (balance < totalFare) {
       toast({
         variant: "destructive",
         title: t('insufficientBalanceToastTitle'),
@@ -226,21 +229,21 @@ export default function HomePage() {
     setIsBoarding(true);
     setTimeout(() => {
         setIsBoarding(false);
-        deductBalance(finalFare);
+        deductBalance(totalFare);
 
         const newTransaction = {
             id: uuidv4(),
             type: 'payment',
             plate: selectedBus?.plate || 'N/A',
-            amount: -finalFare,
+            amount: -totalFare,
         };
         addTransaction(newTransaction);
         
         let updatedBus : BusData | undefined;
         const updatedBuses = buses.map(b => {
             if (b.id === selectedBus.id) {
-                const newSeating = b.seating.map(s => (s && s.id === selectedSeat) ? { ...s, isOccupied: true } : s);
-                updatedBus = { ...b, seating: newSeating, capacity: { ...b.capacity, current: b.capacity.current + 1 }};
+                const newSeating = b.seating.map(s => (s && selectedSeats.includes(s.id)) ? { ...s, isOccupied: true } : s);
+                updatedBus = { ...b, seating: newSeating, capacity: { ...b.capacity, current: b.capacity.current + selectedSeats.length }};
                 setSelectedBus(updatedBus);
                 return updatedBus;
             }
@@ -254,21 +257,21 @@ export default function HomePage() {
                 from: "Your Location", // Mock user's current location
                 destination: stop.name,
                 eta: updatedBus.eta, // ETA for bus to arrive at user's location
-                seat: selectedSeat,
+                seats: selectedSeats,
                 destinationEta: stop.eta, // ETA from boarding stop to destination
             };
             setActiveTrip(newTrip);
         }
 
-        const pointsEarned = Math.floor(finalFare);
+        const pointsEarned = Math.floor(totalFare);
         addLoyaltyPoints(pointsEarned);
 
         const qrData = {
           bus: selectedBus.plate,
-          seat: selectedSeat,
+          seats: selectedSeats,
           from: stop.name,
           to: selectedBus.finalDestination.name,
-          fare: finalFare,
+          fare: totalFare,
           timestamp: new Date().toISOString(),
         };
         const encodedQrData = encodeURIComponent(JSON.stringify(qrData));
@@ -278,7 +281,7 @@ export default function HomePage() {
             const newNotification: Notification = {
                 id: Date.now(),
                 title: t('seatBookedNotificationTitle'),
-                description: t('seatBookedNotificationDescription', { seat: selectedSeat, plate: selectedBus.plate }),
+                description: t('seatBookedNotificationDescription', { seat: selectedSeats.join(', '), plate: selectedBus.plate }),
                 action: (
                      <Button variant="outline" size="sm" onClick={() => setIsQrSheetOpen(true)}>
                         <QrCode className="mr-2 h-4 w-4" />
@@ -286,10 +289,24 @@ export default function HomePage() {
                     </Button>
                 )
             }
-            
             setNotifications(prev => [newNotification, ...prev]);
 
-            let toastDescription = t('fareDeductedToastDescription', { fare: finalFare.toFixed(2) });
+            if (selectedSeats.length > 1) {
+                const reservedSeatsNotification: Notification = {
+                    id: Date.now() + 1,
+                    title: t('seatsReservedForOthers'),
+                    description: t('seatsReservedForOthersDescription'),
+                    action: (
+                        <Button variant="default" size="sm" onClick={() => router.push('/share-trip')}>
+                            <Send className="mr-2 h-4 w-4" />
+                            {t('sendToRecipient')}
+                        </Button>
+                    )
+                }
+                setNotifications(prev => [reservedSeatsNotification, ...prev]);
+            }
+
+            let toastDescription = t('fareDeductedToastDescription', { fare: totalFare.toFixed(2) });
             if (activeDiscount) {
                 toastDescription += ` (${t('discountAppliedToast', { percentage: activeDiscount.percentage })})`
             }
@@ -318,7 +335,7 @@ export default function HomePage() {
     const destinationStop = allStops.find(s => s.name === activeTrip.destination);
     if (!destinationStop) return; // Should not happen
 
-    let fareToRefund = destinationStop.fare;
+    let fareToRefund = destinationStop.fare * activeTrip.seats.length;
     if (activeDiscount) {
       fareToRefund *= (1 - activeDiscount.percentage / 100);
     }
@@ -330,8 +347,8 @@ export default function HomePage() {
     // 2. Free up the seat
     const updatedBuses = buses.map(b => {
       if (b.id === activeTrip.bus.id) {
-        const newSeating = b.seating.map(s => (s && s.id === activeTrip.seat) ? { ...s, isOccupied: false } : s);
-        return { ...b, seating: newSeating, capacity: { ...b.capacity, current: b.capacity.current - 1 }};
+        const newSeating = b.seating.map(s => (s && activeTrip.seats.includes(s.id)) ? { ...s, isOccupied: false } : s);
+        return { ...b, seating: newSeating, capacity: { ...b.capacity, current: b.capacity.current - activeTrip.seats.length }};
       }
       return b;
     });
@@ -340,7 +357,7 @@ export default function HomePage() {
     // 3. Clear trip state
     clearActiveTrip();
     setSelectedBus(null);
-    setSelectedSeat(null);
+    setSelectedSeats([]);
     setIsOnBus(false);
     setQrCodeUrl(null); // Invalidate QR Code
 
@@ -363,7 +380,13 @@ export default function HomePage() {
     if (selectedBus) {
         const seat = selectedBus.seating.find(s => s?.id === seatId);
         if (seat && !seat.isOccupied) {
-            setSelectedSeat(prevSeat => prevSeat === seatId ? null : seatId);
+            setSelectedSeats(prevSeats => {
+                if (prevSeats.includes(seatId)) {
+                    return prevSeats.filter(s => s !== seatId);
+                } else {
+                    return [...prevSeats, seatId];
+                }
+            });
         }
     }
   }
@@ -510,7 +533,7 @@ export default function HomePage() {
                     {activeTrip && !isOnBus && (
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <Button variant="destructive" size="sm">
+                             <Button variant="destructive" size="sm">
                                 <X className="mr-2 h-4 w-4" />
                                 {t('cancel')}
                             </Button>
@@ -561,7 +584,7 @@ export default function HomePage() {
                         <SheetTrigger asChild>
                             <Button variant="outline" className='w-full'>
                                 <Armchair className="mr-2 h-5 w-5" />
-                                {selectedSeat ? t('seatSelected', { seat: selectedSeat }) : t('viewSeats')}
+                                {selectedSeats.length > 0 ? t('seatsSelected', { count: selectedSeats.length }) : t('viewSeats')}
                             </Button>
                         </SheetTrigger>
                         <SheetContent side="bottom" className="rounded-t-2xl">
@@ -570,7 +593,7 @@ export default function HomePage() {
                             </SheetHeader>
                             <BusSeatingChart 
                                 seating={displayedBus.seating}
-                                selectedSeat={selectedSeat}
+                                selectedSeats={selectedSeats}
                                 onSeatSelect={handleSeatSelect}
                                 busPlate={displayedBus.plate}
                                 onConfirm={handleConfirmSeat}
@@ -610,7 +633,7 @@ export default function HomePage() {
                                         </div>
                                         <div className='flex items-center gap-2'>
                                         {activeDiscount && <Badge variant="destructive">-{activeDiscount.percentage}%</Badge>}
-                                            <p className={`font-mono text-sm ${stop.isFinal ? 'font-semibold text-primary' : 'text-foreground'}`}>GH₵{fare.toFixed(2)}</p>
+                                            <p className={`font-mono text-sm ${stop.isFinal ? 'font-semibold text-primary' : 'text-foreground'}`}>{t('farePerSeat', { fare: fare.toFixed(2) })}</p>
                                         </div>
                                     </div>
                                  </AccordionTrigger>
@@ -618,22 +641,22 @@ export default function HomePage() {
                                     <div className="px-3 pt-2 pb-2 text-center">
                                     {activeTrip ? (
                                          <p className='text-sm text-muted-foreground'>{t('tripInProgress')}</p>
-                                    ): displayedBus.capacity.current < displayedBus.capacity.max ? (
+                                    ): displayedBus.capacity.current + selectedSeats.length > displayedBus.capacity.max ? (
+                                        <p className="text-sm text-destructive font-medium p-2 bg-destructive/10 rounded-md">{t('notEnoughSeats')}</p>
+                                    ) : (
                                         <Button 
                                             className='w-full' 
                                             onClick={() => handleBoard(stop)} 
-                                            disabled={isBoarding || !selectedSeat || !!activeTrip}
+                                            disabled={isBoarding || selectedSeats.length === 0 || !!activeTrip}
                                         >
                                             {isBoarding ? (
                                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                            ) : !selectedSeat ? (
+                                            ) : selectedSeats.length === 0 ? (
                                                 t('selectBusSeatFirst')
                                             ) : (
                                                 t('board')
                                             )}
                                         </Button>
-                                    ) : (
-                                        <p className="text-sm text-destructive font-medium p-2 bg-destructive/10 rounded-md">{t('busIsFull')}</p>
                                     )}
                                     </div>
                                  </AccordionContent>
@@ -699,7 +722,7 @@ export default function HomePage() {
                         <p className="text-sm text-muted-foreground">{t('showQrToDriver')}</p>
                         <div className="flex items-center gap-4 justify-center">
                             <Badge variant="outline">{displayedBus?.plate}</Badge>
-                            <Badge>{t('seat')} {selectedSeat}</Badge>
+                            <Badge>{t('seatCount', { count: selectedSeats.length })}: {selectedSeats.join(', ')}</Badge>
                         </div>
                     </div>
                 </div>
