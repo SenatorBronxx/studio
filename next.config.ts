@@ -58,6 +58,12 @@ const nextConfig: NextConfig = {
         hostname: 'play.telecel.com.gh',
         port: '',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.bayfrontgardens.com',
+        port: '',
+        pathname: '/**',
       }
     ],
   },
