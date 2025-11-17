@@ -13,6 +13,7 @@ import {
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Button } from './ui/button';
 import { useLanguage } from '@/context/language-context';
+import { Ticket, Bus, MapPin, Check } from 'lucide-react';
 
 type SignupSlideshowProps = {
     onFinish: () => void;
@@ -50,8 +51,19 @@ export function SignupSlideshow({ onFinish }: SignupSlideshowProps) {
     ];
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background p-4 sm:p-6">
-      <div className="w-full max-w-sm sm:max-w-md mx-auto">
+    <div className="relative flex items-center justify-center min-h-screen bg-background p-4 sm:p-6 overflow-hidden">
+        {/* Floating Icons */}
+        <Ticket className="absolute -top-4 -left-5 h-20 w-20 text-primary/10 rotate-12 animate-float-slow" />
+        <Bus className="absolute bottom-10 -right-10 h-24 w-24 text-primary/10 animate-float-slower -rotate-12" />
+        <MapPin className="absolute top-1/2 -right-2 h-16 w-16 text-accent/10 -rotate-12 animate-float" />
+        <Bus className="absolute top-10 right-12 h-12 w-12 text-muted-foreground/10 animate-float-slow" />
+        <Ticket className="absolute bottom-4 left-4 h-16 w-16 text-accent/10 rotate-6 animate-float" />
+        <MapPin className="absolute bottom-1/3 -left-4 h-12 w-12 text-primary/10 animate-float-slower" />
+        <Check className="absolute top-1/4 left-1/4 h-12 w-12 text-primary/10 animate-float" />
+        <Ticket className="absolute top-1/4 right-1/4 h-12 w-12 text-accent/10 animate-float-slow" />
+        <Bus className="absolute bottom-1/4 left-1/4 h-12 w-12 text-muted-foreground/10 animate-float" />
+
+      <div className="w-full max-w-sm sm:max-w-md mx-auto z-10">
         <Carousel className="w-full">
           <CarouselContent>
             {slideContent.map((slide) => {
