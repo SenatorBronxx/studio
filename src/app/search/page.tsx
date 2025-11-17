@@ -515,20 +515,20 @@ export default function SearchPage() {
                                 </div>
 
                                 {activeTrip ? (
-                                    <div className="relative p-3 bg-primary/10 rounded-lg text-center overflow-hidden">
+                                    <div className={cn("relative p-3 bg-primary/10 rounded-lg text-center", isTransitioning && 'overflow-hidden')}>
                                         <Bus className={cn(
                                             "absolute top-1/2 -translate-y-1/2 h-8 w-8 text-primary/50",
                                             isTransitioning ? 'animate-slide-across' : '-left-12'
                                         )} />
                                         <div className={cn("transition-opacity duration-500", isTransitioning ? 'opacity-0' : 'opacity-100')}>
                                             <p className='text-sm text-primary/80'>
-                                                {isOnBus ? 
-                                                    <>
-                                                        {nextStop ? `${t('nextStop')}: ${nextStop.name}` : t('arrivingAt')} <span className='font-bold'>{isOnBus ? activeTrip.destination : activeTrip.from}</span>
-                                                    </>
-                                                    : 
-                                                    <>{t('busArrivingAtYourLocation')} <span className='font-bold'>{activeTrip.from}</span></>
-                                                }
+                                            {isOnBus ? (
+                                                <>
+                                                    {nextStop ? `${t('nextStop')}: ${nextStop.name}` : `${t('arrivingAt')}:`}
+                                                </>
+                                            ) : (
+                                                `${t('busArrivingAtYourLocation')}:`
+                                            )}
                                             </p>
                                             <div className="flex items-center justify-center gap-2 text-primary font-semibold text-lg">
                                                 <Clock className="h-5 w-5" />
@@ -538,7 +538,7 @@ export default function SearchPage() {
                                                     <span>{isOnBus ? t('youHaveArrived') : t('busHasArrived')}</span>
                                                 )}
                                             </div>
-                                            {isOnBus && <p className='text-xs text-primary/60 mt-1'>{t('finalDestination')}: {activeTrip.bus.finalDestination.name}</p>}
+                                            {isOnBus && <p className='text-xs text-primary/60 mt-1'>{t('finalDestination')}: {activeTrip.destination}</p>}
                                         </div>
                                     </div>
                                 ) : (
