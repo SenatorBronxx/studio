@@ -275,11 +275,11 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
         </div>
       </div>
       <div className="mt-6 grid grid-cols-2 gap-4">
-        <Button variant="outline" onClick={() => handleSocialLogin('Google')} disabled={isSubmitting}>
+        <Button variant="outline" onClick={() => handleSocialLogin('Google')}>
           <Image src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/768px-Google_%22G%22_logo.svg.png" alt="Google" width={16} height={16} className="mr-2 h-4 w-4" />
           Google
         </Button>
-        <Button variant="outline" onClick={() => handleSocialLogin('Apple')} disabled={isSubmitting}>
+        <Button variant="outline" onClick={() => handleSocialLogin('Apple')}>
           <Image src="https://cdn-icons-png.flaticon.com/512/0/747.png" alt="Apple" width={16} height={16} className="mr-2 h-4 w-4" />
           Apple
         </Button>
@@ -287,3 +287,5 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
     </Tabs>
   );
 }
+
+    

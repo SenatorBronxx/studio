@@ -28,7 +28,7 @@ export default function Home() {
   };
 
   const handleSlideshowFinish = () => {
-    router.push(`/home?name=${encodeURIComponent(userName)}`);
+    router.push('/home');
   };
 
   if (showSlideshow) {
@@ -98,3 +98,5 @@ export default function Home() {
     </div>
   );
 }
+
+    
