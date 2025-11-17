@@ -13,10 +13,32 @@ import {
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Button } from './ui/button';
 import { useLanguage } from '@/context/language-context';
-import { Ticket, Bus, MapPin, Check } from 'lucide-react';
+import { Ticket, Bus, MapPin, Check, Flag } from 'lucide-react';
 
 type SignupSlideshowProps = {
     onFinish: () => void;
+};
+
+const MosaicIcon = ({ icon: Icon, className }: { icon: React.ElementType, className?: string }) => {
+    return <Icon className={`h-8 w-8 text-primary/10 ${className}`} />;
+}
+
+const IconMosaicBackground = () => {
+    const icons = [Ticket, Bus, MapPin, Check, Flag];
+    const pattern = Array.from({ length: 150 }).map((_, i) => {
+        const Icon = icons[i % icons.length];
+        const rotation = (i % 12) * 30; // 0, 30, 60...
+        const scale = 1 + ((i % 5) / 10); // 1, 1.1, 1.2...
+        return <Icon key={i} className="h-8 w-8 text-primary/5" style={{ transform: `rotate(${rotation}deg) scale(${scale})` }} />;
+    });
+
+    return (
+        <div className="absolute inset-0 w-full h-full overflow-hidden">
+            <div className="flex flex-wrap gap-4 items-center justify-center -rotate-12 scale-150 opacity-50">
+                 {pattern}
+            </div>
+        </div>
+    );
 };
 
 export function SignupSlideshow({ onFinish }: SignupSlideshowProps) {
@@ -52,17 +74,8 @@ export function SignupSlideshow({ onFinish }: SignupSlideshowProps) {
 
   return (
     <div className="relative flex items-center justify-center min-h-screen bg-background p-4 sm:p-6 overflow-hidden">
-        {/* Floating Icons */}
-        <Ticket className="absolute -top-4 -left-5 h-20 w-20 text-primary/10 rotate-12 animate-float-slow" />
-        <Bus className="absolute bottom-10 -right-10 h-24 w-24 text-primary/10 animate-float-slower -rotate-12" />
-        <MapPin className="absolute top-1/2 -right-2 h-16 w-16 text-accent/10 -rotate-12 animate-float" />
-        <Bus className="absolute top-10 right-12 h-12 w-12 text-muted-foreground/10 animate-float-slow" />
-        <Ticket className="absolute bottom-4 left-4 h-16 w-16 text-accent/10 rotate-6 animate-float" />
-        <MapPin className="absolute bottom-1/3 -left-4 h-12 w-12 text-primary/10 animate-float-slower" />
-        <Check className="absolute top-1/4 left-1/4 h-12 w-12 text-primary/10 animate-float" />
-        <Ticket className="absolute top-1/4 right-1/4 h-12 w-12 text-accent/10 animate-float-slow" />
-        <Bus className="absolute bottom-1/4 left-1/4 h-12 w-12 text-muted-foreground/10 animate-float" />
-
+        <IconMosaicBackground />
+        
       <div className="w-full max-w-sm sm:max-w-md mx-auto z-10">
         <Carousel className="w-full">
           <CarouselContent>
@@ -71,7 +84,7 @@ export function SignupSlideshow({ onFinish }: SignupSlideshowProps) {
               return (
                 <CarouselItem key={slide.id}>
                   <div className="p-1">
-                    <Card>
+                    <Card className="bg-background/80 backdrop-blur-sm">
                       <CardContent className="flex flex-col items-center justify-center p-6 space-y-4 aspect-[9/10] sm:aspect-square">
                         {image && (
                           <div className="relative w-full h-40 sm:h-48">
