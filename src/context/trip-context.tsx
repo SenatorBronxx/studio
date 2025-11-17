@@ -23,6 +23,7 @@ export type ActiveTrip = {
     eta: number; // This will now dynamically hold the current relevant ETA
     seats: string[];
     destinationEta: number; // ETA from boarding stop to destination
+    currentStopIndex: number;
 };
 
 type TripContextType = {
@@ -32,6 +33,7 @@ type TripContextType = {
     setDynamicEta: (eta: number) => void;
     updateActiveTripBus: (bus: BusData) => void;
     isHydrated: boolean;
+    setCurrentStopIndex: (index: number) => void;
 };
 
 const TripContext = createContext<TripContextType | undefined>(undefined);
@@ -90,6 +92,19 @@ export function TripProvider({ children }: { children: ReactNode }) {
             return updatedTrip;
         });
     }, []);
+
+    const setCurrentStopIndex = useCallback((index: number) => {
+        setActiveTripState(prevTrip => {
+            if (!prevTrip) return null;
+            const updatedTrip = { ...prevTrip, currentStopIndex: index };
+             try {
+                localStorage.setItem('eritas-active-trip', JSON.stringify(updatedTrip));
+            } catch (error) {
+                console.error("Failed to write active trip to localStorage", error);
+            }
+            return updatedTrip;
+        });
+    }, []);
     
     const updateActiveTripBus = useCallback((bus: BusData) => {
         setActiveTripState(prevTrip => {
@@ -110,7 +125,8 @@ export function TripProvider({ children }: { children: ReactNode }) {
         clearActiveTrip,
         setDynamicEta,
         updateActiveTripBus,
-        isHydrated
+        isHydrated,
+        setCurrentStopIndex
     };
     
     if (!isHydrated) {

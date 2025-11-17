@@ -339,5 +339,7 @@
     "tripQrCodesTitle": "Your Trip QR Codes",
     "tripQrCodesDescription": "A history of your recent trips and their QR codes.",
     "noTripQrs": "No QR Codes Found",
-    "noTripQrsDescription": "You haven't completed any trips yet to see QR codes."
+    "noTripQrsDescription": "You haven't completed any trips yet to see QR codes.",
+    "nextStop": "Next Stop",
+    "finalDestination": "Final Destination"
 }

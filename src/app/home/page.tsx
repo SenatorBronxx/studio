@@ -114,7 +114,7 @@ export default function HomePage() {
   const { toast } = useToast();
   const { balance, deductBalance, addTransaction, addLoyaltyPoints, addBalance: refundBalance } = useWallet();
   const { setIsOnBus, isOnBus } = useMusic();
-  const { activeTrip, setActiveTrip, isHydrated: isTripHydrated, setDynamicEta, clearActiveTrip } = useTrip();
+  const { activeTrip, setActiveTrip, isHydrated: isTripHydrated, setDynamicEta, clearActiveTrip, setCurrentStopIndex } = useTrip();
   const { bookingAlerts } = useNotificationSettings();
   const { activeDiscount, isDiscountBannerDismissed, dismissDiscountBanner } = useDiscount();
   const { t } = useLanguage();
@@ -166,6 +166,8 @@ export default function HomePage() {
             const destinationStop = [...activeTrip.bus.stops, activeTrip.bus.finalDestination].find(s => s.name === activeTrip.destination);
             if (destinationStop) {
                 setDynamicEta(destinationStop.eta);
+                 // Start tracking stops
+                setCurrentStopIndex(0);
             }
             toast({
                 title: t('onTheBusToastTitle'),
@@ -173,9 +175,20 @@ export default function HomePage() {
             });
             setIsTransitioning(false);
         }, 2000); // Duration of the animation
+    } else if (isOnBus && activeTrip && activeTrip.eta > 0) {
+        // Bus is on the move, update stops
+        interval = setInterval(() => {
+            const allStops = [...activeTrip.bus.stops, activeTrip.bus.finalDestination];
+            const currentStop = allStops[activeTrip.currentStopIndex];
+            if (currentStop && activeTrip.eta <= currentStop.eta) {
+                if (activeTrip.currentStopIndex < allStops.length - 1) {
+                    setCurrentStopIndex(activeTrip.currentStopIndex + 1);
+                }
+            }
+        }, 30 * 1000); // Check every 30 seconds
     }
     return () => clearInterval(interval);
-  }, [activeTrip, isOnBus, setIsOnBus, setDynamicEta, toast, t]);
+  }, [activeTrip, isOnBus, setIsOnBus, setDynamicEta, toast, t, setCurrentStopIndex]);
 
   const handleSearch = () => {
     router.push(`/search?from=${encodeURIComponent(fromLocation)}&to=${encodeURIComponent(toLocation)}`);
@@ -259,6 +272,7 @@ export default function HomePage() {
                 eta: updatedBus.eta, // ETA for bus to arrive at user's location
                 seats: selectedSeats,
                 destinationEta: stop.eta, // ETA from boarding stop to destination
+                currentStopIndex: -1, // Not on bus yet
             };
             setActiveTrip(newTrip);
         }
@@ -403,6 +417,12 @@ export default function HomePage() {
 
   const displayedBus = activeTrip?.bus || selectedBus;
   const primarySeat = activeTrip?.seats[0] || selectedSeats[0];
+
+    const allStops = displayedBus ? [...displayedBus.stops, displayedBus.finalDestination] : [];
+    const nextStop = (activeTrip && activeTrip.currentStopIndex >= 0 && activeTrip.currentStopIndex < allStops.length)
+        ? allStops[activeTrip.currentStopIndex]
+        : null;
+
 
   if (!user) {
     return (
@@ -579,7 +599,13 @@ export default function HomePage() {
                         )} />
                         <div className={cn("transition-opacity duration-500", isTransitioning ? 'opacity-0' : 'opacity-100')}>
                             <p className='text-sm text-primary/80'>
-                            {isOnBus ? t('arrivingAt') : t('busArrivingAtYourLocation')} <span className='font-bold'>{isOnBus ? activeTrip.destination : activeTrip.from}</span>
+                            {isOnBus ? 
+                                <>
+                                    {nextStop ? `${t('nextStop')}: ${nextStop.name}` : t('arrivingAt')} <span className='font-bold'>{isOnBus ? activeTrip.destination : activeTrip.from}</span>
+                                </>
+                                : 
+                                <>{t('busArrivingAtYourLocation')} <span className='font-bold'>{activeTrip.from}</span></>
+                            }
                             </p>
                             <div className="flex items-center justify-center gap-2 text-primary font-semibold text-lg">
                                 <Clock className="h-5 w-5" />
@@ -589,6 +615,7 @@ export default function HomePage() {
                                     <span>{isOnBus ? t('youHaveArrived') : t('busHasArrived')}</span>
                                 )}
                             </div>
+                            {isOnBus && <p className='text-xs text-primary/60 mt-1'>{t('finalDestination')}: {activeTrip.bus.finalDestination.name}</p>}
                         </div>
                     </div>
                 ) : (
