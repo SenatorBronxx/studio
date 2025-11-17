@@ -42,8 +42,8 @@ const signUpSchema = z.object({
 });
 
 type AuthFormProps = {
-  onSignUpSuccess?: (name: string) => void;
-  onSignInSuccess?: () => void;
+  onSignUpSuccess: (name: string) => void;
+  onSignInSuccess: () => void;
 };
 
 export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
@@ -83,7 +83,7 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
         description: t('signInSuccessfulToastDescription'),
         });
         setIsSubmitting(false);
-        onSignInSuccess?.();
+        onSignInSuccess();
     }, 1500);
   };
 
@@ -106,7 +106,7 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
         description: t('signUpSuccessfulToastDescription'),
         });
         setIsSubmitting(false);
-        onSignUpSuccess?.(values.firstName);
+        onSignUpSuccess(values.firstName);
     }, 1500);
   };
   
@@ -128,7 +128,7 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
         });
         
         setIsSubmitting(false);
-        router.push('/home');
+        onSignInSuccess();
     }, 1500);
   }
 
@@ -275,11 +275,11 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
         </div>
       </div>
       <div className="mt-6 grid grid-cols-2 gap-4">
-        <Button variant="outline">
+        <Button variant="outline" onClick={() => handleSocialLogin('Google')} disabled={isSubmitting}>
           <Image src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/768px-Google_%22G%22_logo.svg.png" alt="Google" width={16} height={16} className="mr-2 h-4 w-4" />
           Google
         </Button>
-        <Button variant="outline">
+        <Button variant="outline" onClick={() => handleSocialLogin('Apple')} disabled={isSubmitting}>
           <Image src="https://cdn-icons-png.flaticon.com/512/0/747.png" alt="Apple" width={16} height={16} className="mr-2 h-4 w-4" />
           Apple
         </Button>
