@@ -3,13 +3,14 @@
 
 import {
   ArrowUpRight,
-  Bus,
+  Banknote,
   Search,
   Bell,
   Trash2,
   QrCode,
   LogIn,
   UserCircle,
+  Bus,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -134,7 +135,7 @@ export default function EritasPayPage() {
                 {t('eritasPayBalance')}
               </CardTitle>
                 <div className='p-2 bg-primary/10 rounded-lg'>
-                    <Bus className="h-4 w-4 text-primary" />
+                    <Banknote className="h-4 w-4 text-primary" />
                 </div>
             </CardHeader>
             <CardContent>
