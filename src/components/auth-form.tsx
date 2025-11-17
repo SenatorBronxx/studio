@@ -76,7 +76,6 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
             email: lastSignedUpUser.email,
             phone: values.phone
         };
-        // @ts-ignore
         setUser(mockUserData);
 
         toast({
