@@ -40,7 +40,7 @@ export default function PaymentMethodsPage() {
   const getCardIcon = (type: string) => {
     switch (type) {
       case 'visa':
-        return <VisaIcon className="w-12" />;
+        return <Image src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa Logo" width={48} height={16} />;
       case 'mastercard':
         return <MastercardIcon className="w-12" />;
       default:
