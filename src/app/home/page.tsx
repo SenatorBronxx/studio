@@ -59,6 +59,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { useBusArrivalNotification } from '@/hooks/use-bus-arrival-notification';
 
 
 const initialBusData = [
@@ -131,6 +132,9 @@ export default function HomePage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showDiscountBanner, setShowDiscountBanner] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [busHasArrived, setBusHasArrived] = useState(false);
+
+  useBusArrivalNotification(busHasArrived);
   
   useEffect(() => {
     if (activeDiscount && !isDiscountBannerDismissed) {
@@ -156,10 +160,14 @@ export default function HomePage() {
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (activeTrip && activeTrip.eta > 0) {
+        setBusHasArrived(false);
       interval = setInterval(() => {
         setDynamicEta(activeTrip.eta - 1);
       }, 60 * 1000); 
     } else if (activeTrip && activeTrip.eta <= 0 && !isOnBus) {
+        if (!busHasArrived) {
+            setBusHasArrived(true);
+        }
         setIsTransitioning(true);
         setTimeout(() => {
             setIsOnBus(true);
@@ -188,7 +196,7 @@ export default function HomePage() {
         }, 30 * 1000); // Check every 30 seconds
     }
     return () => clearInterval(interval);
-  }, [activeTrip, isOnBus, setIsOnBus, setDynamicEta, toast, t, setCurrentStopIndex]);
+  }, [activeTrip, isOnBus, setIsOnBus, setDynamicEta, toast, t, setCurrentStopIndex, busHasArrived]);
 
   const handleSearch = () => {
     router.push(`/search?from=${encodeURIComponent(fromLocation)}&to=${encodeURIComponent(toLocation)}`);
@@ -787,3 +795,4 @@ export default function HomePage() {
     
 
     
+

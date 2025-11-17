@@ -38,6 +38,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useDiscount } from '@/context/discount-context';
+import { useBusArrivalNotification } from '@/hooks/use-bus-arrival-notification';
 
 const initialBusData = [
     {
@@ -123,6 +124,9 @@ export default function SearchPage() {
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [busHasArrived, setBusHasArrived] = useState(false);
+
+  useBusArrivalNotification(busHasArrived);
 
   useEffect(() => {
     setIsHydrated(true);
@@ -161,10 +165,14 @@ export default function SearchPage() {
    useEffect(() => {
     let interval: NodeJS.Timeout;
     if (activeTrip && activeTrip.eta > 0) {
+        setBusHasArrived(false);
       interval = setInterval(() => {
         setDynamicEta(activeTrip.eta - 1);
       }, 60 * 1000); // Decrease every minute
     } else if (activeTrip && activeTrip.eta <= 0 && !isOnBus) {
+        if (!busHasArrived) {
+            setBusHasArrived(true);
+        }
         setIsTransitioning(true);
         setTimeout(() => {
             setIsOnBus(true);
@@ -193,7 +201,7 @@ export default function SearchPage() {
         }, 30 * 1000); // Check every 30 seconds
     }
     return () => clearInterval(interval);
-  }, [activeTrip, isOnBus, setIsOnBus, setDynamicEta, toast, t, setCurrentStopIndex]);
+  }, [activeTrip, isOnBus, setIsOnBus, setDynamicEta, toast, t, setCurrentStopIndex, busHasArrived]);
 
   const handleSearch = () => {
     router.push(`/search?from=${encodeURIComponent(fromLocation)}&to=${encodeURIComponent(toLocation)}`);
@@ -771,3 +779,4 @@ export default function SearchPage() {
     
 
     
+
