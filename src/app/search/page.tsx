@@ -383,12 +383,8 @@ export default function SearchPage() {
       description: t('tripCancelledDescription', { fare: fareToRefund.toFixed(2) }),
     });
 
-    const newNotification: Notification = {
-        id: Date.now(),
-        title: "Trip Cancelled",
-        description: "Your QR code for this trip has been terminated."
-    };
-    setNotifications(prev => [newNotification, ...prev]);
+    // Remove any related notifications
+    setNotifications(prev => prev.filter(n => !n.description.includes(activeTrip.bus.plate)));
   };
   
   const handleSeatSelect = (seatId: string) => {
@@ -563,7 +559,7 @@ export default function SearchPage() {
                                                         <span>{isOnBus ? t('youHaveArrived') : t('busHasArrived')}</span>
                                                     )}
                                                 </div>
-                                                {isOnBus && <p className='text-xs text-primary/60 mt-1'>{t('finalDestination')}: {activeTrip.destination}</p>}
+                                                {isOnBus && <p className='text-xs text-primary/60 mt-1'>{`${t('finalDestination')}: ${activeTrip.destination}`}</p>}
                                             </div>
                                         </div>
                                     ) : (
@@ -795,5 +791,7 @@ export default function SearchPage() {
     </div>
   );
 }
+
+    
 
     
