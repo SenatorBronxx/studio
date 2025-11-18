@@ -3,7 +3,7 @@
 
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowRight, Search, BusFront, X, Flag, Users, Loader2, Clock, Armchair, QrCode, Bell, Trash2, MapPin, Bus, Send } from 'lucide-react';
+import { ArrowRight, Search, BusFront, X, Flag, Users, Loader2, Clock, Armchair, QrCode, Bell, Trash2, MapPin, Bus, Send, ChevronDown, ChevronUp } from 'lucide-react';
 import { BottomNav } from '@/components/bottom-nav';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -125,6 +125,7 @@ export default function SearchPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [busHasArrived, setBusHasArrived] = useState(false);
+  const [isPanelMinimized, setIsPanelMinimized] = useState(false);
 
   useBusArrivalNotification(busHasArrived);
 
@@ -472,7 +473,10 @@ export default function SearchPage() {
         </header>
 
         <main className="flex-grow p-4 pb-24">
-            <div className="max-w-md mx-auto">
+            <div className={cn(
+                "max-w-md mx-auto",
+                isPanelMinimized && "hidden"
+            )}>
                 {displayedBus ? (
                     <div className="space-y-3">
                         <Card>
@@ -665,9 +669,28 @@ export default function SearchPage() {
                     </div>
                 )}
             </div>
+            {isPanelMinimized && (
+                 <div className="max-w-md mx-auto">
+                    <Card onClick={() => setIsPanelMinimized(false)} className="cursor-pointer">
+                        <CardContent className="p-4 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <Bus className="h-6 w-6 text-primary" />
+                                <div>
+                                    <p className="font-semibold">{t('tripInProgress')}</p>
+                                    <p className="text-sm text-muted-foreground">{displayedBus?.plate}</p>
+                                </div>
+                            </div>
+                            <ChevronUp className="h-5 w-5 text-muted-foreground" />
+                        </CardContent>
+                    </Card>
+                 </div>
+            )}
         </main>
 
         <div className="sticky bottom-0 z-20">
+            <div className="w-full py-2 flex justify-center cursor-pointer bg-background/75 backdrop-blur-sm max-w-md mx-auto" onClick={() => setIsPanelMinimized(!isPanelMinimized)}>
+                <div className="w-16 h-1.5 bg-muted-foreground/30 rounded-full" />
+            </div>
             {isOnBus && nowPlaying && <NowPlayingBar />}
             <BottomNav />
         </div>
