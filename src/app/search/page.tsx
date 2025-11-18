@@ -472,7 +472,8 @@ export default function SearchPage() {
             </div>
         </header>
 
-        <main className="flex-grow p-4 pb-20">
+        <div className='flex-grow pb-[var(--bottom-nav-height)]'>
+        <main className="flex-grow p-4">
              <div className="fixed bottom-[var(--bottom-nav-height)] left-0 right-0 z-20 pointer-events-none">
                 <div className={cn(
                     "p-2 sm:p-4 transition-transform duration-300 ease-in-out pointer-events-auto",
@@ -544,7 +545,7 @@ export default function SearchPage() {
                                                     <p className='text-sm text-primary/80'>
                                                     {isOnBus ? (
                                                         <>
-                                                            {nextStop ? `${t('nextStop')}: ${nextStop.name}` : `${t('arrivingAt')}:`}
+                                                            {nextStop ? `${t('nextStop')}: ${nextStop.name}` : `${t('arrivingAt')}`}
                                                         </>
                                                     ) : (
                                                         `${t('busArrivingAtYourLocation')}:`
@@ -685,6 +686,7 @@ export default function SearchPage() {
                 )}
             </div>
         </main>
+        </div>
 
         <div className="fixed bottom-0 left-0 right-0 z-20">
             {isOnBus && nowPlaying && <NowPlayingBar />}

@@ -451,10 +451,11 @@ export default function HomePage() {
 
   return (
     <div className="relative min-h-screen w-full bg-background font-sans overflow-hidden">
-      <div className="absolute inset-0 h-full w-full">
-        <Map />
-        <div className="absolute inset-0 bg-background/20 pointer-events-none" />
-      </div>
+        <main className="absolute inset-0 h-full w-full">
+            <Map />
+            <div className="absolute inset-0 bg-background/20 pointer-events-none" />
+        </main>
+      
 
       <header className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-20">
         <Image
@@ -539,10 +540,10 @@ export default function HomePage() {
           <MapPin className="h-12 w-12 text-red-500 opacity-70" />
         </div>
 
-      <div className="fixed bottom-0 left-0 right-0 z-20 pointer-events-none">
+      <div className="fixed bottom-0 left-0 right-0 z-20 pointer-events-none pb-[var(--bottom-nav-height)]">
         <div className={cn(
                 "p-2 sm:p-4 transition-transform duration-300 ease-in-out pointer-events-auto",
-                isPanelMinimized ? "translate-y-[calc(100%-120px-env(safe-area-inset-bottom))]" : "translate-y-0"
+                isPanelMinimized ? "translate-y-[calc(100%-120px)]" : "translate-y-0"
         )}>
             <div 
                 className="bg-background/75 backdrop-blur-sm rounded-t-2xl max-w-md mx-auto shadow-lg"
@@ -626,7 +627,7 @@ export default function HomePage() {
                                     <p className='text-sm text-primary/80'>
                                     {isOnBus ? (
                                         <>
-                                            {nextStop ? `${t('nextStop')}: ${nextStop.name}` : `${t('arrivingAt')}:`}
+                                            {nextStop ? `${t('nextStop')}: ${nextStop.name}` : `${t('arrivingAt')}`}
                                         </>
                                     ) : (
                                         `${t('busArrivingAtYourLocation')}:`
@@ -768,11 +769,10 @@ export default function HomePage() {
                 </div>
             </div>
         </div>
+      </div>
         <div className="fixed bottom-0 left-0 right-0 z-10 pointer-events-auto">
             <BottomNav />
         </div>
-      </div>
-
        <Sheet open={isQrSheetOpen} onOpenChange={setIsQrSheetOpen}>
             <SheetContent side="bottom" className="rounded-t-2xl">
                 <SheetHeader>
