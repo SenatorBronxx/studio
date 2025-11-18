@@ -300,7 +300,8 @@ export default function HomePage() {
           timestamp: new Date().toISOString(),
         };
         const encodedQrData = encodeURIComponent(JSON.stringify(qrData));
-        setQrCodeUrl(`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodedQrData}`);
+        const newQrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodedQrData}`;
+        setQrCodeUrl(newQrCodeUrl);
         
         if (bookingAlerts) {
             let toastDescription = t('fareDeductedToastDescription', { fare: totalFare.toFixed(2) });
@@ -318,6 +319,18 @@ export default function HomePage() {
                     </Button>
                 )
             });
+
+            const qrNotification: Notification = {
+                id: Date.now(),
+                title: t('yourBoardingPass'),
+                description: `${t('showQrToDriver')} (${selectedBus.plate} - ${t('seat')}: ${primarySeat})`,
+                action: (
+                    <div className="mt-2 flex justify-center">
+                        <Image src={newQrCodeUrl} alt={t('boardingQrCode')} width={150} height={150} />
+                    </div>
+                )
+            };
+            setNotifications(prev => [qrNotification, ...prev]);
 
             if (selectedSeats.length > 1) {
                 const reservedSeatsNotification: Notification = {
