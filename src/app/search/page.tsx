@@ -472,164 +472,178 @@ export default function SearchPage() {
             </div>
         </header>
 
-        <main className="flex-grow p-4 pb-24">
-            <div className={cn(
-                "max-w-md mx-auto",
-                isPanelMinimized && "hidden"
-            )}>
-                {displayedBus ? (
-                    <div className="space-y-3">
-                        <Card>
-                            <CardContent className="p-4 space-y-3">
-                                <div className="flex justify-between items-start">
-                                    <div className="flex items-center gap-3">
-                                        <Avatar>
-                                            {displayedBus.driverImage && <AvatarImage src={displayedBus.driverImage} alt={displayedBus.driver} />}
-                                            <AvatarFallback>{displayedBus.driver.charAt(0)}</AvatarFallback>
-                                        </Avatar>
-                                        <div>
-                                            <h2 className="text-xl font-bold text-foreground">{displayedBus.driver}</h2>
-                                            <p className="text-sm text-muted-foreground font-mono">{displayedBus.plate}</p>
-                                        </div>
-                                    </div>
-                                    {!activeTrip && (
-                                    <Button variant="ghost" size="icon" onClick={clearSelectedBus} className="h-8 w-8 -mt-1 -mr-2">
-                                        <X className="h-5 w-5" />
-                                    </Button>
-                                    )}
-                                     {activeTrip && !isOnBus && (
-                                        <AlertDialog>
-                                        <AlertDialogTrigger asChild>
-                                            <Button variant="destructive" size="sm">
-                                                <X className="mr-2 h-4 w-4" />
-                                                {t('cancel')}
-                                            </Button>
-                                        </AlertDialogTrigger>
-                                        <AlertDialogContent>
-                                            <AlertDialogHeader>
-                                            <AlertDialogTitle>{t('cancelTripConfirmationTitle')}</AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                                {t('cancelTripConfirmationDescription')}
-                                            </AlertDialogDescription>
-                                            </AlertDialogHeader>
-                                            <AlertDialogFooter>
-                                            <AlertDialogCancel>{t('goBack')}</AlertDialogCancel>
-                                            <AlertDialogAction
-                                                onClick={handleCancelTrip}
-                                                className="bg-destructive hover:bg-destructive/90"
-                                            >
-                                                {t('confirmCancellation')}
-                                            </AlertDialogAction>
-                                            </AlertDialogFooter>
-                                        </AlertDialogContent>
-                                        </AlertDialog>
-                                    )}
-                                </div>
-
-                                {activeTrip ? (
-                                    <div className={cn("relative p-3 bg-primary/10 rounded-lg text-center", isTransitioning && 'overflow-hidden')}>
-                                        <Bus className={cn(
-                                            "absolute top-1/2 -translate-y-1/2 h-8 w-8 text-primary/50",
-                                            isTransitioning ? 'animate-slide-across' : '-left-12'
-                                        )} />
-                                        <div className={cn("transition-opacity duration-500", isTransitioning ? 'opacity-0' : 'opacity-100')}>
-                                            <p className='text-sm text-primary/80'>
-                                            {isOnBus ? (
-                                                <>
-                                                    {nextStop ? `${t('nextStop')}: ${nextStop.name}` : `${t('arrivingAt')}:`}
-                                                </>
-                                            ) : (
-                                                `${t('busArrivingAtYourLocation')}:`
-                                            )}
-                                            </p>
-                                            <div className="flex items-center justify-center gap-2 text-primary font-semibold text-lg">
-                                                <Clock className="h-5 w-5" />
-                                                {activeTrip.eta > 0 ? (
-                                                    <span dangerouslySetInnerHTML={{ __html: t('arrivingIn', { minutes: activeTrip.eta }) }} />
-                                                ) : (
-                                                    <span>{isOnBus ? t('youHaveArrived') : t('busHasArrived')}</span>
-                                                )}
+        <main className="flex-grow p-4 pb-20">
+             <div className="fixed bottom-[var(--bottom-nav-height)] left-0 right-0 z-20 pointer-events-none">
+                <div className={cn(
+                    "p-2 sm:p-4 transition-transform duration-300 ease-in-out pointer-events-auto",
+                    isPanelMinimized ? "translate-y-[calc(100%-80px)]" : "translate-y-0"
+                )}>
+                    {displayedBus && (
+                        <div className="bg-background/75 backdrop-blur-sm rounded-t-2xl max-w-md mx-auto shadow-lg">
+                             <div 
+                                className="w-full py-2 flex justify-center cursor-pointer"
+                                onClick={() => setIsPanelMinimized(!isPanelMinimized)}
+                            >
+                                <div className="w-16 h-1.5 bg-muted-foreground/30 rounded-full" />
+                            </div>
+                            <div className="p-4 pt-0 space-y-3">
+                               <Card>
+                                    <CardContent className="p-4 space-y-3">
+                                        <div className="flex justify-between items-start">
+                                            <div className="flex items-center gap-3">
+                                                <Avatar>
+                                                    {displayedBus.driverImage && <AvatarImage src={displayedBus.driverImage} alt={displayedBus.driver} />}
+                                                    <AvatarFallback>{displayedBus.driver.charAt(0)}</AvatarFallback>
+                                                </Avatar>
+                                                <div>
+                                                    <h2 className="text-xl font-bold text-foreground">{displayedBus.driver}</h2>
+                                                    <p className="text-sm text-muted-foreground font-mono">{displayedBus.plate}</p>
+                                                </div>
                                             </div>
-                                            {isOnBus && <p className='text-xs text-primary/60 mt-1'>{t('finalDestination')}: {activeTrip.destination}</p>}
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <Sheet open={isSeatSheetOpen} onOpenChange={setIsSeatSheetOpen}>
-                                        <SheetTrigger asChild>
-                                            <Button variant="outline" className='w-full'>
-                                                <Armchair className="mr-2 h-5 w-5" />
-                                                {selectedSeats.length > 0 ? t('seatsSelected', { count: selectedSeats.length }) : t('viewSeats')}
+                                            {!activeTrip && (
+                                            <Button variant="ghost" size="icon" onClick={clearSelectedBus} className="h-8 w-8 -mt-1 -mr-2">
+                                                <X className="h-5 w-5" />
                                             </Button>
-                                        </SheetTrigger>
-                                        <SheetContent side="bottom" className="rounded-t-2xl">
-                                            <SheetHeader><SheetTitle>{t('selectYourSeat')}</SheetTitle></SheetHeader>
-                                            <BusSeatingChart 
-                                                seating={displayedBus.seating}
-                                                selectedSeats={selectedSeats}
-                                                onSeatSelect={handleSeatSelect}
-                                                busPlate={displayedBus.plate}
-                                                onConfirm={handleConfirmSeat}
-                                            />
-                                        </SheetContent>
-                                    </Sheet>
-                                )}
+                                            )}
+                                            {activeTrip && !isOnBus && (
+                                                <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <Button variant="destructive" size="sm">
+                                                        <X className="mr-2 h-4 w-4" />
+                                                        {t('cancel')}
+                                                    </Button>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                    <AlertDialogHeader>
+                                                    <AlertDialogTitle>{t('cancelTripConfirmationTitle')}</AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        {t('cancelTripConfirmationDescription')}
+                                                    </AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                    <AlertDialogCancel>{t('goBack')}</AlertDialogCancel>
+                                                    <AlertDialogAction
+                                                        onClick={handleCancelTrip}
+                                                        className="bg-destructive hover:bg-destructive/90"
+                                                    >
+                                                        {t('confirmCancellation')}
+                                                    </AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                                </AlertDialog>
+                                            )}
+                                        </div>
 
-                                <Separator />
-
-                                <div>
-                                    <div className="flex justify-between items-center mb-1">
-                                        <h3 className="text-sm font-semibold text-foreground/80 flex items-center gap-2"><Users className="h-4 w-4" />{t('busCapacity')}</h3>
-                                        <p className="text-sm font-mono text-muted-foreground">{displayedBus.capacity.current} / {displayedBus.capacity.max} {t('seats')}</p>
-                                    </div>
-                                    <Progress value={(displayedBus.capacity.current / displayedBus.capacity.max) * 100} className="h-2" />
-                                </div>
-
-                                <div>
-                                    <h3 className="text-sm font-semibold text-foreground/80 mb-2">{t('busFares')}:</h3>
-                                    <Accordion type="single" collapsible className="w-full">
-                                        {[...displayedBus.stops, { ...displayedBus.finalDestination, isFinal: true }].map((stop, index) => {
-                                             let fare = stop.fare;
-                                             if (activeDiscount) {
-                                                fare *= (1 - activeDiscount.percentage / 100);
-                                             }
-                                            return (
-                                                <AccordionItem value={`item-${index}`} key={index} className="border-b-0">
-                                                    <AccordionTrigger className="py-2 rounded-lg hover:bg-muted/50 px-2 data-[state=open]:bg-muted">
-                                                        <div className="flex items-center justify-between gap-3 w-full">
-                                                            <div className="flex items-center gap-3">
-                                                                <div className={`h-5 w-5 rounded-full flex items-center justify-center ${stop.isFinal ? 'bg-primary/20' : 'bg-muted-foreground/20'}`}>
-                                                                    {stop.isFinal ? <Flag className="h-3 w-3 text-primary" /> : <MapPin className="h-3 w-3 text-muted-foreground" />}
-                                                                </div>
-                                                                <p className={`text-sm ${stop.isFinal ? 'font-semibold text-primary' : 'text-foreground'}`}>{stop.name} {stop.isFinal && `(${t('final')})`}</p>
-                                                            </div>
-                                                             <div className='flex items-center gap-2'>
-                                                                {activeDiscount && <Badge variant="destructive">-{activeDiscount.percentage}%</Badge>}
-                                                                <p className={`font-mono text-sm ${stop.isFinal ? 'font-semibold text-primary' : 'text-foreground'}`}>{t('farePerSeat', { fare: fare.toFixed(2) })}</p>
-                                                            </div>
-                                                        </div>
-                                                    </AccordionTrigger>
-                                                    <AccordionContent>
-                                                        <div className="px-3 pt-2 pb-2 text-center">
-                                                        {activeTrip ? (
-                                                            <p className='text-sm text-muted-foreground'>{t('tripInProgress')}</p>
-                                                        ) : displayedBus.capacity.current + selectedSeats.length > displayedBus.capacity.max ? (
-                                                            <p className="text-sm text-destructive font-medium p-2 bg-destructive/10 rounded-md">{t('notEnoughSeats')}</p>
+                                        {activeTrip ? (
+                                            <div className={cn("relative p-3 bg-primary/10 rounded-lg text-center", isTransitioning && 'overflow-hidden')}>
+                                                <Bus className={cn(
+                                                    "absolute top-1/2 -translate-y-1/2 h-8 w-8 text-primary/50",
+                                                    isTransitioning ? 'animate-slide-across' : '-left-12'
+                                                )} />
+                                                <div className={cn("transition-opacity duration-500", isTransitioning ? 'opacity-0' : 'opacity-100')}>
+                                                    <p className='text-sm text-primary/80'>
+                                                    {isOnBus ? (
+                                                        <>
+                                                            {nextStop ? `${t('nextStop')}: ${nextStop.name}` : `${t('arrivingAt')}:`}
+                                                        </>
+                                                    ) : (
+                                                        `${t('busArrivingAtYourLocation')}:`
+                                                    )}
+                                                    </p>
+                                                    <div className="flex items-center justify-center gap-2 text-primary font-semibold text-lg">
+                                                        <Clock className="h-5 w-5" />
+                                                        {activeTrip.eta > 0 ? (
+                                                            <span dangerouslySetInnerHTML={{ __html: t('arrivingIn', { minutes: activeTrip.eta }) }} />
                                                         ) : (
-                                                            <Button className='w-full' onClick={() => handleBoard(stop)} disabled={isBoarding || selectedSeats.length === 0 || !!activeTrip}>
-                                                                {isBoarding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : selectedSeats.length === 0 ? t('selectBusSeatFirst') : t('board')}
-                                                            </Button>
+                                                            <span>{isOnBus ? t('youHaveArrived') : t('busHasArrived')}</span>
                                                         )}
-                                                        </div>
-                                                    </AccordionContent>
-                                                </AccordionItem>
-                                            )
-                                        })}
-                                    </Accordion>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
-                ) : (fromQuery || toQuery) ? (
+                                                    </div>
+                                                    {isOnBus && <p className='text-xs text-primary/60 mt-1'>{t('finalDestination')}: {activeTrip.destination}</p>}
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <Sheet open={isSeatSheetOpen} onOpenChange={setIsSeatSheetOpen}>
+                                                <SheetTrigger asChild>
+                                                    <Button variant="outline" className='w-full'>
+                                                        <Armchair className="mr-2 h-5 w-5" />
+                                                        {selectedSeats.length > 0 ? t('seatsSelected', { count: selectedSeats.length }) : t('viewSeats')}
+                                                    </Button>
+                                                </SheetTrigger>
+                                                <SheetContent side="bottom" className="rounded-t-2xl">
+                                                    <SheetHeader><SheetTitle>{t('selectYourSeat')}</SheetTitle></SheetHeader>
+                                                    <BusSeatingChart 
+                                                        seating={displayedBus.seating}
+                                                        selectedSeats={selectedSeats}
+                                                        onSeatSelect={handleSeatSelect}
+                                                        busPlate={displayedBus.plate}
+                                                        onConfirm={handleConfirmSeat}
+                                                    />
+                                                </SheetContent>
+                                            </Sheet>
+                                        )}
+
+                                        <Separator />
+
+                                        <div>
+                                            <div className="flex justify-between items-center mb-1">
+                                                <h3 className="text-sm font-semibold text-foreground/80 flex items-center gap-2"><Users className="h-4 w-4" />{t('busCapacity')}</h3>
+                                                <p className="text-sm font-mono text-muted-foreground">{displayedBus.capacity.current} / {displayedBus.capacity.max} {t('seats')}</p>
+                                            </div>
+                                            <Progress value={(displayedBus.capacity.current / displayedBus.capacity.max) * 100} className="h-2" />
+                                        </div>
+
+                                        <div>
+                                            <h3 className="text-sm font-semibold text-foreground/80 mb-2">{t('busFares')}:</h3>
+                                            <Accordion type="single" collapsible className="w-full">
+                                                {[...displayedBus.stops, { ...displayedBus.finalDestination, isFinal: true }].map((stop, index) => {
+                                                    let fare = stop.fare;
+                                                    if (activeDiscount) {
+                                                        fare *= (1 - activeDiscount.percentage / 100);
+                                                    }
+                                                    return (
+                                                        <AccordionItem value={`item-${index}`} key={index} className="border-b-0">
+                                                            <AccordionTrigger className="py-2 rounded-lg hover:bg-muted/50 px-2 data-[state=open]:bg-muted">
+                                                                <div className="flex items-center justify-between gap-3 w-full">
+                                                                    <div className="flex items-center gap-3">
+                                                                        <div className={`h-5 w-5 rounded-full flex items-center justify-center ${stop.isFinal ? 'bg-primary/20' : 'bg-muted-foreground/20'}`}>
+                                                                            {stop.isFinal ? <Flag className="h-3 w-3 text-primary" /> : <MapPin className="h-3 w-3 text-muted-foreground" />}
+                                                                        </div>
+                                                                        <p className={`text-sm ${stop.isFinal ? 'font-semibold text-primary' : 'text-foreground'}`}>{stop.name} {stop.isFinal && `(${t('final')})`}</p>
+                                                                    </div>
+                                                                    <div className='flex items-center gap-2'>
+                                                                        {activeDiscount && <Badge variant="destructive">-{activeDiscount.percentage}%</Badge>}
+                                                                        <p className={`font-mono text-sm ${stop.isFinal ? 'font-semibold text-primary' : 'text-foreground'}`}>{t('farePerSeat', { fare: fare.toFixed(2) })}</p>
+                                                                    </div>
+                                                                </div>
+                                                            </AccordionTrigger>
+                                                            <AccordionContent>
+                                                                <div className="px-3 pt-2 pb-2 text-center">
+                                                                {activeTrip ? (
+                                                                    <p className='text-sm text-muted-foreground'>{t('tripInProgress')}</p>
+                                                                ) : displayedBus.capacity.current + selectedSeats.length > displayedBus.capacity.max ? (
+                                                                    <p className="text-sm text-destructive font-medium p-2 bg-destructive/10 rounded-md">{t('notEnoughSeats')}</p>
+                                                                ) : (
+                                                                    <Button className='w-full' onClick={() => handleBoard(stop)} disabled={isBoarding || selectedSeats.length === 0 || !!activeTrip}>
+                                                                        {isBoarding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : selectedSeats.length === 0 ? t('selectBusSeatFirst') : t('board')}
+                                                                    </Button>
+                                                                )}
+                                                                </div>
+                                                            </AccordionContent>
+                                                        </AccordionItem>
+                                                    )
+                                                })}
+                                            </Accordion>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            <div className="max-w-md mx-auto mt-4">
+                 {(fromQuery || toQuery) && !displayedBus && (
                     <div className='space-y-4'>
                         <h1 className="text-xl font-bold text-foreground">{t('showingResultsFor')}:</h1>
                         <p className="text-muted-foreground -mt-2"><span className='font-semibold text-foreground'>{fromQuery}</span> to <span className='font-semibold text-foreground'>{toQuery}</span></p>
@@ -661,7 +675,8 @@ export default function SearchPage() {
                             </Card>
                         )}
                     </div>
-                ) : (
+                )}
+                 {!(fromQuery || toQuery) && !displayedBus && (
                     <div className="text-center mt-16 text-muted-foreground">
                         <Search className="h-16 w-16 text-muted-foreground/30 mb-4 mx-auto" />
                         <h1 className="text-2xl font-bold text-foreground">{t('findYourBus')}</h1>
@@ -669,28 +684,9 @@ export default function SearchPage() {
                     </div>
                 )}
             </div>
-            {isPanelMinimized && (
-                 <div className="max-w-md mx-auto">
-                    <Card onClick={() => setIsPanelMinimized(false)} className="cursor-pointer">
-                        <CardContent className="p-4 flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <Bus className="h-6 w-6 text-primary" />
-                                <div>
-                                    <p className="font-semibold">{t('tripInProgress')}</p>
-                                    <p className="text-sm text-muted-foreground">{displayedBus?.plate}</p>
-                                </div>
-                            </div>
-                            <ChevronUp className="h-5 w-5 text-muted-foreground" />
-                        </CardContent>
-                    </Card>
-                 </div>
-            )}
         </main>
 
-        <div className="sticky bottom-0 z-20">
-            <div className="w-full py-2 flex justify-center cursor-pointer bg-background/75 backdrop-blur-sm max-w-md mx-auto" onClick={() => setIsPanelMinimized(!isPanelMinimized)}>
-                <div className="w-16 h-1.5 bg-muted-foreground/30 rounded-full" />
-            </div>
+        <div className="fixed bottom-0 left-0 right-0 z-20">
             {isOnBus && nowPlaying && <NowPlayingBar />}
             <BottomNav />
         </div>
@@ -795,11 +791,3 @@ export default function SearchPage() {
     </div>
   );
 }
-
-    
-
-
-    
-
-    
-
