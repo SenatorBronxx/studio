@@ -63,7 +63,7 @@
     "viewQrCode": "View QR Code",
     "fareDeductedToastDescription": "The fare of GH₵{{fare}} has been deducted.",
     "discountAppliedToast": "({{percentage}}% discount applied!)",
-    "seatBookedToastTitle": "Seat Booked Successfully!",
+    "seatBookedToastTitle": "Seat Booked!",
     "discountActivatedTitle": "{{percentage}}% Discount Activated!",
     "viewSeats": "View Seats",
     "seatSelected": "Seat {{seat}} Selected",
@@ -229,7 +229,6 @@
     "mapLoadError": "Google Maps failed to load. This might be due to a missing API key or other configuration issue. Please check the browser console for more details.",
     "mapErrorTitle": "Map Error",
     "findingYourLocation": "Finding your location...",
-    "mapConfigErrorTitle": "Configuration Error",
     "mapConfigErrorDescription": "Google Maps API Key is missing from your environment variables.",
     "noConnection": "No Connection",
     "noConnectionDescription": "Please check your internet connection and try again. The app will automatically reconnect when it's back online.",
@@ -343,3 +342,5 @@
     "nextStop": "Next Stop",
     "finalDestination": "Final Destination"
 }
+
+    

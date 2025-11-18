@@ -289,13 +289,21 @@ export default function SearchPage() {
         const encodedQrData = encodeURIComponent(JSON.stringify(qrData));
         setQrCodeUrl(`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodedQrData}`);
         
-        const newNotification: Notification = {
-            id: Date.now(),
-            title: t('seatBookedToastTitle'),
-            description: t('seatBookedNotificationDescription', { seat: primarySeat, plate: selectedBus.plate }),
-            action: <Button variant="outline" size="sm" onClick={() => setIsQrSheetOpen(true)}><QrCode className="mr-2 h-4 w-4" />{t('viewQrCode')}</Button>
+        let toastDescription = t('fareDeductedToastDescription', { fare: totalFare.toFixed(2) });
+        if (activeDiscount) {
+            toastDescription += ` (${t('discountAppliedToast', { percentage: activeDiscount.percentage })})`
         }
-        setNotifications(prev => [newNotification, ...prev]);
+
+        toast({
+            title: t('seatBookedToastTitle'),
+            description: toastDescription,
+            action: (
+                <Button variant="outline" size="sm" onClick={() => setIsQrSheetOpen(true)}>
+                    <QrCode className="mr-2 h-4 w-4" />
+                    {t('viewQrCode')}
+                </Button>
+            )
+        });
 
         if (selectedSeats.length > 1) {
             const reservedSeatsNotification: Notification = {
@@ -311,16 +319,6 @@ export default function SearchPage() {
             }
             setNotifications(prev => [reservedSeatsNotification, ...prev]);
         }
-
-        let toastDescription = t('fareDeductedToastDescription', { fare: totalFare.toFixed(2) });
-        if (activeDiscount) {
-            toastDescription += ` (${t('discountAppliedToast', { percentage: activeDiscount.percentage })})`
-        }
-
-        toast({
-            title: t('seatBookedToastTitle'),
-            description: toastDescription,
-        });
         
         if (pointsEarned > 0) {
             toast({
@@ -472,7 +470,7 @@ export default function SearchPage() {
         </header>
 
         <main className="flex-grow p-4 pb-20">
-             <div className="fixed bottom-0 left-0 right-0 z-20 pointer-events-none">
+             <div className="fixed bottom-0 left-0 right-0 z-20 pointer-events-none pb-20">
                 <div className="p-2 sm:p-4 pointer-events-auto">
                     {displayedBus && (
                         <div className="bg-background/75 backdrop-blur-sm rounded-t-2xl max-w-md mx-auto shadow-lg p-4 space-y-3">
@@ -674,7 +672,7 @@ export default function SearchPage() {
             </div>
         </main>
 
-        <div className="fixed bottom-0 left-0 right-0 z-20">
+        <div className="fixed bottom-0 left-0 right-0 z-10">
             {isOnBus && nowPlaying && <NowPlayingBar />}
             <BottomNav />
         </div>
@@ -779,3 +777,5 @@ export default function SearchPage() {
     </div>
   );
 }
+
+    

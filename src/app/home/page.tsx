@@ -48,7 +48,6 @@ import { useNotificationSettings } from '@/context/notification-settings-context
 import { useDiscount } from '@/context/discount-context';
 import { useLanguage } from '@/context/language-context';
 import { useTrip, type ActiveTrip } from '@/context/trip-context';
-import { useUser } from '@/context/user-context';
 import { cn } from '@/lib/utils';
 import {
   AlertDialog,
@@ -303,18 +302,21 @@ export default function HomePage() {
         setQrCodeUrl(`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodedQrData}`);
         
         if (bookingAlerts) {
-            const newNotification: Notification = {
-                id: Date.now(),
+            let toastDescription = t('fareDeductedToastDescription', { fare: totalFare.toFixed(2) });
+            if (activeDiscount) {
+                toastDescription += ` (${t('discountAppliedToast', { percentage: activeDiscount.percentage })})`
+            }
+
+            toast({
                 title: t('seatBookedToastTitle'),
-                description: t('seatBookedNotificationDescription', { seat: primarySeat, plate: selectedBus.plate }),
+                description: toastDescription,
                 action: (
-                     <Button variant="outline" size="sm" onClick={() => setIsQrSheetOpen(true)}>
+                    <Button variant="outline" size="sm" onClick={() => setIsQrSheetOpen(true)}>
                         <QrCode className="mr-2 h-4 w-4" />
                         {t('viewQrCode')}
                     </Button>
                 )
-            }
-            setNotifications(prev => [newNotification, ...prev]);
+            });
 
             if (selectedSeats.length > 1) {
                 const reservedSeatsNotification: Notification = {
@@ -330,16 +332,6 @@ export default function HomePage() {
                 }
                 setNotifications(prev => [reservedSeatsNotification, ...prev]);
             }
-
-            let toastDescription = t('fareDeductedToastDescription', { fare: totalFare.toFixed(2) });
-            if (activeDiscount) {
-                toastDescription += ` (${t('discountAppliedToast', { percentage: activeDiscount.percentage })})`
-            }
-
-            toast({
-                title: t('seatBookedToastTitle'),
-                description: toastDescription,
-            });
 
             if (pointsEarned > 0) {
                 toast({
@@ -539,7 +531,7 @@ export default function HomePage() {
           <MapPin className="h-12 w-12 text-red-500 opacity-70" />
         </div>
 
-      <div className="fixed bottom-0 left-0 right-0 z-20">
+      <div className="fixed bottom-0 left-0 right-0 z-20 pb-20">
         <div className="p-2 sm:p-4">
             <div className="bg-background/75 backdrop-blur-sm rounded-t-2xl p-4 max-w-md mx-auto flex flex-col gap-4 shadow-lg">
                 {showDiscountBanner && activeDiscount && (
@@ -754,7 +746,9 @@ export default function HomePage() {
                 )}
             </div>
         </div>
-        <BottomNav />
+        <div className="fixed bottom-0 left-0 right-0 z-10">
+          <BottomNav />
+        </div>
       </div>
 
        <Sheet open={isQrSheetOpen} onOpenChange={setIsQrSheetOpen}>
@@ -783,3 +777,5 @@ export default function HomePage() {
     </div>
   );
 }
+
+    

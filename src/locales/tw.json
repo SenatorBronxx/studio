@@ -63,7 +63,7 @@
     "viewQrCode": "Hwɛ QR Koodu",
     "fareDeductedToastDescription": "Wɔayi akwantu ka GH₵{{fare}} afi wo sika so.",
     "discountAppliedToast": "({{percentage}}% aniammɔnho ayɛ adwuma!)",
-    "seatBookedToastTitle": "Akonnwa no Atɔ Yie!",
+    "seatBookedToastTitle": "Akonnwa Atɔ!",
     "discountActivatedTitle": "{{percentage}}% Aniammɔnho Ayɛ Adwuma!",
     "viewSeats": "Hwɛ Akonnwa",
     "seatSelected": "Woapaw Akonnwa {{seat}}",
@@ -342,3 +342,5 @@
     "nextStop": "Gyinabea a Edi Hɔ",
     "finalDestination": "Awiei Gyinabea"
 }
+
+    
