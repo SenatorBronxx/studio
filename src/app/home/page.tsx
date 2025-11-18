@@ -540,10 +540,10 @@ export default function HomePage() {
           <MapPin className="h-12 w-12 text-red-500 opacity-70" />
         </div>
 
-      <div className="fixed bottom-0 left-0 right-0 z-20 pointer-events-none pb-[var(--bottom-nav-height)]">
+      <div className="fixed bottom-[var(--bottom-nav-height)] left-0 right-0 z-20 pointer-events-none">
         <div className={cn(
                 "p-2 sm:p-4 transition-transform duration-300 ease-in-out pointer-events-auto",
-                isPanelMinimized ? "translate-y-[calc(100%-120px)]" : "translate-y-0"
+                isPanelMinimized ? "translate-y-[calc(100%-80px)]" : "translate-y-0"
         )}>
             <div 
                 className="bg-background/75 backdrop-blur-sm rounded-t-2xl max-w-md mx-auto shadow-lg"
@@ -799,3 +799,4 @@ export default function HomePage() {
     </div>
   );
 }
+
