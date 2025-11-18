@@ -61,6 +61,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useBusArrivalNotification } from '@/hooks/use-bus-arrival-notification';
+import { useUser } from '@/context/user-context';
 
 
 const initialBusData = [
