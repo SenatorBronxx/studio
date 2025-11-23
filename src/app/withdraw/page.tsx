@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Loader2, Wallet, CreditCard, Smartphone } from 'lucide-react';
+import { ArrowLeft, Loader2, Wallet, Smartphone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -13,38 +13,24 @@ import { useWallet } from '@/context/wallet-context';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/context/language-context';
 import Image from 'next/image';
-import { VisaIcon } from '@/components/icons/visa';
-import { MastercardIcon } from '@/components/icons/mastercard';
-import { useUser } from '@/context/user-context';
 
-
-const linkedCards = [
-    { id: 'card-1', type: 'visa', last4: '4589', name: 'Personal Visa' },
-    { id: 'card-2', type: 'mastercard', last4: '8923', name: 'Work Mastercard' },
+const mobileMoneyNetworks = [
+    { id: 'mtn', name: 'MTN Mobile Money', logo: "https://momodeveloper.mtn.com/content/momo_mtnb.png" },
+    { id: 'telecel', name: 'Telecel Cash', logo: 'https://play.telecel.com.gh/static/Rede-5f0f780acc6c05a6539d7e3229ac508c.webp' },
+    { id: 'airteltigo', name: 'AirtelTigo Money', logo: 'https://www.bayfrontgardens.com/assets/img/payment/at.png' },
 ];
 
+
 export default function WithdrawPage() {
-    const [destination, setDestination] = useState('');
+    const [network, setNetwork] = useState('mtn');
+    const [phone, setPhone] = useState('');
     const [amount, setAmount] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
     
     const { balance, deductBalance, addTransaction } = useWallet();
-    const router = useRouter();
+    router = useRouter();
     const { toast } = useToast();
     const { t } = useLanguage();
-    const { user } = useUser();
-
-    const formatPhoneNumber = (phone: string) => {
-        if (!phone) return '';
-        const cleaned = phone.replace(/\D/g, '');
-        if (cleaned.length < 10) return phone; // Return as is if not a full number
-        // Assuming a format like +233 XX XXX XXXX
-        return `${cleaned.slice(0, 5)} *** ${cleaned.slice(-4)}`;
-    }
-
-    const mobileMoneyAccounts = user ? [
-        { id: 'momo-1', provider: 'mtn', name: 'MTN Mobile Money', number: formatPhoneNumber(user.phone), logo: "https://momodeveloper.mtn.com/content/momo_mtnb.png" },
-    ] : [];
 
     const handleWithdraw = (e: React.FormEvent) => {
         e.preventDefault();
@@ -68,11 +54,11 @@ export default function WithdrawPage() {
             return;
         }
         
-        if (!destination) {
+        if (!phone) {
             toast({
                 variant: 'destructive',
-                title: "No Destination Selected",
-                description: "Please select an account to withdraw to.",
+                title: "Phone Number Required",
+                description: "Please enter a destination phone number.",
             });
             return;
         }
@@ -83,35 +69,23 @@ export default function WithdrawPage() {
         setTimeout(() => {
             deductBalance(withdrawAmount);
             
-            const allAccounts = [...linkedCards, ...mobileMoneyAccounts];
-            const destAccount = allAccounts.find(acc => acc.id === destination);
+            const selectedNetwork = mobileMoneyNetworks.find(n => n.id === network);
 
             addTransaction({
                 type: 'payment', // Using 'payment' type to represent a debit
-                plate: `Withdraw to ${destAccount?.name || 'Account'}`,
+                plate: `Withdraw to ${selectedNetwork?.name || 'Mobile Money'}`,
                 amount: -withdrawAmount,
             });
 
             toast({
                 title: "Withdrawal Successful",
-                description: `GH₵${withdrawAmount.toFixed(2)} has been sent to your selected account.`,
+                description: `GH₵${withdrawAmount.toFixed(2)} has been sent to ${phone}.`,
             });
             
             setIsProcessing(false);
             router.push('/eritas-pay');
 
         }, 1500);
-    };
-
-    const getCardIcon = (type: string) => {
-        switch (type) {
-            case 'visa':
-                return <Image src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa Logo" width={40} height={13} />;
-            case 'mastercard':
-                return <MastercardIcon className="w-10" />;
-            default:
-                return <CreditCard className="h-6 w-6 text-muted-foreground" />;
-        }
     };
 
 
@@ -144,7 +118,7 @@ export default function WithdrawPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle>Withdrawal Details</CardTitle>
-                        <CardDescription>Enter the amount and select where to send the funds.</CardDescription>
+                        <CardDescription>Enter the amount and destination for the funds.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="space-y-2">
@@ -166,33 +140,29 @@ export default function WithdrawPage() {
                     <CardHeader>
                         <CardTitle>Destination Account</CardTitle>
                     </CardHeader>
-                    <CardContent>
-                        <RadioGroup value={destination} onValueChange={setDestination} className="space-y-4">
-                           {mobileMoneyAccounts.map((net) => (
+                    <CardContent className="space-y-6">
+                        <RadioGroup value={network} onValueChange={setNetwork} className="space-y-4">
+                           {mobileMoneyNetworks.map((net) => (
                                 <Label key={net.id} htmlFor={net.id} className="flex items-center justify-between p-4 border rounded-lg cursor-pointer has-[:checked]:bg-primary/10 has-[:checked]:border-primary">
                                     <div className="flex items-center gap-4">
-                                        <Image src={net.logo} alt={`${net.name} logo`} width={60} height={30} className='object-contain h-auto' />
-                                        <div>
-                                            <span className="font-medium">{net.name}</span>
-                                            <p className='text-sm text-muted-foreground font-mono'>{net.number}</p>
-                                        </div>
+                                        <Image src={net.logo} alt={`${net.name} logo`} width={80} height={40} className='object-contain h-auto' />
+                                        <span className="font-medium">{net.name}</span>
                                     </div>
                                     <RadioGroupItem value={net.id} id={net.id} />
                                 </Label>
                             ))}
-                             {linkedCards.map((card) => (
-                                <Label key={card.id} htmlFor={card.id} className="flex items-center justify-between p-4 border rounded-lg cursor-pointer has-[:checked]:bg-primary/10 has-[:checked]:border-primary">
-                                    <div className="flex items-center gap-4">
-                                        {getCardIcon(card.type)}
-                                        <div>
-                                            <span className="font-medium">{card.name}</span>
-                                            <p className='text-sm text-muted-foreground font-mono'>**** {card.last4}</p>
-                                        </div>
-                                    </div>
-                                    <RadioGroupItem value={card.id} id={card.id} />
-                                </Label>
-                            ))}
                         </RadioGroup>
+                         <div className="space-y-2">
+                            <Label htmlFor="phone">{t('phoneNumberLabel')}</Label>
+                            <Input 
+                                id="phone" 
+                                type="tel" 
+                                placeholder="+233 24 123 4567" 
+                                value={phone} 
+                                onChange={(e) => setPhone(e.target.value)}
+                                required
+                            />
+                        </div>
                     </CardContent>
                 </Card>
 
