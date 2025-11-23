@@ -23,6 +23,7 @@ import { searchMusic } from '@/ai/flows/search-music';
 import { getSongInsights, type SongInsightsOutput } from '@/ai/flows/get-song-insights';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
+import React from 'react';
 
 const musicArtworks = PlaceHolderImages.filter(p => p.id.startsWith('music-art-'));
 const fallbackImage = PlaceHolderImages.find(p => p.id === 'music-art-1')?.imageUrl || '';
@@ -142,7 +143,7 @@ export default function MusicPage() {
             <Sheet open={isPlaylistOpen} onOpenChange={setIsPlaylistOpen}>
                 <SheetTrigger asChild>
                     <Button variant="ghost" size="icon">
-                        <ListVideo className="h-6 w-6" />
+                        <ListMusic className="h-6 w-6" />
                          {isOnBus && playlist.length > 0 && (
                             <span className="absolute -top-1 -right-1 flex h-4 w-4">
                                 <span className="relative inline-flex rounded-full h-4 w-4 bg-primary text-primary-foreground text-xs items-center justify-center">
