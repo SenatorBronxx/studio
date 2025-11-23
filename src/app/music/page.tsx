@@ -255,11 +255,11 @@ export default function MusicPage() {
                                                 </div>
                                             </div>
                                             <div className="flex flex-col items-center">
-                                                <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => upvoteSong(track.id)}>
+                                                <Button size="icon" variant="ghost" className={cn("h-6 w-6", track.userVote === 'up' && 'text-primary')} onClick={() => upvoteSong(track.id)}>
                                                     <ArrowUp className="h-4 w-4" />
                                                 </Button>
                                                 <span className="text-sm font-bold w-6 text-center">{track.votes}</span>
-                                                <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => downvoteSong(track.id)}>
+                                                <Button size="icon" variant="ghost" className={cn("h-6 w-6", track.userVote === 'down' && 'text-destructive')} onClick={() => downvoteSong(track.id)}>
                                                     <ArrowDown className="h-4 w-4" />
                                                 </Button>
                                             </div>

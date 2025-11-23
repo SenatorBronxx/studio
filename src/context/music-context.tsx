@@ -20,11 +20,12 @@ export type Track = {
 export type PlaylistItem = Track & { 
     addedByUser: boolean;
     votes: number;
+    userVote: 'up' | 'down' | null;
 };
 
 const initialPlaylist: PlaylistItem[] = [
-    { id: 101, title: 'Accra Night', artist: 'E.L', image: musicArtworks[1]?.imageUrl || '', duration: '3:15', addedByUser: false, votes: 3 },
-    { id: 102, title: 'Adonai', artist: 'Sarkodie', image: musicArtworks[3]?.imageUrl || '', duration: '4:02', addedByUser: false, votes: 5 },
+    { id: 101, title: 'Accra Night', artist: 'E.L', image: musicArtworks[1]?.imageUrl || '', duration: '3:15', addedByUser: false, votes: 3, userVote: null },
+    { id: 102, title: 'Adonai', artist: 'Sarkodie', image: musicArtworks[3]?.imageUrl || '', duration: '4:02', addedByUser: false, votes: 5, userVote: 'up' },
 ];
 
 // Mock song to simulate another user adding it
@@ -35,7 +36,8 @@ const mockCollaboratorSong: PlaylistItem = {
     image: musicArtworks[4]?.imageUrl || '',
     duration: "3:16",
     addedByUser: false,
-    votes: 0
+    votes: 0,
+    userVote: null
 };
 
 type MusicContextType = {
@@ -186,7 +188,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
       });
       return;
     }
-    const newTrack: PlaylistItem = { ...track, addedByUser: true, votes: 1 };
+    const newTrack: PlaylistItem = { ...track, addedByUser: true, votes: 1, userVote: 'up' };
     setPlaylist(prev => [...prev, newTrack]);
 
     if (!nowPlaying) {
@@ -230,13 +232,41 @@ export function MusicProvider({ children }: { children: ReactNode }) {
 
   const upvoteSong = (trackId: number) => {
     setPlaylist(prev => 
-        prev.map(song => song.id === trackId ? { ...song, votes: song.votes + 1 } : song)
+        prev.map(song => {
+            if (song.id === trackId) {
+                if (song.userVote === 'up') {
+                    // User is retracting their upvote
+                    return { ...song, votes: song.votes - 1, userVote: null };
+                } else if (song.userVote === 'down') {
+                    // User is changing their downvote to an upvote
+                    return { ...song, votes: song.votes + 2, userVote: 'up' };
+                } else {
+                    // User is casting a new upvote
+                    return { ...song, votes: song.votes + 1, userVote: 'up' };
+                }
+            }
+            return song;
+        })
     );
   };
   
   const downvoteSong = (trackId: number) => {
     setPlaylist(prev => 
-        prev.map(song => song.id === trackId ? { ...song, votes: Math.max(0, song.votes - 1) } : song)
+        prev.map(song => {
+            if (song.id === trackId) {
+                if (song.userVote === 'down') {
+                    // User is retracting their downvote
+                    return { ...song, votes: song.votes + 1, userVote: null };
+                } else if (song.userVote === 'up') {
+                    // User is changing their upvote to a downvote
+                    return { ...song, votes: song.votes - 2, userVote: 'down' };
+                } else {
+                    // User is casting a new downvote
+                    return { ...song, votes: song.votes - 1, userVote: 'down' };
+                }
+            }
+            return song;
+        })
     );
   };
   
