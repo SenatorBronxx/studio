@@ -176,7 +176,7 @@ export default function EritasPayPage() {
                 </Button>
             </Link>
             <Link href="/link-card" passHref>
-                <Button size="lg" variant="secondary" className="flex-col h-20 w-full">
+                <Button size="lg" variant="secondary" className="flex-col h-20 w-full text-xs px-2 leading-tight">
                     <Image src="https://upload.wikimedia.org/wikipedia/commons/4/41/Visa_Logo.png" alt="Visa Logo" width={80} height={26} className="mb-2" />
                     {t('synchronizeWithVisa')}
                 </Button>
@@ -256,7 +256,3 @@ export default function EritasPayPage() {
     </div>
   );
 }
-
-    
-
-    
