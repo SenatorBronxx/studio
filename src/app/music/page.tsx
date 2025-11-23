@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ListMusic, ListVideo, Plus, X, Search, Bus, LogIn, Loader2, Info, Text } from 'lucide-react';
+import { ListMusic, Plus, X, Search, Bus, LogIn, Loader2, Info, Text, MusicIcon } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { BottomNav } from '@/components/bottom-nav';
@@ -22,6 +22,7 @@ import { useDebounce } from '@/hooks/use-debounce';
 import { searchMusic } from '@/ai/flows/search-music';
 import { getSongInsights, type SongInsightsOutput } from '@/ai/flows/get-song-insights';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { cn } from '@/lib/utils';
 
 const musicArtworks = PlaceHolderImages.filter(p => p.id.startsWith('music-art-'));
 const fallbackImage = PlaceHolderImages.find(p => p.id === 'music-art-1')?.imageUrl || '';
@@ -54,7 +55,7 @@ export default function MusicPage() {
     const [isSearching, setIsSearching] = useState(false);
     const [songInsights, setSongInsights] = useState<SongInsightsOutput | null>(null);
     const [isFetchingInsights, setIsFetchingInsights] = useState(false);
-    const [activeInsightTab, setActiveInsightTab] = useState('insights');
+    const [isInsightsSheetOpen, setIsInsightsSheetOpen] = useState(false);
 
     const handleSearch = useCallback(async (query: string) => {
         if (query.trim() === '') {
@@ -88,6 +89,7 @@ export default function MusicPage() {
         if (!nowPlaying) return;
 
         setIsFetchingInsights(true);
+        setIsInsightsSheetOpen(true);
         setSongInsights(null); // Clear previous insights
         try {
             const insights = await getSongInsights({ title: nowPlaying.title, artist: nowPlaying.artist });
@@ -131,6 +133,7 @@ export default function MusicPage() {
     }
 
   return (
+    <>
     <div className="flex flex-col min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background/75 backdrop-blur-sm p-4 space-y-4">
@@ -158,61 +161,20 @@ export default function MusicPage() {
                         <>
                             {nowPlaying ? (
                                 <div className='mb-4 space-y-3 shrink-0'>
-                                    <p className="text-sm font-medium text-muted-foreground">{t('nowPlaying')}</p>
-                                    <div className="flex items-center gap-4 p-3 bg-primary/10 rounded-lg">
-                                        <div className="relative shrink-0">
-                                            <Image src={nowPlaying.image} alt={nowPlaying.title} width={64} height={64} className="rounded-md object-cover" />
-                                            <div className='absolute inset-0 bg-black/20 flex items-center justify-center'>
-                                                <NowPlayingIcon />
-                                            </div>
-                                        </div>
-                                        <div className="flex-grow space-y-1">
-                                            <p className="font-semibold text-lg">{nowPlaying.title}</p>
-                                            <div className="flex text-sm text-muted-foreground">
-                                                <span>{nowPlaying.artist}</span>
-                                                <span className="mx-2">•</span>
-                                                <span>{nowPlaying.duration}</span>
-                                            </div>
-                                            <Progress value={songProgress} className="h-1 bg-primary/20" />
+                                     <div className="relative flex flex-col justify-end text-white rounded-lg overflow-hidden p-4 h-48 bg-secondary">
+                                        <Image src={nowPlaying.image} alt={nowPlaying.title} fill className="object-cover" />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                                        <div className='relative z-10'>
+                                            <p className='text-xs font-semibold uppercase tracking-wider'>{t('nowPlaying')}</p>
+                                            <h3 className="font-bold text-2xl truncate">{nowPlaying.title}</h3>
+                                            <p className="text-sm opacity-80">{nowPlaying.artist}</p>
+                                            <Progress value={songProgress} className="h-1 bg-white/20 mt-2" indicatorClassName="bg-white" />
                                         </div>
                                     </div>
-                                     <Tabs value={activeInsightTab} onValueChange={setActiveInsightTab} className="w-full">
-                                        <TabsList className="grid w-full grid-cols-2">
-                                            <TabsTrigger value="insights" onClick={handleFetchInsights}><Info className="mr-2 h-4 w-4"/>Insights</TabsTrigger>
-                                            <TabsTrigger value="lyrics" onClick={handleFetchInsights}><Text className="mr-2 h-4 w-4"/>Lyrics</TabsTrigger>
-                                        </TabsList>
-                                        <TabsContent value="insights" className="mt-2">
-                                            <Card className="bg-secondary">
-                                                <CardContent className="p-3 text-sm h-28">
-                                                    {isFetchingInsights ? (
-                                                        <div className="flex items-center justify-center h-full text-muted-foreground">
-                                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Fetching...
-                                                        </div>
-                                                    ) : (
-                                                        <ScrollArea className="h-full pr-3">
-                                                           {songInsights?.trivia || "Click 'Insights' to learn more about this song."}
-                                                        </ScrollArea>
-                                                    )}
-                                                </CardContent>
-                                            </Card>
-                                        </TabsContent>
-                                         <TabsContent value="lyrics" className="mt-2">
-                                            <Card className="bg-secondary">
-                                                <CardContent className="p-3 text-sm h-28">
-                                                     {isFetchingInsights ? (
-                                                        <div className="flex items-center justify-center h-full text-muted-foreground">
-                                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Fetching...
-                                                        </div>
-                                                    ) : (
-                                                        <ScrollArea className="h-full pr-3 whitespace-pre-wrap font-mono">
-                                                           {songInsights?.lyrics || "Click 'Lyrics' to see the words."}
-                                                        </ScrollArea>
-                                                    )}
-                                                </CardContent>
-                                            </Card>
-                                        </TabsContent>
-                                    </Tabs>
-
+                                    <Button variant="outline" className="w-full" onClick={handleFetchInsights}>
+                                        <Info className="mr-2 h-4 w-4" />
+                                        View Lyrics & Insights
+                                    </Button>
                                     <Separator />
                                 </div>
                            ) : null}
@@ -354,5 +316,59 @@ export default function MusicPage() {
         <BottomNav />
       </div>
     </div>
+
+    <Sheet open={isInsightsSheetOpen} onOpenChange={setIsInsightsSheetOpen}>
+        <SheetContent side="bottom" className="max-h-[80vh] rounded-t-2xl flex flex-col">
+            <SheetHeader>
+                <SheetTitle>
+                    {nowPlaying?.title}
+                </SheetTitle>
+                <p className='text-sm text-muted-foreground'>{nowPlaying?.artist}</p>
+            </SheetHeader>
+            {isFetchingInsights || !songInsights ? (
+                 <div className="flex flex-col items-center justify-center flex-grow py-8 text-muted-foreground">
+                    <Loader2 className="mr-2 h-8 w-8 animate-spin mb-4" />
+                    <p>Fetching insights...</p>
+                </div>
+            ) : (
+                <ScrollArea className="flex-grow my-4 -mx-6 px-6">
+                    <div className='space-y-6'>
+                        <div>
+                            <h3 className="text-lg font-semibold mb-2 flex items-center gap-2"><Info className="h-5 w-5 text-primary"/>Trivia</h3>
+                            <p className="text-sm text-muted-foreground bg-secondary p-4 rounded-lg">{songInsights.trivia}</p>
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-semibold mb-2 flex items-center gap-2"><MusicIcon className="h-5 w-5 text-primary"/>Lyrics</h3>
+                            <p className="text-sm text-muted-foreground whitespace-pre-wrap font-mono leading-relaxed">{songInsights.lyrics}</p>
+                        </div>
+                    </div>
+                </ScrollArea>
+            )}
+        </SheetContent>
+    </Sheet>
+    </>
   );
 }
+
+// Extend Progress component props to accept indicatorClassName
+declare module "@radix-ui/react-progress" {
+    interface ProgressProps {
+        indicatorClassName?: string
+    }
+}
+const OriginalProgress = Progress;
+const NewProgress = React.forwardRef<
+    React.ElementRef<typeof OriginalProgress>,
+    React.ComponentPropsWithoutRef<typeof OriginalProgress> & { indicatorClassName?: string }
+>(({ indicatorClassName, ...props }, ref) => (
+    <OriginalProgress
+        ref={ref}
+        {...props}
+        // @ts-ignore
+        indicatorClassName={cn(indicatorClassName)}
+    />
+));
+NewProgress.displayName = Progress.displayName;
+// Monkey patch the progress component to allow indicatorClassName
+(Progress as any) = NewProgress;
+
