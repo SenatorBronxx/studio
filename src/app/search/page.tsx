@@ -85,6 +85,7 @@ type Notification = {
     id: number;
     title: string;
     description: string;
+    tripId?: string;
     action?: React.ReactNode;
 };
 
@@ -248,11 +249,12 @@ export default function SearchPage() {
 
     setIsBoarding(true);
     setTimeout(() => {
+        const tripId = uuidv4();
         setIsBoarding(false);
         deductBalance(totalFare);
 
         const newTransaction = {
-            id: uuidv4(),
+            id: tripId,
             type: 'payment',
             plate: selectedBus.plate || 'N/A',
             amount: -totalFare,
@@ -273,6 +275,7 @@ export default function SearchPage() {
         
         if (updatedBus) {
           const newTrip: ActiveTrip = {
+            id: tripId,
             bus: updatedBus,
             from: "Your Location",
             destination: stop.name,
@@ -288,7 +291,7 @@ export default function SearchPage() {
         addLoyaltyPoints(pointsEarned);
 
         const primarySeat = selectedSeats[0];
-        const qrData = { bus: selectedBus.plate, seat: primarySeat, from: stop.name, to: selectedBus.finalDestination.name, fare: totalFare / selectedSeats.length, timestamp: new Date().toISOString() };
+        const qrData = { tripId: tripId, bus: selectedBus.plate, seat: primarySeat, from: stop.name, to: selectedBus.finalDestination.name, fare: totalFare / selectedSeats.length, timestamp: new Date().toISOString() };
         const encodedQrData = encodeURIComponent(JSON.stringify(qrData));
         const newQrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodedQrData}`;
         setQrCodeUrl(newQrCodeUrl);
@@ -314,6 +317,7 @@ export default function SearchPage() {
                 id: Date.now(),
                 title: t('yourBoardingPass'),
                 description: `${t('showQrToDriver')} (${selectedBus.plate} - ${t('seat')}: ${primarySeat})`,
+                tripId: tripId,
                 action: (
                     <div className="mt-2 flex justify-center">
                         <Image src={newQrCodeUrl} alt={t('boardingQrCode')} width={150} height={150} />
@@ -351,6 +355,7 @@ export default function SearchPage() {
   const handleCancelTrip = () => {
     if (!activeTrip) return;
 
+    const tripId = activeTrip.id;
     const allStops = [...activeTrip.bus.stops, activeTrip.bus.finalDestination];
     const destinationStop = allStops.find(s => s.name === activeTrip.destination);
     if (!destinationStop) return;
@@ -384,7 +389,7 @@ export default function SearchPage() {
     });
 
     // Remove any related notifications
-    setNotifications(prev => prev.filter(n => !n.description.includes(activeTrip.bus.plate || '')));
+    setNotifications(prev => prev.filter(n => n.tripId !== tripId));
   };
   
   const handleSeatSelect = (seatId: string) => {
@@ -791,3 +796,5 @@ export default function SearchPage() {
     </div>
   );
 }
+
+    

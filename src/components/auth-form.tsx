@@ -51,6 +51,7 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
   const { toast } = useToast();
   const { setUser } = useUser();
   const { t } = useLanguage();
+  const router = useRouter();
   
   const signInForm = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
@@ -127,7 +128,7 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
         });
         
         setIsSubmitting(false);
-        onSignInSuccess();
+        router.push('/home');
     }, 1500);
   }
 
@@ -286,7 +287,5 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
     </Tabs>
   );
 }
-
-    
 
     

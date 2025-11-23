@@ -38,17 +38,19 @@ export function UserProvider({ children, clearAllData }: { children: ReactNode, 
     if (isHydrated) {
       try {
         if (newUser) {
-          const storedUserJson = localStorage.getItem('eritas-user');
-          if (storedUserJson) {
-            const storedUser = JSON.parse(storedUserJson);
-            // If the user name is different, assume it's a new login and clear all data
-            if (storedUser.name !== newUser.name) {
-              clearAllData();
-            }
-          }
+           const storedUserJson = localStorage.getItem('eritas-user');
+           // Clear previous user's data if the user is different
+           if (storedUserJson) {
+             const storedUser = JSON.parse(storedUserJson);
+             if (storedUser.name !== newUser.name) {
+               console.log("New user detected, clearing all old data.");
+               clearAllData();
+             }
+           }
           localStorage.setItem('eritas-user', JSON.stringify(newUser));
         } else {
           // On explicit logout (setUser(null)), clear all data.
+          console.log("User logged out, clearing all data.");
           clearAllData();
         }
       } catch (error) {

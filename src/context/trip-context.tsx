@@ -17,6 +17,7 @@ type BusData = {
 };
 
 export type ActiveTrip = {
+    id: string;
     bus: BusData;
     from: string;
     destination: string;
@@ -147,3 +148,5 @@ export function useTrip() {
     }
     return context;
 }
+
+    

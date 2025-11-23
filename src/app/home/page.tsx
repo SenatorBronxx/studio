@@ -106,6 +106,7 @@ type Notification = {
     id: number;
     title: string;
     description: string;
+    tripId?: string;
     action?: React.ReactNode;
 };
 
@@ -249,11 +250,12 @@ export default function HomePage() {
 
     setIsBoarding(true);
     setTimeout(() => {
+        const tripId = uuidv4();
         setIsBoarding(false);
         deductBalance(totalFare);
 
         const newTransaction = {
-            id: uuidv4(),
+            id: tripId,
             type: 'payment',
             plate: selectedBus?.plate || 'N/A',
             amount: -totalFare,
@@ -274,6 +276,7 @@ export default function HomePage() {
 
         if(updatedBus){
             const newTrip: ActiveTrip = {
+                id: tripId,
                 bus: updatedBus,
                 from: "Your Location", // Mock user's current location
                 destination: stop.name,
@@ -290,6 +293,7 @@ export default function HomePage() {
 
         const primarySeat = selectedSeats[0];
         const qrData = {
+          tripId: tripId,
           bus: selectedBus.plate,
           seat: primarySeat,
           from: stop.name,
@@ -322,6 +326,7 @@ export default function HomePage() {
                 id: Date.now(),
                 title: t('yourBoardingPass'),
                 description: `${t('showQrToDriver')} (${selectedBus.plate} - ${t('seat')}: ${primarySeat})`,
+                tripId: tripId,
                 action: (
                     <div className="mt-2 flex justify-center">
                         <Image src={newQrCodeUrl} alt={t('boardingQrCode')} width={150} height={150} />
@@ -358,6 +363,8 @@ export default function HomePage() {
 
    const handleCancelTrip = () => {
     if (!activeTrip) return;
+
+    const tripId = activeTrip.id;
 
     // Find the original fare
     const allStops = [...activeTrip.bus.stops, activeTrip.bus.finalDestination];
@@ -396,8 +403,8 @@ export default function HomePage() {
       description: t('tripCancelledDescription', { fare: fareToRefund.toFixed(2) }),
     });
 
-    // Remove any related notifications
-    setNotifications(prev => prev.filter(n => !n.description.includes(activeTrip.bus.plate || '')));
+    // 5. Remove any related notifications
+    setNotifications(prev => prev.filter(n => n.tripId !== tripId));
   };
 
   
@@ -786,3 +793,5 @@ export default function HomePage() {
     </div>
   );
 }
+
+    
