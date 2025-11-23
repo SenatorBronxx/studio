@@ -1,12 +1,12 @@
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, ReactElement } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ListMusic, Plus, X, Search, Bus, LogIn, Loader2, Info, Text, MusicIcon } from 'lucide-react';
+import { ListMusic, Plus, X, Search, Bus, LogIn, Loader2, Info, MusicIcon } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { BottomNav } from '@/components/bottom-nav';
@@ -22,7 +22,6 @@ import { useDebounce } from '@/hooks/use-debounce';
 import { searchMusic } from '@/ai/flows/search-music';
 import { getSongInsights, type SongInsightsOutput } from '@/ai/flows/get-song-insights';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { cn } from '@/lib/utils';
 import React from 'react';
 
 const musicArtworks = PlaceHolderImages.filter(p => p.id.startsWith('music-art-'));
@@ -350,26 +349,3 @@ export default function MusicPage() {
     </>
   );
 }
-
-// Extend Progress component props to accept indicatorClassName
-declare module "@radix-ui/react-progress" {
-    interface ProgressProps {
-        indicatorClassName?: string
-    }
-}
-const OriginalProgress = Progress;
-const NewProgress = React.forwardRef<
-    React.ElementRef<typeof OriginalProgress>,
-    React.ComponentPropsWithoutRef<typeof OriginalProgress> & { indicatorClassName?: string }
->(({ indicatorClassName, ...props }, ref) => (
-    <OriginalProgress
-        ref={ref}
-        {...props}
-        // @ts-ignore
-        indicatorClassName={cn(indicatorClassName)}
-    />
-));
-NewProgress.displayName = Progress.displayName;
-// Monkey patch the progress component to allow indicatorClassName
-(Progress as any) = NewProgress;
-
