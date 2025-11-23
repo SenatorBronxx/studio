@@ -11,6 +11,7 @@ import {
   LogIn,
   UserCircle,
   Bus,
+  ArrowDownToLine,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -161,11 +162,17 @@ export default function EritasPayPage() {
             </Card>
 
           {/* Action Buttons */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <Link href="/top-up" passHref>
                 <Button size="lg" className="flex-col h-20 w-full">
                 <ArrowUpRight className="h-6 w-6 mb-1" />
                 {t('topUp')}
+                </Button>
+            </Link>
+            <Link href="/withdraw" passHref>
+                <Button size="lg" variant="secondary" className="flex-col h-20 w-full">
+                <ArrowDownToLine className="h-6 w-6 mb-1" />
+                Withdraw
                 </Button>
             </Link>
             <Link href="/link-card" passHref>
@@ -249,5 +256,7 @@ export default function EritasPayPage() {
     </div>
   );
 }
+
+    
 
     
