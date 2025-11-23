@@ -30,6 +30,7 @@ import { Loader2 } from 'lucide-react';
 import { useLanguage } from '@/context/language-context';
 import { useUser } from '@/context/user-context';
 import { useRouter } from 'next/navigation';
+import { IconMosaicBackground } from '@/components/icon-mosaic-background';
 
 type Notification = {
     id: number;
@@ -129,19 +130,22 @@ export default function EritasPayPage() {
       <main className="flex-grow p-4">
         <div className="max-w-md mx-auto space-y-6">
           {/* Balance Card */}
-          <Card className="shadow-lg">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">
-                {t('eritasPayBalance')}
-              </CardTitle>
-                <div className='p-2 bg-primary/10 rounded-lg'>
-                    <Banknote className="h-4 w-4 text-primary" />
-                </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-4xl font-bold">GH₵ {balance.toFixed(2)}</div>
-              <Badge variant="secondary" className="mt-2">{t('cashBackOnBusTickets')}</Badge>
-            </CardContent>
+          <Card className="shadow-lg relative bg-primary/5 overflow-hidden">
+            <IconMosaicBackground />
+             <div className='relative'>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium">
+                  {t('eritasPayBalance')}
+                </CardTitle>
+                  <div className='p-2 bg-primary/10 rounded-lg'>
+                      <Banknote className="h-4 w-4 text-primary" />
+                  </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-4xl font-bold">GH₵ {balance.toFixed(2)}</div>
+                <Badge variant="secondary" className="mt-2">{t('cashBackOnBusTickets')}</Badge>
+              </CardContent>
+            </div>
           </Card>
           
           {/* Wallet Threshold */}
@@ -245,3 +249,5 @@ export default function EritasPayPage() {
     </div>
   );
 }
+
+    

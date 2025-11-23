@@ -13,25 +13,7 @@ import {
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Button } from './ui/button';
 import { useLanguage } from '@/context/language-context';
-import { Ticket, Bus, MapPin, Check, Flag } from 'lucide-react';
-
-const IconMosaicBackground = () => {
-    const icons = [Ticket, Bus, MapPin, Check, Flag];
-    const pattern = Array.from({ length: 150 }).map((_, i) => {
-        const Icon = icons[i % icons.length];
-        const rotation = (i % 12) * 30; // 0, 30, 60...
-        const scale = 1 + ((i % 5) / 10); // 1, 1.1, 1.2...
-        return <Icon key={i} className="h-8 w-8 text-primary/10" style={{ transform: `rotate(${rotation}deg) scale(${scale})` }} />;
-    });
-
-    return (
-        <div className="absolute inset-0 w-full h-full overflow-hidden">
-            <div className="flex flex-wrap gap-2 items-center justify-center -rotate-12 scale-150 opacity-50">
-                 {pattern}
-            </div>
-        </div>
-    );
-};
+import { IconMosaicBackground } from './icon-mosaic-background';
 
 export function SignupSlideshow({ onFinish }: { onFinish: () => void }) {
     const { t } = useLanguage();
@@ -108,3 +90,5 @@ export function SignupSlideshow({ onFinish }: { onFinish: () => void }) {
     </div>
   );
 }
+
+    
