@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ListMusic, Plus, X, Search, Bus, LogIn, Loader2, Info, MusicIcon } from 'lucide-react';
+import { ListMusic, Plus, X, Search, Bus, LogIn, Loader2, Info, MusicIcon, ThumbsUp, ThumbsDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { BottomNav } from '@/components/bottom-nav';
@@ -97,6 +97,8 @@ export default function MusicPage() {
         addToPlaylist,
         removeFromPlaylist,
         isOnBus,
+        upvoteSong,
+        downvoteSong,
     } = useMusic();
 
     const { t } = useLanguage();
@@ -185,6 +187,10 @@ export default function MusicPage() {
         );
     }
 
+    const upNextPlaylist = playlist
+        .filter(p => p.id !== nowPlaying?.id)
+        .sort((a, b) => b.votes - a.votes);
+
   return (
     <>
     <div className="flex flex-col min-h-screen bg-background">
@@ -233,12 +239,12 @@ export default function MusicPage() {
                            ) : null}
 
                            <div className="flex-grow overflow-y-auto">
-                            {playlist.filter(p => p.id !== nowPlaying?.id).length > 0 ? (
+                            {upNextPlaylist.length > 0 ? (
                                  <>
                                     <p className="text-sm font-medium text-muted-foreground mb-2">{t('upNext')}</p>
                                     <div className="space-y-3">
-                                    {playlist.filter(p => p.id !== nowPlaying?.id).map((track: PlaylistItem) => (
-                                        <div key={track.id} className="flex items-center gap-4 group">
+                                    {upNextPlaylist.map((track: PlaylistItem) => (
+                                        <div key={track.id} className="flex items-center gap-2 group">
                                             <Image src={track.image} alt={track.title} width={48} height={48} className="rounded-md object-cover" />
                                             <div className="flex-grow">
                                                 <p className="font-semibold">{track.title}</p>
@@ -247,6 +253,15 @@ export default function MusicPage() {
                                                     <span className="mx-2">•</span>
                                                     <span>{track.duration}</span>
                                                 </div>
+                                            </div>
+                                            <div className="flex flex-col items-center">
+                                                <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => upvoteSong(track.id)}>
+                                                    <ArrowUp className="h-4 w-4" />
+                                                </Button>
+                                                <span className="text-sm font-bold w-6 text-center">{track.votes}</span>
+                                                <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => downvoteSong(track.id)}>
+                                                    <ArrowDown className="h-4 w-4" />
+                                                </Button>
                                             </div>
                                             {track.addedByUser && (
                                                 <Button size="icon" variant="ghost" className="opacity-0 group-hover:opacity-100" onClick={() => removeFromPlaylist(track.id)}>

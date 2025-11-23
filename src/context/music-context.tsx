@@ -1,7 +1,7 @@
 
 'use client';
 
-import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from './language-context';
@@ -17,11 +17,14 @@ export type Track = {
     duration: string;
 };
 
-export type PlaylistItem = Track & { addedByUser: boolean };
+export type PlaylistItem = Track & { 
+    addedByUser: boolean;
+    votes: number;
+};
 
 const initialPlaylist: PlaylistItem[] = [
-    { id: 101, title: 'Accra Night', artist: 'E.L', image: musicArtworks[1]?.imageUrl || '', duration: '3:15', addedByUser: false },
-    { id: 102, title: 'Adonai', artist: 'Sarkodie', image: musicArtworks[3]?.imageUrl || '', duration: '4:02', addedByUser: false },
+    { id: 101, title: 'Accra Night', artist: 'E.L', image: musicArtworks[1]?.imageUrl || '', duration: '3:15', addedByUser: false, votes: 3 },
+    { id: 102, title: 'Adonai', artist: 'Sarkodie', image: musicArtworks[3]?.imageUrl || '', duration: '4:02', addedByUser: false, votes: 5 },
 ];
 
 // Mock song to simulate another user adding it
@@ -32,6 +35,7 @@ const mockCollaboratorSong: PlaylistItem = {
     image: musicArtworks[4]?.imageUrl || '',
     duration: "3:16",
     addedByUser: false,
+    votes: 0
 };
 
 type MusicContextType = {
@@ -45,6 +49,8 @@ type MusicContextType = {
   addToPlaylist: (track: Track) => void;
   removeFromPlaylist: (trackId: number) => void;
   setNowPlaying: (track: PlaylistItem | null) => void;
+  upvoteSong: (trackId: number) => void;
+  downvoteSong: (trackId: number) => void;
 };
 
 const MusicContext = createContext<MusicContextType | undefined>(undefined);
@@ -128,19 +134,20 @@ export function MusicProvider({ children }: { children: ReactNode }) {
   
   useEffect(() => {
     if (songProgress >= 100 && isOnBus) {
-      // Logic to move to the next song
-      const currentIndex = playlist.findIndex(p => p.id === nowPlaying?.id);
-      const nextIndex = (currentIndex + 1) % playlist.length;
-      if (playlist[nextIndex]) {
-        setNowPlaying(playlist[nextIndex]);
+      const remainingPlaylist = playlist.filter(p => p.id !== nowPlaying?.id);
+      const sortedPlaylist = [...remainingPlaylist].sort((a, b) => b.votes - a.votes);
+      
+      if (sortedPlaylist.length > 0) {
+        const nextSong = sortedPlaylist[0];
+        setNowPlaying(nextSong);
       } else {
         // End of playlist
         toast({ title: t('tripEndedTitle'), description: t('tripEndedDescription') });
         setIsOnBus(false);
         setNowPlaying(null);
-        clearActiveTrip(); // This will trigger the UI reset
+        clearActiveTrip();
       }
-      setSongProgress(0); // Reset progress after handling
+      setSongProgress(0);
     }
   }, [songProgress, isOnBus, playlist, nowPlaying, toast, t, clearActiveTrip]);
 
@@ -179,7 +186,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
       });
       return;
     }
-    const newTrack = { ...track, addedByUser: true };
+    const newTrack: PlaylistItem = { ...track, addedByUser: true, votes: 1 };
     setPlaylist(prev => [...prev, newTrack]);
 
     if (!nowPlaying) {
@@ -206,9 +213,10 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     let newPlaylist = playlist.filter(t => t.id !== trackId);
 
     if (nowPlaying?.id === trackId) {
-      const currentIndex = playlist.findIndex(p => p.id === trackId);
-      const nextIndex = (currentIndex + 1) % playlist.length;
-      const nextSong = newPlaylist[nextIndex] || newPlaylist[0] || null;
+      // Logic for when the currently playing song is removed
+      const remainingPlaylist = newPlaylist.filter(p => p.id !== trackId);
+      const sortedPlaylist = [...remainingPlaylist].sort((a, b) => b.votes - a.votes);
+      const nextSong = sortedPlaylist[0] || null;
       setNowPlaying(nextSong);
     }
     
@@ -219,11 +227,36 @@ export function MusicProvider({ children }: { children: ReactNode }) {
       description: t('songRemovedToastDescription'),
     });
   };
+
+  const upvoteSong = (trackId: number) => {
+    setPlaylist(prev => 
+        prev.map(song => song.id === trackId ? { ...song, votes: song.votes + 1 } : song)
+    );
+  };
+  
+  const downvoteSong = (trackId: number) => {
+    setPlaylist(prev => 
+        prev.map(song => song.id === trackId ? { ...song, votes: Math.max(0, song.votes - 1) } : song)
+    );
+  };
   
   if (!isHydrated) return null;
 
   return (
-    <MusicContext.Provider value={{ playlist, nowPlaying, songProgress, isPlaylistOpen, setIsPlaylistOpen, addToPlaylist, removeFromPlaylist, setNowPlaying, isOnBus, setIsOnBus }}>
+    <MusicContext.Provider value={{ 
+        playlist, 
+        nowPlaying, 
+        songProgress, 
+        isPlaylistOpen, 
+        setIsPlaylistOpen, 
+        addToPlaylist, 
+        removeFromPlaylist, 
+        setNowPlaying, 
+        isOnBus, 
+        setIsOnBus,
+        upvoteSong,
+        downvoteSong
+    }}>
       {children}
     </MusicContext.Provider>
   );
