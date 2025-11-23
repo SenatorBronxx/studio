@@ -28,7 +28,7 @@ export default function WithdrawPage() {
     const [isProcessing, setIsProcessing] = useState(false);
     
     const { balance, deductBalance, addTransaction } = useWallet();
-    router = useRouter();
+    const router = useRouter();
     const { toast } = useToast();
     const { t } = useLanguage();
 
