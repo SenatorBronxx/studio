@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ListMusic, ListVideo, Plus, X, Search, Bus, LogIn, Loader2 } from 'lucide-react';
+import { ListMusic, ListVideo, Plus, X, Search, Bus, LogIn, Loader2, Info, Text } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { BottomNav } from '@/components/bottom-nav';
@@ -20,6 +20,8 @@ import { useUser } from '@/context/user-context';
 import { useRouter } from 'next/navigation';
 import { useDebounce } from '@/hooks/use-debounce';
 import { searchMusic } from '@/ai/flows/search-music';
+import { getSongInsights, type SongInsightsOutput } from '@/ai/flows/get-song-insights';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const musicArtworks = PlaceHolderImages.filter(p => p.id.startsWith('music-art-'));
 const fallbackImage = PlaceHolderImages.find(p => p.id === 'music-art-1')?.imageUrl || '';
@@ -50,6 +52,9 @@ export default function MusicPage() {
     const debouncedSearchQuery = useDebounce(searchQuery, 500);
     const [searchResults, setSearchResults] = useState<Track[]>([]);
     const [isSearching, setIsSearching] = useState(false);
+    const [songInsights, setSongInsights] = useState<SongInsightsOutput | null>(null);
+    const [isFetchingInsights, setIsFetchingInsights] = useState(false);
+    const [activeInsightTab, setActiveInsightTab] = useState('insights');
 
     const handleSearch = useCallback(async (query: string) => {
         if (query.trim() === '') {
@@ -79,6 +84,21 @@ export default function MusicPage() {
         handleSearch(debouncedSearchQuery);
     }, [debouncedSearchQuery, handleSearch]);
 
+    const handleFetchInsights = useCallback(async () => {
+        if (!nowPlaying) return;
+
+        setIsFetchingInsights(true);
+        setSongInsights(null); // Clear previous insights
+        try {
+            const insights = await getSongInsights({ title: nowPlaying.title, artist: nowPlaying.artist });
+            setSongInsights(insights);
+        } catch (error) {
+            console.error("Error fetching song insights:", error);
+            setSongInsights({ trivia: "Could not load insights at this time.", lyrics: "Lyrics are currently unavailable." });
+        } finally {
+            setIsFetchingInsights(false);
+        }
+    }, [nowPlaying]);
 
     const NowPlayingBar = () => {
         if (!nowPlaying) return null;
@@ -129,38 +149,75 @@ export default function MusicPage() {
                         )}
                     </Button>
                 </SheetTrigger>
-                <SheetContent>
+                <SheetContent className='flex flex-col'>
                     <SheetHeader>
                         <SheetTitle>{t('busPlaylist')}</SheetTitle>
                     </SheetHeader>
-                    <div className="py-4 flex flex-col h-full">
+                    <div className="py-4 flex flex-col h-full overflow-hidden">
                        {isOnBus ? (
                         <>
                             {nowPlaying ? (
-                                <>
-                                    <div className='mb-4 space-y-3'>
-                                        <p className="text-sm font-medium text-muted-foreground">{t('nowPlaying')}</p>
-                                        <div className="flex items-center gap-4 p-3 bg-primary/10 rounded-lg">
-                                            <Image src={nowPlaying.image} alt={nowPlaying.title} width={48} height={48} className="rounded-md object-cover" />
-                                            <div className="flex-grow space-y-2">
-                                                <div>
-                                                    <p className="font-semibold">{nowPlaying.title}</p>
-                                                    <div className="flex text-sm text-muted-foreground">
-                                                        <span>{nowPlaying.artist}</span>
-                                                        <span className="mx-2">•</span>
-                                                        <span>{nowPlaying.duration}</span>
-                                                    </div>
-                                                </div>
-                                                 <Progress value={songProgress} className="h-1" />
+                                <div className='mb-4 space-y-3 shrink-0'>
+                                    <p className="text-sm font-medium text-muted-foreground">{t('nowPlaying')}</p>
+                                    <div className="flex items-center gap-4 p-3 bg-primary/10 rounded-lg">
+                                        <div className="relative shrink-0">
+                                            <Image src={nowPlaying.image} alt={nowPlaying.title} width={64} height={64} className="rounded-md object-cover" />
+                                            <div className='absolute inset-0 bg-black/20 flex items-center justify-center'>
+                                                <NowPlayingIcon />
                                             </div>
-                                            <NowPlayingIcon />
+                                        </div>
+                                        <div className="flex-grow space-y-1">
+                                            <p className="font-semibold text-lg">{nowPlaying.title}</p>
+                                            <div className="flex text-sm text-muted-foreground">
+                                                <span>{nowPlaying.artist}</span>
+                                                <span className="mx-2">•</span>
+                                                <span>{nowPlaying.duration}</span>
+                                            </div>
+                                            <Progress value={songProgress} className="h-1 bg-primary/20" />
                                         </div>
                                     </div>
+                                     <Tabs value={activeInsightTab} onValueChange={setActiveInsightTab} className="w-full">
+                                        <TabsList className="grid w-full grid-cols-2">
+                                            <TabsTrigger value="insights" onClick={handleFetchInsights}><Info className="mr-2 h-4 w-4"/>Insights</TabsTrigger>
+                                            <TabsTrigger value="lyrics" onClick={handleFetchInsights}><Text className="mr-2 h-4 w-4"/>Lyrics</TabsTrigger>
+                                        </TabsList>
+                                        <TabsContent value="insights" className="mt-2">
+                                            <Card className="bg-secondary">
+                                                <CardContent className="p-3 text-sm h-28">
+                                                    {isFetchingInsights ? (
+                                                        <div className="flex items-center justify-center h-full text-muted-foreground">
+                                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Fetching...
+                                                        </div>
+                                                    ) : (
+                                                        <ScrollArea className="h-full pr-3">
+                                                           {songInsights?.trivia || "Click 'Insights' to learn more about this song."}
+                                                        </ScrollArea>
+                                                    )}
+                                                </CardContent>
+                                            </Card>
+                                        </TabsContent>
+                                         <TabsContent value="lyrics" className="mt-2">
+                                            <Card className="bg-secondary">
+                                                <CardContent className="p-3 text-sm h-28">
+                                                     {isFetchingInsights ? (
+                                                        <div className="flex items-center justify-center h-full text-muted-foreground">
+                                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Fetching...
+                                                        </div>
+                                                    ) : (
+                                                        <ScrollArea className="h-full pr-3 whitespace-pre-wrap font-mono">
+                                                           {songInsights?.lyrics || "Click 'Lyrics' to see the words."}
+                                                        </ScrollArea>
+                                                    )}
+                                                </CardContent>
+                                            </Card>
+                                        </TabsContent>
+                                    </Tabs>
+
                                     <Separator />
-                                </>
+                                </div>
                            ) : null}
 
-                           <div className="flex-grow overflow-y-auto mt-4">
+                           <div className="flex-grow overflow-y-auto">
                             {playlist.filter(p => p.id !== nowPlaying?.id).length > 0 ? (
                                  <>
                                     <p className="text-sm font-medium text-muted-foreground mb-2">{t('upNext')}</p>

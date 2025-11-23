@@ -24,6 +24,16 @@ const initialPlaylist: PlaylistItem[] = [
     { id: 102, title: 'Adonai', artist: 'Sarkodie', image: musicArtworks[3]?.imageUrl || '', duration: '4:02', addedByUser: false },
 ];
 
+// Mock song to simulate another user adding it
+const mockCollaboratorSong: PlaylistItem = {
+    id: 201,
+    title: "Forever",
+    artist: "Gyakie",
+    image: musicArtworks[4]?.imageUrl || '',
+    duration: "3:16",
+    addedByUser: false,
+};
+
 type MusicContextType = {
   playlist: PlaylistItem[];
   nowPlaying: PlaylistItem | null;
@@ -41,7 +51,7 @@ const MusicContext = createContext<MusicContextType | undefined>(undefined);
 
 export function MusicProvider({ children }: { children: ReactNode }) {
   const [playlist, setPlaylist] = useState<PlaylistItem[]>(initialPlaylist);
-  const [nowPlaying, setNowPlaying] = useState<PlaylistItem | null>(initialPlaylist[0] || null);
+  const [nowPlaying, setNowPlaying] = useState<PlaylistItem | null>(null);
   const [songProgress, setSongProgress] = useState(0);
   const [isPlaylistOpen, setIsPlaylistOpen] = useState(false);
   const [isOnBus, setIsOnBus] = useState(false);
@@ -55,16 +65,21 @@ export function MusicProvider({ children }: { children: ReactNode }) {
       const storedPlaylist = localStorage.getItem('eritas-music-playlist');
       if (storedPlaylist) {
         setPlaylist(JSON.parse(storedPlaylist));
+      } else {
+        setPlaylist(initialPlaylist); // Set initial if nothing is stored
       }
+
       const storedNowPlaying = localStorage.getItem('eritas-music-nowplaying');
       if (storedNowPlaying) {
         const track = JSON.parse(storedNowPlaying);
         setNowPlaying(track);
-        // Ensure the now playing track is in the playlist
-        if (track && !JSON.parse(storedPlaylist || '[]').some((p: PlaylistItem) => p.id === track.id)) {
-            setPlaylist(prev => [track, ...prev]);
+        if (track && !playlist.some((p: PlaylistItem) => p.id === track.id)) {
+             setPlaylist(prev => [track, ...prev]);
         }
+      } else if (playlist.length > 0) {
+        setNowPlaying(playlist[0]);
       }
+
       const storedIsOnBus = localStorage.getItem('eritas-music-isonbus');
       if (storedIsOnBus) {
         setIsOnBus(JSON.parse(storedIsOnBus));
@@ -113,13 +128,38 @@ export function MusicProvider({ children }: { children: ReactNode }) {
   
   useEffect(() => {
     if (songProgress >= 100 && isOnBus) {
-      toast({ title: t('tripEndedTitle'), description: t('tripEndedDescription') });
-      setIsOnBus(false);
-      setNowPlaying(null);
-      clearActiveTrip(); // This will trigger the UI reset
+      // Logic to move to the next song
+      const currentIndex = playlist.findIndex(p => p.id === nowPlaying?.id);
+      const nextIndex = (currentIndex + 1) % playlist.length;
+      if (playlist[nextIndex]) {
+        setNowPlaying(playlist[nextIndex]);
+      } else {
+        // End of playlist
+        toast({ title: t('tripEndedTitle'), description: t('tripEndedDescription') });
+        setIsOnBus(false);
+        setNowPlaying(null);
+        clearActiveTrip(); // This will trigger the UI reset
+      }
       setSongProgress(0); // Reset progress after handling
     }
-  }, [songProgress, isOnBus, toast, t, clearActiveTrip]);
+  }, [songProgress, isOnBus, playlist, nowPlaying, toast, t, clearActiveTrip]);
+
+  // Mock collaborator adding a song
+  useEffect(() => {
+    if (isOnBus) {
+        const timer = setTimeout(() => {
+            if (!playlist.some(t => t.id === mockCollaboratorSong.id)) {
+                setPlaylist(prev => [...prev, mockCollaboratorSong]);
+                toast({
+                    title: "Someone added a song!",
+                    description: `'${mockCollaboratorSong.title}' by ${mockCollaboratorSong.artist} was added to the playlist.`,
+                });
+            }
+        }, 15000); // Simulate after 15 seconds
+        return () => clearTimeout(timer);
+    }
+  }, [isOnBus, playlist, toast]);
+
 
   const addToPlaylist = (track: Track) => {
     if (!isOnBus) {
@@ -196,5 +236,3 @@ export function useMusic() {
   }
   return context;
 }
-
-    

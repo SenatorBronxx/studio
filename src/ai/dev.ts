@@ -4,5 +4,6 @@ config();
 
 import '@/ai/flows/save-user-preferences.ts';
 import '@/ai/flows/search-music.ts';
+import '@/ai/flows/get-song-insights.ts';
 
     
