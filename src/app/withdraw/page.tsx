@@ -15,17 +15,13 @@ import { useLanguage } from '@/context/language-context';
 import Image from 'next/image';
 import { VisaIcon } from '@/components/icons/visa';
 import { MastercardIcon } from '@/components/icons/mastercard';
+import { useUser } from '@/context/user-context';
 
 
 const linkedCards = [
     { id: 'card-1', type: 'visa', last4: '4589', name: 'Personal Visa' },
     { id: 'card-2', type: 'mastercard', last4: '8923', name: 'Work Mastercard' },
 ];
-
-const mobileMoneyAccounts = [
-    { id: 'momo-1', provider: 'mtn', name: 'MTN Mobile Money', number: '+233 24 *** 4567', logo: "https://momodeveloper.mtn.com/content/momo_mtnb.png" },
-];
-
 
 export default function WithdrawPage() {
     const [destination, setDestination] = useState('');
@@ -36,6 +32,19 @@ export default function WithdrawPage() {
     const router = useRouter();
     const { toast } = useToast();
     const { t } = useLanguage();
+    const { user } = useUser();
+
+    const formatPhoneNumber = (phone: string) => {
+        if (!phone) return '';
+        const cleaned = phone.replace(/\D/g, '');
+        if (cleaned.length < 10) return phone; // Return as is if not a full number
+        // Assuming a format like +233 XX XXX XXXX
+        return `${cleaned.slice(0, 5)} *** ${cleaned.slice(-4)}`;
+    }
+
+    const mobileMoneyAccounts = user ? [
+        { id: 'momo-1', provider: 'mtn', name: 'MTN Mobile Money', number: formatPhoneNumber(user.phone), logo: "https://momodeveloper.mtn.com/content/momo_mtnb.png" },
+    ] : [];
 
     const handleWithdraw = (e: React.FormEvent) => {
         e.preventDefault();
@@ -201,5 +210,3 @@ export default function WithdrawPage() {
     </div>
   );
 }
-
-    
