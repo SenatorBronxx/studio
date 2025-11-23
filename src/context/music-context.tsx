@@ -29,7 +29,7 @@ const initialPlaylist: PlaylistItem[] = [
 
 // Mock song to simulate another user adding it
 const mockCollaboratorSong: PlaylistItem = {
-    id: 201,
+    id: 202,
     title: "Forever",
     artist: "Gyakie",
     image: musicArtworks[4]?.imageUrl || '',
