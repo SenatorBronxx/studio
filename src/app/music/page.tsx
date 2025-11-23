@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback, ReactElement } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -22,7 +22,7 @@ import { useDebounce } from '@/hooks/use-debounce';
 import { searchMusic } from '@/ai/flows/search-music';
 import { getSongInsights, type SongInsightsOutput } from '@/ai/flows/get-song-insights';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import React from 'react';
+import { cn } from '@/lib/utils';
 
 const musicArtworks = PlaceHolderImages.filter(p => p.id.startsWith('music-art-'));
 const fallbackImage = PlaceHolderImages.find(p => p.id === 'music-art-1')?.imageUrl || '';
@@ -33,6 +33,59 @@ const genres = [
   { name: 'Afrobeat', image: musicArtworks[2]?.imageUrl || '' },
   { name: 'Gospel', image: musicArtworks[3]?.imageUrl || '' },
 ];
+
+const AnimatedLyrics = ({ lyrics, songProgress }: { lyrics: SongInsightsOutput['lyrics'], songProgress: number }) => {
+    const songDuration = 180; // Mock duration of 3 minutes (180s)
+    const currentTime = (songProgress / 100) * songDuration;
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
+    const activeLineRef = useRef<HTMLParagraphElement>(null);
+
+    const activeLineIndex = lyrics.findIndex((line, i) => {
+        const nextLine = lyrics[i + 1];
+        return currentTime >= line.time && (!nextLine || currentTime < nextLine.time);
+    });
+
+    useEffect(() => {
+        if (activeLineRef.current && scrollContainerRef.current) {
+            const container = scrollContainerRef.current;
+            const activeLine = activeLineRef.current;
+            const containerHeight = container.clientHeight;
+            const lineTop = activeLine.offsetTop;
+            const lineHeight = activeLine.clientHeight;
+
+            // Scroll to center the active line
+            const scrollTo = lineTop - (containerHeight / 2) + (lineHeight / 2);
+            
+            container.scrollTo({
+                top: scrollTo,
+                behavior: 'smooth'
+            });
+        }
+    }, [activeLineIndex]);
+
+
+    return (
+        <ScrollArea ref={scrollContainerRef} className="h-[250px] w-full text-center">
+             <div className='py-8'>
+                {lyrics.map((line, index) => (
+                    <p
+                        key={index}
+                        ref={index === activeLineIndex ? activeLineRef : null}
+                        className={cn(
+                            "text-xl font-medium transition-all duration-300 ease-in-out py-1 font-mono",
+                            index === activeLineIndex
+                                ? 'text-foreground scale-105'
+                                : 'text-muted-foreground/50 scale-100'
+                        )}
+                    >
+                        {line.line}
+                    </p>
+                ))}
+             </div>
+        </ScrollArea>
+    );
+};
+
 
 export default function MusicPage() {
     const { 
@@ -96,7 +149,7 @@ export default function MusicPage() {
             setSongInsights(insights);
         } catch (error) {
             console.error("Error fetching song insights:", error);
-            setSongInsights({ trivia: "Could not load insights at this time.", lyrics: "Lyrics are currently unavailable." });
+            setSongInsights({ trivia: "Could not load insights at this time.", lyrics: [] });
         } finally {
             setIsFetchingInsights(false);
         }
@@ -331,18 +384,22 @@ export default function MusicPage() {
                     <p>Fetching insights...</p>
                 </div>
             ) : (
-                <ScrollArea className="flex-grow my-4 -mx-6 px-6">
-                    <div className='space-y-6'>
+                <div className='flex flex-col flex-grow overflow-hidden'>
+                    <div className='space-y-4 my-4 shrink-0'>
                         <div>
-                            <h3 className="text-lg font-semibold mb-2 flex items-center gap-2"><Info className="h-5 w-5 text-primary"/>Trivia</h3>
-                            <p className="text-sm text-muted-foreground bg-secondary p-4 rounded-lg">{songInsights.trivia}</p>
+                            <h3 className="text-lg font-semibold flex items-center gap-2 px-6"><Info className="h-5 w-5 text-primary"/>Trivia</h3>
+                            <p className="text-sm text-muted-foreground bg-secondary p-4 rounded-lg mx-6 mt-2">{songInsights.trivia}</p>
                         </div>
                         <div>
-                            <h3 className="text-lg font-semibold mb-2 flex items-center gap-2"><MusicIcon className="h-5 w-5 text-primary"/>Lyrics</h3>
-                            <p className="text-sm text-muted-foreground whitespace-pre-wrap font-mono leading-relaxed">{songInsights.lyrics}</p>
+                            <h3 className="text-lg font-semibold flex items-center gap-2 px-6"><MusicIcon className="h-5 w-5 text-primary"/>Lyrics</h3>
                         </div>
                     </div>
-                </ScrollArea>
+                    {songInsights.lyrics.length > 0 ? (
+                        <AnimatedLyrics lyrics={songInsights.lyrics} songProgress={songProgress} />
+                    ) : (
+                        <p className="text-sm text-muted-foreground text-center py-8">Lyrics are not available for this song.</p>
+                    )}
+                </div>
             )}
         </SheetContent>
     </Sheet>

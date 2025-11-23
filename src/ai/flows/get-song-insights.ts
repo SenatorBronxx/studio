@@ -16,9 +16,14 @@ const SongInsightsInputSchema = z.object({
 });
 export type SongInsightsInput = z.infer<typeof SongInsightsInputSchema>;
 
+const LyricLineSchema = z.object({
+  time: z.number().describe('The timestamp in seconds when this lyric line starts.'),
+  line: z.string().describe('A single line of the song lyrics.'),
+});
+
 const SongInsightsOutputSchema = z.object({
   trivia: z.string().describe('Interesting trivia or background information about the song or artist.'),
-  lyrics: z.string().describe('The full lyrics of the song.'),
+  lyrics: z.array(LyricLineSchema).describe('The full timed lyrics of the song.'),
 });
 export type SongInsightsOutput = z.infer<typeof SongInsightsOutputSchema>;
 
@@ -26,11 +31,36 @@ export type SongInsightsOutput = z.infer<typeof SongInsightsOutputSchema>;
 const MOCK_INSIGHTS: Record<string, SongInsightsOutput> = {
     "Adonai by Sarkodie": {
         trivia: "Sarkodie's 'Adonai' remix featuring Castro is one of the most successful Ghanaian songs of all time. The tragic disappearance of Castro at sea shortly after the song's release added a layer of poignancy and cemented its place in Ghanaian music history.",
-        lyrics: `(Sarkodie)\nYeah! Uh!\nNow, lemme see you bounce!\nUh! OBIDIPONBIDI!\n\n(Castro)\nAdonai, Adonai, Nhyira nka wo din Adonai\n(Blessings be unto your name, Adonai)\nAyeyi nka wo din Adonai\n(Praises be unto your name, Adonai)\nMe nyankopon, me nyankopon\n(My God, my God)\nWo na wo ma me daa\n(You are the one who provides for me daily)\n\n(Sarkodie - Verse 1)\nEveryday I wake up, I thank the Lord for my life\nStarted from the bottom, now we here, we alright\nSee the blessings coming, man, I never give up the fight\nFrom the streets of Tema, now we shining so bright\n... (Lyrics continue)`
+        lyrics: [
+            { time: 0, line: "Yeah! Uh!" },
+            { time: 3, line: "Now, lemme see you bounce!" },
+            { time: 5, line: "Uh! OBIDIPONBIDI!" },
+            { time: 8, line: "Adonai, Adonai, Nhyira nka wo din Adonai" },
+            { time: 13, line: "(Blessings be unto your name, Adonai)" },
+            { time: 16, line: "Ayeyi nka wo din Adonai" },
+            { time: 20, line: "(Praises be unto your name, Adonai)" },
+            { time: 23, line: "Me nyankopon, me nyankopon" },
+            { time: 26, line: "(My God, my God)" },
+            { time: 28, line: "Wo na wo ma me daa" },
+            { time: 30, line: "(You are the one who provides for me daily)" },
+            { time: 33, line: "Everyday I wake up, I thank the Lord for my life" },
+            { time: 37, line: "Started from the bottom, now we here, we alright" },
+            { time: 41, line: "See the blessings coming, man, I never give up the fight" },
+            { time: 45, line: "From the streets of Tema, now we shining so bright" },
+        ]
     },
     "Accra Night by E.L": {
         trivia: "E.L's 'Accra Night' is an ode to the vibrant and bustling nightlife of Ghana's capital. The song captures the energy of the city, from its busy streets to its lively clubs, and has become an anthem for many who love Accra's nocturnal scene.",
-        lyrics: `(E.L)\nYeah, it's another Accra night\nCity lights shining so bright\nFeeling good, everything's right\nGonna party till the morning light\n\nFrom Osu to East Legon\nThe vibe is on, the party's strong\nEvery corner, there's a song\nThis is where I belong\n... (Lyrics continue)`
+        lyrics: [
+            { time: 0, line: "Yeah, it's another Accra night" },
+            { time: 4, line: "City lights shining so bright" },
+            { time: 8, line: "Feeling good, everything's right" },
+            { time: 12, line: "Gonna party till the morning light" },
+            { time: 16, line: "From Osu to East Legon" },
+            { time: 20, line: "The vibe is on, the party's strong" },
+            { time: 24, line: "Every corner, there's a song" },
+            { time: 28, line: "This is where I belong" },
+        ]
     }
 };
 
@@ -52,7 +82,7 @@ export async function getSongInsights(
   // Return a generic response if no mock is found
   return Promise.resolve({
     trivia: `No specific trivia available for ${input.title}. This song is a popular track in the Ghanaian music scene.`,
-    lyrics: `Lyrics for ${input.title} by ${input.artist} are not available in this mock version.`
+    lyrics: [{ time: 0, line: `Lyrics for ${input.title} by ${input.artist} are not available in this mock version.`}]
   });
 }
 
@@ -67,7 +97,7 @@ const songInsightsFlow = ai.defineFlow(
       prompt: `
         You are a music expert and historian. For the song "${title}" by "${artist}", provide the following:
         1.  A short, interesting piece of trivia or background about the song, the artist, or its impact on Ghanaian culture.
-        2.  The full lyrics for the song.
+        2.  The full lyrics for the song, with a time in seconds for each line.
 
         Format the output as JSON.
       `,
@@ -78,6 +108,6 @@ const songInsightsFlow = ai.defineFlow(
       },
     });
 
-    return llmResponse.output || { trivia: "Could not generate insights.", lyrics: "Could not find lyrics."};
+    return llmResponse.output || { trivia: "Could not generate insights.", lyrics: []};
   }
 );
