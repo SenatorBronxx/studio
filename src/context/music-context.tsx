@@ -10,7 +10,7 @@ import { useTrip } from './trip-context';
 const musicArtworks = PlaceHolderImages.filter(p => p.id.startsWith('music-art-'));
 
 export type Track = {
-    id: number;
+    id: string; // Changed to string for Spotify IDs
     title: string;
     artist: string;
     image: string;
@@ -24,13 +24,13 @@ export type PlaylistItem = Track & {
 };
 
 const initialPlaylist: PlaylistItem[] = [
-    { id: 101, title: 'Accra Night', artist: 'E.L', image: musicArtworks[1]?.imageUrl || '', duration: '3:15', addedByUser: false, votes: 3, userVote: null },
-    { id: 102, title: 'Adonai', artist: 'Sarkodie', image: musicArtworks[3]?.imageUrl || '', duration: '4:02', addedByUser: false, votes: 5, userVote: 'up' },
+    { id: "3ODKjzmHanT7p12zG3zzxP", title: 'Accra Night', artist: 'E.L', image: musicArtworks[1]?.imageUrl || '', duration: '3:15', addedByUser: false, votes: 3, userVote: null },
+    { id: "55mJdeMOo22iO3p2sQW3n3", title: 'Adonai', artist: 'Sarkodie', image: musicArtworks[3]?.imageUrl || '', duration: '4:02', addedByUser: false, votes: 5, userVote: 'up' },
 ];
 
 // Mock song to simulate another user adding it
 const mockCollaboratorSong: PlaylistItem = {
-    id: 202,
+    id: "4QcvhN5qP7k8J2f2aAI3tA",
     title: "Forever",
     artist: "Gyakie",
     image: musicArtworks[4]?.imageUrl || '',
@@ -49,10 +49,10 @@ type MusicContextType = {
   setIsOnBus: (isOnBus: boolean) => void;
   setIsPlaylistOpen: (isOpen: boolean) => void;
   addToPlaylist: (track: Track) => void;
-  removeFromPlaylist: (trackId: number) => void;
+  removeFromPlaylist: (trackId: string) => void;
   setNowPlaying: (track: PlaylistItem | null) => void;
-  upvoteSong: (trackId: number) => void;
-  downvoteSong: (trackId: number) => void;
+  upvoteSong: (trackId: string) => void;
+  downvoteSong: (trackId: string) => void;
 };
 
 const MusicContext = createContext<MusicContextType | undefined>(undefined);
@@ -201,7 +201,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const removeFromPlaylist = (trackId: number) => {
+  const removeFromPlaylist = (trackId: string) => {
     const songToRemove = playlist.find(t => t.id === trackId);
     if (!songToRemove || !songToRemove.addedByUser) {
       toast({
@@ -230,7 +230,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const upvoteSong = (trackId: number) => {
+  const upvoteSong = (trackId: string) => {
     setPlaylist(prev => 
         prev.map(song => {
             if (song.id === trackId) {
@@ -250,7 +250,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     );
   };
   
-  const downvoteSong = (trackId: number) => {
+  const downvoteSong = (trackId: string) => {
     setPlaylist(prev => 
         prev.map(song => {
             if (song.id === trackId) {
