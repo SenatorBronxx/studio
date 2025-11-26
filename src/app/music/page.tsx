@@ -243,8 +243,8 @@ export default function MusicPage() {
                                  <>
                                     <p className="text-sm font-medium text-muted-foreground mb-2">{t('upNext')}</p>
                                     <div className="space-y-3">
-                                    {upNextPlaylist.map((track: PlaylistItem) => (
-                                        <div key={track.id} className="flex items-center gap-2 group">
+                                    {upNextPlaylist.map((track: PlaylistItem, index: number) => (
+                                        <div key={`${track.id}-${index}`} className="flex items-center gap-2 group">
                                             <Image src={track.image} alt={track.title} width={48} height={48} className="rounded-md object-cover" />
                                             <div className="flex-grow">
                                                 <p className="font-semibold">{track.title}</p>
