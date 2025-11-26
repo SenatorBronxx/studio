@@ -115,7 +115,7 @@ export default function HomePage() {
   const { user } = useUser();
   const { toast } = useToast();
   const { balance, deductBalance, addTransaction, addLoyaltyPoints, addBalance: refundBalance } = useWallet();
-  const { setIsOnBus, isOnBus } = useMusic();
+  const { setIsOnBus, isOnBus, setNowPlaying } = useMusic();
   const { activeTrip, setActiveTrip, isHydrated: isTripHydrated, setDynamicEta, clearActiveTrip, setCurrentStopIndex } = useTrip();
   const { bookingAlerts } = useNotificationSettings();
   const { activeDiscount, isDiscountBannerDismissed, dismissDiscountBanner } = useDiscount();
@@ -160,44 +160,46 @@ export default function HomePage() {
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
+
     if (activeTrip && activeTrip.eta > 0) {
-        setBusHasArrived(false);
       interval = setInterval(() => {
         setDynamicEta(activeTrip.eta - 1);
-      }, 5 * 1000); 
-    } else if (activeTrip && activeTrip.eta <= 0 && !isOnBus) {
+      }, 5 * 1000); // 5 seconds for faster testing
+    } else if (activeTrip && activeTrip.eta <= 0) {
+      if (isOnBus) {
+        // Trip has ended
+        toast({
+          title: t('tripEndedTitle'),
+          description: t('tripEndedDescription'),
+        });
+        clearActiveTrip();
+        setIsOnBus(false);
+        setNowPlaying(null);
+      } else {
+        // Bus has arrived for pickup
         if (!busHasArrived) {
-            setBusHasArrived(true);
+          setBusHasArrived(true);
         }
         setIsTransitioning(true);
         setTimeout(() => {
-            setIsOnBus(true);
-            const destinationStop = [...activeTrip.bus.stops, activeTrip.bus.finalDestination].find(s => s.name === activeTrip.destination);
-            if (destinationStop) {
-                setDynamicEta(destinationStop.eta);
-                 // Start tracking stops
-                setCurrentStopIndex(0);
-            }
-            toast({
-                title: t('onTheBusToastTitle'),
-                description: t('onTheBusToastDescription'),
-            });
-            setIsTransitioning(false);
+          setIsOnBus(true);
+          const destinationStop = [...activeTrip.bus.stops, activeTrip.bus.finalDestination].find(s => s.name === activeTrip.destination);
+          if (destinationStop) {
+            setDynamicEta(destinationStop.eta);
+            setCurrentStopIndex(0); // Start tracking stops
+          }
+          toast({
+            title: t('onTheBusToastTitle'),
+            description: t('onTheBusToastDescription'),
+          });
+          setIsTransitioning(false);
         }, 2000); // Duration of the animation
-    } else if (isOnBus && activeTrip && activeTrip.eta > 0) {
-        // Bus is on the move, update stops
-        interval = setInterval(() => {
-            const allStops = [...activeTrip.bus.stops, activeTrip.bus.finalDestination];
-            const currentStop = allStops[activeTrip.currentStopIndex];
-            if (currentStop && activeTrip.eta <= currentStop.eta) {
-                if (activeTrip.currentStopIndex < allStops.length - 1) {
-                    setCurrentStopIndex(activeTrip.currentStopIndex + 1);
-                }
-            }
-        }, 5 * 1000); // Check every 5 seconds
+      }
     }
+
     return () => clearInterval(interval);
-  }, [activeTrip, isOnBus, setIsOnBus, setDynamicEta, toast, t, setCurrentStopIndex, busHasArrived]);
+  }, [activeTrip, isOnBus, setDynamicEta, setIsOnBus, t, toast, clearActiveTrip, setCurrentStopIndex, busHasArrived, setNowPlaying]);
+
 
   const handleSearch = () => {
     router.push(`/search?from=${encodeURIComponent(fromLocation)}&to=${encodeURIComponent(toLocation)}`);
