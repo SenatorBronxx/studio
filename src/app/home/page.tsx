@@ -164,7 +164,7 @@ export default function HomePage() {
         setBusHasArrived(false);
       interval = setInterval(() => {
         setDynamicEta(activeTrip.eta - 1);
-      }, 60 * 1000); 
+      }, 5 * 1000); 
     } else if (activeTrip && activeTrip.eta <= 0 && !isOnBus) {
         if (!busHasArrived) {
             setBusHasArrived(true);
@@ -194,7 +194,7 @@ export default function HomePage() {
                     setCurrentStopIndex(activeTrip.currentStopIndex + 1);
                 }
             }
-        }, 30 * 1000); // Check every 30 seconds
+        }, 5 * 1000); // Check every 5 seconds
     }
     return () => clearInterval(interval);
   }, [activeTrip, isOnBus, setIsOnBus, setDynamicEta, toast, t, setCurrentStopIndex, busHasArrived]);
