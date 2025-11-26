@@ -69,31 +69,22 @@ export function MusicProvider({ children }: { children: ReactNode }) {
   const { clearActiveTrip } = useTrip();
 
    useEffect(() => {
+    // Force reset to initial playlist for testing
+    setPlaylist(initialPlaylist);
+    if (initialPlaylist.length > 0) {
+      setNowPlaying(initialPlaylist[0]);
+    } else {
+      setNowPlaying(null);
+    }
+    
+    // We keep this to read the `isOnBus` status
     try {
-      const storedPlaylist = localStorage.getItem('eritas-music-playlist');
-      if (storedPlaylist) {
-        setPlaylist(JSON.parse(storedPlaylist));
-      } else {
-        setPlaylist(initialPlaylist); // Set initial if nothing is stored
-      }
-
-      const storedNowPlaying = localStorage.getItem('eritas-music-nowplaying');
-      if (storedNowPlaying) {
-        const track = JSON.parse(storedNowPlaying);
-        setNowPlaying(track);
-        if (track && !playlist.some((p: PlaylistItem) => p.id === track.id)) {
-             setPlaylist(prev => [track, ...prev]);
-        }
-      } else if (playlist.length > 0) {
-        setNowPlaying(playlist[0]);
-      }
-
       const storedIsOnBus = localStorage.getItem('eritas-music-isonbus');
       if (storedIsOnBus) {
         setIsOnBus(JSON.parse(storedIsOnBus));
       }
     } catch (error) {
-        console.error("Failed to read music state from localStorage", error);
+        console.error("Failed to read isOnBus state from localStorage", error);
     }
     setIsHydrated(true);
   }, []);
@@ -101,6 +92,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if(isHydrated) {
         try {
+            // Persist the playlist state for real-time updates during a session
             localStorage.setItem('eritas-music-playlist', JSON.stringify(playlist));
             localStorage.setItem('eritas-music-isonbus', JSON.stringify(isOnBus));
             if (nowPlaying) {
@@ -299,3 +291,5 @@ export function useMusic() {
   }
   return context;
 }
+
+    
