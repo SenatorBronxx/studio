@@ -28,18 +28,6 @@ const initialPlaylist: PlaylistItem[] = [
     { id: "3ODKjzmHanT7p12zG3zzxP", title: 'Accra Night', artist: 'E.L', image: musicArtworks[1]?.imageUrl || '', duration: '3:15', addedByUser: false, votes: 3, userVote: null },
 ];
 
-// Mock song to simulate another user adding it
-const mockCollaboratorSong: PlaylistItem = {
-    id: "4QcvhN5qP7k8J2f2aAI3tA",
-    title: "Forever",
-    artist: "Gyakie",
-    image: musicArtworks[4]?.imageUrl || '',
-    duration: "3:16",
-    addedByUser: false,
-    votes: 0,
-    userVote: null
-};
-
 type MusicContextType = {
   playlist: PlaylistItem[];
   nowPlaying: PlaylistItem | null;
@@ -67,6 +55,8 @@ export function MusicProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   const { t } = useLanguage();
   const { clearActiveTrip } = useTrip();
+  const [nextSongId, setNextSongId] = useState<string | null>(null);
+
 
    useEffect(() => {
     // Force reset to initial playlist for testing
@@ -129,10 +119,20 @@ export function MusicProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (songProgress >= 100 && isOnBus) {
       const remainingPlaylist = playlist.filter(p => p.id !== nowPlaying?.id);
-      const sortedPlaylist = [...remainingPlaylist].sort((a, b) => b.votes - a.votes);
       
-      if (sortedPlaylist.length > 0) {
-        const nextSong = sortedPlaylist[0];
+      let nextSong: PlaylistItem | undefined;
+
+      if (nextSongId) {
+        nextSong = remainingPlaylist.find(song => song.id === nextSongId);
+        setNextSongId(null); // Reset after playing
+      }
+
+      if (!nextSong) {
+        const sortedPlaylist = [...remainingPlaylist].sort((a, b) => b.votes - a.votes);
+        nextSong = sortedPlaylist[0];
+      }
+      
+      if (nextSong) {
         setNowPlaying(nextSong);
       } else {
         // End of playlist
@@ -143,7 +143,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
       }
       setSongProgress(0);
     }
-  }, [songProgress, isOnBus, playlist, nowPlaying, toast, t, clearActiveTrip]);
+  }, [songProgress, isOnBus, playlist, nowPlaying, toast, t, clearActiveTrip, nextSongId]);
 
   // Mock collaborator adding a song
   /*
@@ -184,6 +184,8 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     }
     const newTrack: PlaylistItem = { ...track, addedByUser: true, votes: 1, userVote: 'up' };
     setPlaylist(prev => [...prev, newTrack]);
+    setNextSongId(newTrack.id);
+
 
     if (!nowPlaying) {
       setNowPlaying(newTrack);
