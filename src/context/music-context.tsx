@@ -24,8 +24,8 @@ export type PlaylistItem = Track & {
 };
 
 const initialPlaylist: PlaylistItem[] = [
-    { id: "3ODKjzmHanT7p12zG3zzxP", title: 'Accra Night', artist: 'E.L', image: musicArtworks[1]?.imageUrl || '', duration: '3:15', addedByUser: false, votes: 3, userVote: null },
     { id: "55mJdeMOo22iO3p2sQW3n3", title: 'Adonai', artist: 'Sarkodie', image: musicArtworks[3]?.imageUrl || '', duration: '4:02', addedByUser: false, votes: 5, userVote: 'up' },
+    { id: "3ODKjzmHanT7p12zG3zzxP", title: 'Accra Night', artist: 'E.L', image: musicArtworks[1]?.imageUrl || '', duration: '3:15', addedByUser: false, votes: 3, userVote: null },
 ];
 
 // Mock song to simulate another user adding it
