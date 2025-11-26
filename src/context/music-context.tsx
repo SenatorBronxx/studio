@@ -24,8 +24,8 @@ export type PlaylistItem = Track & {
 };
 
 const initialPlaylist: PlaylistItem[] = [
-    { id: "55mJdeMOo22iO3p2sQW3n3", title: 'Adonai', artist: 'Sarkodie', image: musicArtworks[3]?.imageUrl || '', duration: '4:02', addedByUser: false, votes: 5, userVote: 'up' },
-    { id: "3ODKjzmHanT7p12zG3zzxP", title: 'Accra Night', artist: 'E.L', image: musicArtworks[1]?.imageUrl || '', duration: '3:15', addedByUser: false, votes: 3, userVote: null },
+    { id: '55mJdeMOo22iO3p2sQW3n3', title: 'Adonai', artist: 'Sarkodie', image: musicArtworks[3]?.imageUrl || '', duration: '4:02', addedByUser: false, votes: 5, userVote: 'up' },
+    { id: '3ODKjzmHanT7p12zG3zzxP', title: 'Accra Night', artist: 'E.L', image: musicArtworks[1]?.imageUrl || '', duration: '3:15', addedByUser: false, votes: 3, userVote: null },
 ];
 
 type MusicContextType = {
@@ -118,7 +118,8 @@ export function MusicProvider({ children }: { children: ReactNode }) {
   
   useEffect(() => {
     if (songProgress >= 100 && isOnBus) {
-      const remainingPlaylist = playlist.filter(p => p.id !== nowPlaying?.id);
+      const finishedSongId = nowPlaying?.id;
+      const remainingPlaylist = playlist.filter(p => p.id !== finishedSongId);
       
       let nextSong: PlaylistItem | undefined;
 
@@ -130,6 +131,11 @@ export function MusicProvider({ children }: { children: ReactNode }) {
       if (!nextSong) {
         const sortedPlaylist = [...remainingPlaylist].sort((a, b) => b.votes - a.votes);
         nextSong = sortedPlaylist[0];
+      }
+
+      // Update the main playlist to remove the song that just finished
+      if (finishedSongId) {
+        setPlaylist(prev => prev.filter(p => p.id !== finishedSongId));
       }
       
       if (nextSong) {
