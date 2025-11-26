@@ -93,7 +93,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     if(isHydrated) {
         try {
             // Persist the playlist state for real-time updates during a session
-            localStorage.setItem('eritas-music-playlist', JSON.stringify(playlist));
+            // localStorage.setItem('eritas-music-playlist', JSON.stringify(playlist));
             localStorage.setItem('eritas-music-isonbus', JSON.stringify(isOnBus));
             if (nowPlaying) {
                 localStorage.setItem('eritas-music-nowplaying', JSON.stringify(nowPlaying));
@@ -146,6 +146,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
   }, [songProgress, isOnBus, playlist, nowPlaying, toast, t, clearActiveTrip]);
 
   // Mock collaborator adding a song
+  /*
   useEffect(() => {
     if (isOnBus) {
         const timer = setTimeout(() => {
@@ -160,6 +161,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
         return () => clearTimeout(timer);
     }
   }, [isOnBus, playlist, toast]);
+  */
 
 
   const addToPlaylist = (track: Track) => {
@@ -291,5 +293,3 @@ export function useMusic() {
   }
   return context;
 }
-
-    
