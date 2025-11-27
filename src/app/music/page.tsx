@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ListMusic, Plus, X, Search, Bus, LogIn, Loader2, Info, MusicIcon, ArrowUp, ArrowDown } from 'lucide-react';
+import { ListMusic, Plus, X, Search, Bus, LogIn, Loader2, Info, MusicIcon, ArrowUp, ArrowDown, Bookmark } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { BottomNav } from '@/components/bottom-nav';
@@ -33,6 +33,13 @@ const genres = [
   { name: 'Afrobeat', image: musicArtworks[2]?.imageUrl || '' },
   { name: 'Gospel', image: musicArtworks[3]?.imageUrl || '' },
 ];
+
+const mockSavedSongs: Track[] = [
+    { id: '6v3s69i1iGj2aB1k2h3i4j', title: 'Terminator', artist: 'King Promise', image: musicArtworks[4]?.imageUrl || '', duration: '3:45' },
+    { id: '7w8x9y0z1a2b3c4d5e6f', title: 'Anuonyam', artist: 'Diana Hamilton', image: musicArtworks[0]?.imageUrl || '', duration: '5:10' },
+    { id: '8a9b0c1d2e3f4g5h6i7j', title: 'Omo Ada', artist: 'Medikal', image: musicArtworks[2]?.imageUrl || '', duration: '2:55' },
+];
+
 
 const AnimatedLyrics = ({ lyrics, songProgress }: { lyrics: SongInsightsOutput['lyrics'], songProgress: number }) => {
     const songDuration = 180; // Mock duration of 3 minutes (180s)
@@ -111,6 +118,7 @@ export default function MusicPage() {
     const [songInsights, setSongInsights] = useState<SongInsightsOutput | null>(null);
     const [isFetchingInsights, setIsFetchingInsights] = useState(false);
     const [isInsightsSheetOpen, setIsInsightsSheetOpen] = useState(false);
+    const [isSavedSongsSheetOpen, setIsSavedSongsSheetOpen] = useState(false);
 
     const handleSearch = useCallback(async (query: string) => {
         if (query.trim() === '') {
@@ -198,53 +206,22 @@ export default function MusicPage() {
       <header className="sticky top-0 z-10 bg-background/75 backdrop-blur-sm p-4 space-y-4">
         <div className="max-w-md mx-auto flex justify-between items-center">
             <h1 className="text-2xl font-bold">{t('browse')}</h1>
-            <Sheet open={isPlaylistOpen} onOpenChange={setIsPlaylistOpen}>
-                <SheetTrigger asChild>
-                    <Button variant="ghost" size="icon">
-                        <ListMusic className="h-6 w-6" />
-                         {isOnBus && playlist.length > 0 && (
-                            <span className="absolute -top-1 -right-1 flex h-4 w-4">
-                                <span className="relative inline-flex rounded-full h-4 w-4 bg-primary text-primary-foreground text-xs items-center justify-center">
-                                    {playlist.length}
-                                </span>
-                            </span>
-                        )}
-                    </Button>
-                </SheetTrigger>
-                <SheetContent className='flex flex-col'>
-                    <SheetHeader>
-                        <SheetTitle>{t('busPlaylist')}</SheetTitle>
-                    </SheetHeader>
-                    <div className="py-4 flex flex-col h-full overflow-hidden">
-                       {isOnBus ? (
-                        <>
-                            {nowPlaying ? (
-                                <div className='mb-4 space-y-3 shrink-0'>
-                                     <div className="relative flex flex-col justify-end text-white rounded-lg overflow-hidden p-4 h-48 bg-secondary">
-                                        <Image src={nowPlaying.image} alt={nowPlaying.title} fill className="object-cover" />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-                                        <div className='relative z-10'>
-                                            <p className='text-xs font-semibold uppercase tracking-wider'>{t('nowPlaying')}</p>
-                                            <h3 className="font-bold text-2xl truncate">{nowPlaying.title}</h3>
-                                            <p className="text-sm opacity-80">{nowPlaying.artist}</p>
-                                            <Progress value={songProgress} className="h-1 bg-white/20 mt-2" indicatorClassName="bg-white" />
-                                        </div>
-                                    </div>
-                                    <Button variant="outline" className="w-full" onClick={handleFetchInsights}>
-                                        <Info className="mr-2 h-4 w-4" />
-                                        View Lyrics & Insights
-                                    </Button>
-                                    <Separator />
-                                </div>
-                           ) : null}
-
-                           <div className="flex-grow overflow-y-auto">
-                            {upNextPlaylist.length > 0 ? (
-                                 <>
-                                    <p className="text-sm font-medium text-muted-foreground mb-2">{t('upNext')}</p>
-                                    <div className="space-y-3">
-                                    {upNextPlaylist.map((track: PlaylistItem, index: number) => (
-                                        <div key={`${track.id}-${index}`} className="flex items-center gap-2 group">
+            <div className="flex items-center gap-2">
+                <Sheet open={isSavedSongsSheetOpen} onOpenChange={setIsSavedSongsSheetOpen}>
+                    <SheetTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                            <Bookmark className="h-6 w-6" />
+                        </Button>
+                    </SheetTrigger>
+                    <SheetContent>
+                        <SheetHeader>
+                            <SheetTitle>Saved Songs</SheetTitle>
+                        </SheetHeader>
+                        <div className="py-4 h-full flex flex-col">
+                            {mockSavedSongs.length > 0 ? (
+                                <div className="space-y-3 overflow-y-auto">
+                                    {mockSavedSongs.map((track) => (
+                                         <div key={track.id} className="flex items-center gap-4 group">
                                             <Image src={track.image} alt={track.title} width={48} height={48} className="rounded-md object-cover" />
                                             <div className="flex-grow">
                                                 <p className="font-semibold">{track.title}</p>
@@ -254,43 +231,115 @@ export default function MusicPage() {
                                                     <span>{track.duration}</span>
                                                 </div>
                                             </div>
-                                            <div className="flex flex-col items-center">
-                                                <Button size="icon" variant="ghost" className={cn("h-6 w-6", track.userVote === 'up' && 'text-primary')} onClick={() => upvoteSong(track.id)}>
-                                                    <ArrowUp className="h-4 w-4" />
-                                                </Button>
-                                                <span className="text-sm font-bold w-6 text-center">{track.votes}</span>
-                                                <Button size="icon" variant="ghost" className={cn("h-6 w-6", track.userVote === 'down' && 'text-destructive')} onClick={() => downvoteSong(track.id)}>
-                                                    <ArrowDown className="h-4 w-4" />
-                                                </Button>
-                                            </div>
-                                            {track.addedByUser && (
-                                                <Button size="icon" variant="ghost" className="opacity-0 group-hover:opacity-100" onClick={() => removeFromPlaylist(track.id)}>
-                                                    <X className="h-5 w-5 text-muted-foreground" />
-                                                </Button>
-                                            )}
+                                            <Button size="icon" variant="ghost" className="shrink-0" onClick={() => addToPlaylist(track)}>
+                                                <Plus className="h-5 w-5 text-muted-foreground" />
+                                            </Button>
                                         </div>
                                     ))}
-                                    </div>
-                                </>
-                            ) : !nowPlaying ? (
-                                <div className="text-center text-muted-foreground py-12 flex flex-col items-center justify-center h-full">
-                                    <ListMusic className="h-12 w-12 mx-auto mb-4" />
-                                    <p>{t('noSongsAdded')}</p>
-                                    <p className="text-xs">{t('browseAndAddSongs')}</p>
                                 </div>
-                            ) : null}
-                           </div>
-                        </>
-                       ) : (
-                         <div className="flex flex-col items-center justify-center text-center h-full text-muted-foreground">
-                            <Bus className="h-12 w-12 mb-4" />
-                            <h3 className="font-semibold">{t('boardBusToSeePlaylist')}</h3>
-                            <p className="text-sm mt-1">{t('playlistOnlyOnTrip')}</p>
+                            ) : (
+                                <div className="flex flex-col items-center justify-center text-center h-full text-muted-foreground">
+                                    <Bookmark className="h-12 w-12 mb-4" />
+                                    <p>You have no saved songs.</p>
+                                </div>
+                            )}
                         </div>
-                       )}
-                    </div>
-                </SheetContent>
-            </Sheet>
+                    </SheetContent>
+                </Sheet>
+                <Sheet open={isPlaylistOpen} onOpenChange={setIsPlaylistOpen}>
+                    <SheetTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                            <ListMusic className="h-6 w-6" />
+                            {isOnBus && playlist.length > 0 && (
+                                <span className="absolute -top-1 -right-1 flex h-4 w-4">
+                                    <span className="relative inline-flex rounded-full h-4 w-4 bg-primary text-primary-foreground text-xs items-center justify-center">
+                                        {playlist.length}
+                                    </span>
+                                </span>
+                            )}
+                        </Button>
+                    </SheetTrigger>
+                    <SheetContent className='flex flex-col'>
+                        <SheetHeader>
+                            <SheetTitle>{t('busPlaylist')}</SheetTitle>
+                        </SheetHeader>
+                        <div className="py-4 flex flex-col h-full overflow-hidden">
+                        {isOnBus ? (
+                            <>
+                                {nowPlaying ? (
+                                    <div className='mb-4 space-y-3 shrink-0'>
+                                        <div className="relative flex flex-col justify-end text-white rounded-lg overflow-hidden p-4 h-48 bg-secondary">
+                                            <Image src={nowPlaying.image} alt={nowPlaying.title} fill className="object-cover" />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                                            <div className='relative z-10'>
+                                                <p className='text-xs font-semibold uppercase tracking-wider'>{t('nowPlaying')}</p>
+                                                <h3 className="font-bold text-2xl truncate">{nowPlaying.title}</h3>
+                                                <p className="text-sm opacity-80">{nowPlaying.artist}</p>
+                                                <Progress value={songProgress} className="h-1 bg-white/20 mt-2" indicatorClassName="bg-white" />
+                                            </div>
+                                        </div>
+                                        <Button variant="outline" className="w-full" onClick={handleFetchInsights}>
+                                            <Info className="mr-2 h-4 w-4" />
+                                            View Lyrics & Insights
+                                        </Button>
+                                        <Separator />
+                                    </div>
+                            ) : null}
+
+                            <div className="flex-grow overflow-y-auto">
+                                {upNextPlaylist.length > 0 ? (
+                                    <>
+                                        <p className="text-sm font-medium text-muted-foreground mb-2">{t('upNext')}</p>
+                                        <div className="space-y-3">
+                                        {upNextPlaylist.map((track: PlaylistItem, index: number) => (
+                                            <div key={`${track.id}-${index}`} className="flex items-center gap-2 group">
+                                                <Image src={track.image} alt={track.title} width={48} height={48} className="rounded-md object-cover" />
+                                                <div className="flex-grow">
+                                                    <p className="font-semibold">{track.title}</p>
+                                                    <div className="flex text-sm text-muted-foreground">
+                                                        <span>{track.artist}</span>
+                                                        <span className="mx-2">•</span>
+                                                        <span>{track.duration}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="flex flex-col items-center">
+                                                    <Button size="icon" variant="ghost" className={cn("h-6 w-6", track.userVote === 'up' && 'text-primary')} onClick={() => upvoteSong(track.id)}>
+                                                        <ArrowUp className="h-4 w-4" />
+                                                    </Button>
+                                                    <span className="text-sm font-bold w-6 text-center">{track.votes}</span>
+                                                    <Button size="icon" variant="ghost" className={cn("h-6 w-6", track.userVote === 'down' && 'text-destructive')} onClick={() => downvoteSong(track.id)}>
+                                                        <ArrowDown className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                                {track.addedByUser && (
+                                                    <Button size="icon" variant="ghost" className="opacity-0 group-hover:opacity-100" onClick={() => removeFromPlaylist(track.id)}>
+                                                        <X className="h-5 w-5 text-muted-foreground" />
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        ))}
+                                        </div>
+                                    </>
+                                ) : !nowPlaying ? (
+                                    <div className="text-center text-muted-foreground py-12 flex flex-col items-center justify-center h-full">
+                                        <ListMusic className="h-12 w-12 mx-auto mb-4" />
+                                        <p>{t('noSongsAdded')}</p>
+                                        <p className="text-xs">{t('browseAndAddSongs')}</p>
+                                    </div>
+                                ) : null}
+                            </div>
+                            </>
+                        ) : (
+                            <div className="flex flex-col items-center justify-center text-center h-full text-muted-foreground">
+                                <Bus className="h-12 w-12 mb-4" />
+                                <h3 className="font-semibold">{t('boardBusToSeePlaylist')}</h3>
+                                <p className="text-sm mt-1">{t('playlistOnlyOnTrip')}</p>
+                            </div>
+                        )}
+                        </div>
+                    </SheetContent>
+                </Sheet>
+            </div>
         </div>
         <div className="max-w-md mx-auto relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -421,3 +470,5 @@ export default function MusicPage() {
     </>
   );
 }
+
+    
