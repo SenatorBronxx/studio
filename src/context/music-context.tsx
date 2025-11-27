@@ -28,6 +28,18 @@ const initialPlaylist: PlaylistItem[] = [
     { id: '3ODKjzmHanT7p12zG3zzxP', title: 'Accra Night', artist: 'E.L', image: musicArtworks[1]?.imageUrl || '', duration: '3:15', addedByUser: false, votes: 3, userVote: null },
 ];
 
+const mockCollaboratorSong: PlaylistItem = { 
+    id: '4uUG5RXrOk84mYEfFvj3cK', 
+    title: 'Strub Tha Ground (Feat. Yung Miami)', 
+    artist: 'Quavo, Yung Miami, Migos, City Girls', 
+    image: musicArtworks[4]?.imageUrl || '', 
+    duration: '3:15', 
+    addedByUser: false, 
+    votes: 1, 
+    userVote: null 
+};
+
+
 type MusicContextType = {
   playlist: PlaylistItem[];
   nowPlaying: PlaylistItem | null;
@@ -119,7 +131,11 @@ export function MusicProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (songProgress >= 100 && isOnBus) {
       const finishedSongId = nowPlaying?.id;
-      const remainingPlaylist = playlist.filter(p => p.id !== finishedSongId);
+      
+      let remainingPlaylist = playlist;
+      if (finishedSongId) {
+        remainingPlaylist = playlist.filter(p => p.id !== finishedSongId);
+      }
       
       let nextSong: PlaylistItem | undefined;
 
@@ -152,7 +168,6 @@ export function MusicProvider({ children }: { children: ReactNode }) {
   }, [songProgress, isOnBus, playlist, nowPlaying, toast, t, clearActiveTrip, nextSongId]);
 
   // Mock collaborator adding a song
-  /*
   useEffect(() => {
     if (isOnBus) {
         const timer = setTimeout(() => {
@@ -167,7 +182,6 @@ export function MusicProvider({ children }: { children: ReactNode }) {
         return () => clearTimeout(timer);
     }
   }, [isOnBus, playlist, toast]);
-  */
 
 
   const addToPlaylist = (track: Track) => {
