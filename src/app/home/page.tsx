@@ -60,6 +60,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useBusArrivalNotification } from '@/hooks/use-bus-arrival-notification';
 import { useUser } from '@/context/user-context';
+import { TripRating } from '@/components/trip-rating';
 
 
 const initialBusData = [
@@ -134,6 +135,7 @@ export default function HomePage() {
   const [showDiscountBanner, setShowDiscountBanner] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [busHasArrived, setBusHasArrived] = useState(false);
+  const [tripToRate, setTripToRate] = useState<ActiveTrip | null>(null);
 
   useBusArrivalNotification(busHasArrived);
   
@@ -172,6 +174,7 @@ export default function HomePage() {
           title: t('tripEndedTitle'),
           description: t('tripEndedDescription'),
         });
+        setTripToRate(activeTrip);
         clearActiveTrip();
         setIsOnBus(false);
         setNowPlaying(null);
@@ -433,6 +436,14 @@ export default function HomePage() {
     dismissDiscountBanner();
     setShowDiscountBanner(false);
   }
+  
+  const handleRatingSubmit = () => {
+    setTripToRate(null);
+    toast({
+        title: "Feedback Submitted",
+        description: "Thank you for helping us improve our service!",
+    });
+  }
 
   const displayedBus = activeTrip?.bus || selectedBus;
   const primarySeat = activeTrip?.seats[0] || selectedSeats[0];
@@ -565,7 +576,9 @@ export default function HomePage() {
                         </div>
                     </div>
                 )}
-                {displayedBus && isTripHydrated ? (
+                {tripToRate ? (
+                     <TripRating trip={tripToRate} onSubmit={handleRatingSubmit} />
+                ) : displayedBus && isTripHydrated ? (
                 <div className="space-y-3">
                     <div className="flex justify-between items-start">
                         <div className="flex items-center gap-3">
@@ -791,6 +804,3 @@ export default function HomePage() {
     </div>
   );
 }
-
-    
-    

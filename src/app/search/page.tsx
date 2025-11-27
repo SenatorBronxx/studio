@@ -40,6 +40,7 @@ import {
 import { useDiscount } from '@/context/discount-context';
 import { useBusArrivalNotification } from '@/hooks/use-bus-arrival-notification';
 import { useNotificationSettings } from '@/context/notification-settings-context';
+import { TripRating } from '@/components/trip-rating';
 
 const initialBusData = [
     {
@@ -129,6 +130,7 @@ export default function SearchPage() {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [busHasArrived, setBusHasArrived] = useState(false);
   const { bookingAlerts } = useNotificationSettings();
+  const [tripToRate, setTripToRate] = useState<ActiveTrip | null>(null);
 
 
   useBusArrivalNotification(busHasArrived);
@@ -181,6 +183,7 @@ export default function SearchPage() {
           title: t('tripEndedTitle'),
           description: t('tripEndedDescription'),
         });
+        setTripToRate(activeTrip);
         clearActiveTrip();
         setIsOnBus(false);
         setNowPlaying(null);
@@ -413,6 +416,14 @@ export default function SearchPage() {
   const handleConfirmSeat = () => {
     setIsSeatSheetOpen(false);
   }
+  
+  const handleRatingSubmit = () => {
+    setTripToRate(null);
+    toast({
+        title: "Feedback Submitted",
+        description: "Thank you for helping us improve our service!",
+    });
+  }
 
   const NowPlayingBar = () => {
     if (!nowPlaying) return null;
@@ -493,7 +504,13 @@ export default function SearchPage() {
 
         <main className="flex-grow p-4 pb-20">
              <div className="fixed bottom-0 left-0 right-0 z-20 pointer-events-none pb-[80px]">
-                {displayedBus && (
+                {tripToRate ? (
+                    <div className="p-2 sm:p-4 pointer-events-auto">
+                        <div className="bg-background/75 backdrop-blur-sm rounded-t-2xl max-w-md mx-auto shadow-lg p-4 space-y-3">
+                             <TripRating trip={tripToRate} onSubmit={handleRatingSubmit} />
+                        </div>
+                    </div>
+                ) : displayedBus && (
                 <div className="p-2 sm:p-4 pointer-events-auto">
                     <div className="bg-background/75 backdrop-blur-sm rounded-t-2xl max-w-md mx-auto shadow-lg p-4 space-y-3">
                     <Card>
@@ -795,6 +812,3 @@ export default function SearchPage() {
     </div>
   );
 }
-
-    
-    
