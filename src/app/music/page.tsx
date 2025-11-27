@@ -35,59 +35,6 @@ const genres = [
   { name: 'Gospel', image: musicArtworks[3]?.imageUrl || '' },
 ];
 
-const AnimatedLyrics = ({ lyrics, songProgress }: { lyrics: SongInsightsOutput['lyrics'], songProgress: number }) => {
-    const songDuration = 180; // Mock duration of 3 minutes (180s)
-    const currentTime = (songProgress / 100) * songDuration;
-    const scrollContainerRef = useRef<HTMLDivElement>(null);
-    const activeLineRef = useRef<HTMLParagraphElement>(null);
-
-    const activeLineIndex = lyrics.findIndex((line, i) => {
-        const nextLine = lyrics[i + 1];
-        return currentTime >= line.time && (!nextLine || currentTime < nextLine.time);
-    });
-
-    useEffect(() => {
-        if (activeLineRef.current && scrollContainerRef.current) {
-            const container = scrollContainerRef.current;
-            const activeLine = activeLineRef.current;
-            const containerHeight = container.clientHeight;
-            const lineTop = activeLine.offsetTop;
-            const lineHeight = activeLine.clientHeight;
-
-            // Scroll to center the active line
-            const scrollTo = lineTop - (containerHeight / 2) + (lineHeight / 2);
-            
-            container.scrollTo({
-                top: scrollTo,
-                behavior: 'smooth'
-            });
-        }
-    }, [activeLineIndex]);
-
-
-    return (
-        <ScrollArea ref={scrollContainerRef} className="h-[250px] w-full text-center">
-             <div className='py-8'>
-                {lyrics.map((line, index) => (
-                    <p
-                        key={index}
-                        ref={index === activeLineIndex ? activeLineRef : null}
-                        className={cn(
-                            "text-xl font-medium transition-all duration-300 ease-in-out py-1 font-mono",
-                            index === activeLineIndex
-                                ? 'text-foreground scale-105'
-                                : 'text-muted-foreground/50 scale-100'
-                        )}
-                    >
-                        {line.line}
-                    </p>
-                ))}
-             </div>
-        </ScrollArea>
-    );
-};
-
-
 export default function MusicPage() {
     const { 
         playlist,
@@ -110,9 +57,6 @@ export default function MusicPage() {
     const debouncedSearchQuery = useDebounce(searchQuery, 500);
     const [searchResults, setSearchResults] = useState<Track[]>([]);
     const [isSearching, setIsSearching] = useState(false);
-    const [songInsights, setSongInsights] = useState<SongInsightsOutput | null>(null);
-    const [isFetchingInsights, setIsFetchingInsights] = useState(false);
-    const [isInsightsSheetOpen, setIsInsightsSheetOpen] = useState(false);
     const [isSavedSongsSheetOpen, setIsSavedSongsSheetOpen] = useState(false);
 
     const handleSearch = useCallback(async (query: string) => {
@@ -142,23 +86,6 @@ export default function MusicPage() {
     useEffect(() => {
         handleSearch(debouncedSearchQuery);
     }, [debouncedSearchQuery, handleSearch]);
-
-    const handleFetchInsights = useCallback(async () => {
-        if (!nowPlaying) return;
-
-        setIsFetchingInsights(true);
-        setIsInsightsSheetOpen(true);
-        setSongInsights(null); // Clear previous insights
-        try {
-            const insights = await getSongInsights({ title: nowPlaying.title, artist: nowPlaying.artist });
-            setSongInsights(insights);
-        } catch (error) {
-            console.error("Error fetching song insights:", error);
-            setSongInsights({ trivia: "Could not load insights at this time.", lyrics: [] });
-        } finally {
-            setIsFetchingInsights(false);
-        }
-    }, [nowPlaying]);
 
     const NowPlayingBar = () => {
         if (!nowPlaying) return null;
@@ -277,10 +204,6 @@ export default function MusicPage() {
                                                 <Progress value={songProgress} className="h-1 bg-white/20 mt-2" indicatorClassName="bg-white" />
                                             </div>
                                         </div>
-                                        <Button variant="outline" className="w-full" onClick={handleFetchInsights}>
-                                            <Info className="mr-2 h-4 w-4" />
-                                            View Lyrics & Insights
-                                        </Button>
                                         <Separator />
                                     </div>
                             ) : null}
@@ -437,40 +360,8 @@ export default function MusicPage() {
         <BottomNav />
       </div>
     </div>
-
-    <Sheet open={isInsightsSheetOpen} onOpenChange={setIsInsightsSheetOpen}>
-        <SheetContent side="bottom" className="max-h-[80vh] rounded-t-2xl flex flex-col">
-            <SheetHeader>
-                <SheetTitle>
-                    {nowPlaying?.title}
-                </SheetTitle>
-                <p className='text-sm text-muted-foreground'>{nowPlaying?.artist}</p>
-            </SheetHeader>
-            {isFetchingInsights || !songInsights ? (
-                 <div className="flex flex-col items-center justify-center flex-grow py-8 text-muted-foreground">
-                    <Loader2 className="mr-2 h-8 w-8 animate-spin mb-4" />
-                    <p>Fetching insights...</p>
-                </div>
-            ) : (
-                <div className='flex flex-col flex-grow overflow-hidden'>
-                    <div className='space-y-4 my-4 shrink-0'>
-                        <div>
-                            <h3 className="text-lg font-semibold flex items-center gap-2 px-6"><Info className="h-5 w-5 text-primary"/>Trivia</h3>
-                            <p className="text-sm text-muted-foreground bg-secondary p-4 rounded-lg mx-6 mt-2">{songInsights.trivia}</p>
-                        </div>
-                        <div>
-                            <h3 className="text-lg font-semibold flex items-center gap-2 px-6"><MusicIcon className="h-5 w-5 text-primary"/>Lyrics</h3>
-                        </div>
-                    </div>
-                    {songInsights.lyrics.length > 0 ? (
-                        <AnimatedLyrics lyrics={songInsights.lyrics} songProgress={songProgress} />
-                    ) : (
-                        <p className="text-sm text-muted-foreground text-center py-8">Lyrics are not available for this song.</p>
-                    )}
-                </div>
-            )}
-        </SheetContent>
-    </Sheet>
     </>
   );
 }
+
+    
