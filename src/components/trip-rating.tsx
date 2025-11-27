@@ -1,14 +1,15 @@
 
 'use client';
 
-import { useState } from 'react';
-import { Star, MessageSquare } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Star, MessageSquare, PartyPopper } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import type { ActiveTrip } from '@/context/trip-context';
+import Confetti from 'react-confetti';
 
 type TripRatingProps = {
   trip: ActiveTrip;
@@ -20,10 +21,41 @@ export function TripRating({ trip, onSubmit }: TripRatingProps) {
   const [hoverRating, setHoverRating] = useState(0);
   const [showComplaint, setShowComplaint] = useState(false);
   const [complaintText, setComplaintText] = useState('');
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    // This is a simple way to get window dimensions on the client.
+    // For more complex layouts, you might use a ref on the parent card.
+    setDimensions({ width: window.innerWidth, height: window.innerHeight });
+  }, []);
 
   const handleSubmit = () => {
-    onSubmit(rating, complaintText);
+    setIsSubmitted(true);
+    // After the confetti runs for a bit, call the original submit handler
+    setTimeout(() => {
+        onSubmit(rating, complaintText);
+    }, 4000);
   };
+
+  if (isSubmitted) {
+    return (
+        <Card className="w-full max-w-md mx-auto relative overflow-hidden">
+             <Confetti
+                width={dimensions.width}
+                height={dimensions.height}
+                recycle={false}
+                numberOfPieces={200}
+             />
+             <CardHeader className="text-center">
+                <CardTitle className="flex flex-col items-center justify-center gap-2">
+                    <PartyPopper className="h-10 w-10 text-primary"/>
+                    Thanks for your review!
+                </CardTitle>
+             </CardHeader>
+        </Card>
+    )
+  }
 
   return (
     <Card className="w-full max-w-md mx-auto animate-in fade-in-50 slide-in-from-bottom-5">
