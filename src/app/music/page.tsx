@@ -23,6 +23,7 @@ import { searchMusic } from '@/ai/flows/search-music';
 import { getSongInsights, type SongInsightsOutput } from '@/ai/flows/get-song-insights';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
+import { useSavedSongs } from '@/context/saved-songs-context';
 
 const musicArtworks = PlaceHolderImages.filter(p => p.id.startsWith('music-art-'));
 const fallbackImage = PlaceHolderImages.find(p => p.id === 'music-art-1')?.imageUrl || '';
@@ -33,13 +34,6 @@ const genres = [
   { name: 'Afrobeat', image: musicArtworks[2]?.imageUrl || '' },
   { name: 'Gospel', image: musicArtworks[3]?.imageUrl || '' },
 ];
-
-const mockSavedSongs: Track[] = [
-    { id: '6v3s69i1iGj2aB1k2h3i4j', title: 'Terminator', artist: 'King Promise', image: musicArtworks[4]?.imageUrl || '', duration: '3:45' },
-    { id: '7w8x9y0z1a2b3c4d5e6f', title: 'Anuonyam', artist: 'Diana Hamilton', image: musicArtworks[0]?.imageUrl || '', duration: '5:10' },
-    { id: '8a9b0c1d2e3f4g5h6i7j', title: 'Omo Ada', artist: 'Medikal', image: musicArtworks[2]?.imageUrl || '', duration: '2:55' },
-];
-
 
 const AnimatedLyrics = ({ lyrics, songProgress }: { lyrics: SongInsightsOutput['lyrics'], songProgress: number }) => {
     const songDuration = 180; // Mock duration of 3 minutes (180s)
@@ -107,6 +101,7 @@ export default function MusicPage() {
         upvoteSong,
         downvoteSong,
     } = useMusic();
+    const { savedSongs, saveSong, unsaveSong, isSongSaved } = useSavedSongs();
 
     const { t } = useLanguage();
     const { user } = useUser();
@@ -218,9 +213,9 @@ export default function MusicPage() {
                             <SheetTitle>Saved Songs</SheetTitle>
                         </SheetHeader>
                         <div className="py-4 h-full flex flex-col">
-                            {mockSavedSongs.length > 0 ? (
+                            {savedSongs.length > 0 ? (
                                 <div className="space-y-3 overflow-y-auto">
-                                    {mockSavedSongs.map((track) => (
+                                    {savedSongs.map((track) => (
                                          <div key={track.id} className="flex items-center gap-4 group">
                                             <Image src={track.image} alt={track.title} width={48} height={48} className="rounded-md object-cover" />
                                             <div className="flex-grow">
@@ -231,6 +226,9 @@ export default function MusicPage() {
                                                     <span>{track.duration}</span>
                                                 </div>
                                             </div>
+                                            <Button size="icon" variant="ghost" className="shrink-0" onClick={() => unsaveSong(track.id)}>
+                                                <X className="h-5 w-5 text-destructive" />
+                                            </Button>
                                             <Button size="icon" variant="ghost" className="shrink-0" onClick={() => addToPlaylist(track)}>
                                                 <Plus className="h-5 w-5 text-muted-foreground" />
                                             </Button>
@@ -241,6 +239,7 @@ export default function MusicPage() {
                                 <div className="flex flex-col items-center justify-center text-center h-full text-muted-foreground">
                                     <Bookmark className="h-12 w-12 mb-4" />
                                     <p>You have no saved songs.</p>
+                                    <p className='text-xs'>Use the bookmark icon on a song to save it.</p>
                                 </div>
                             )}
                         </div>
@@ -396,25 +395,30 @@ export default function MusicPage() {
                     ) : (
                         <div className="space-y-2">
                             {searchResults.length > 0 ? (
-                                searchResults.map(track => (
-                                    <Card key={track.id}>
-                                        <CardContent className="p-2 flex items-center gap-4">
-                                            <Image src={track.image} alt={track.title} width={48} height={48} className="rounded-md object-cover" />
-                                            <div className="flex-grow">
-                                                <p className="font-semibold">{track.title}</p>
-                                                <div className="flex text-sm text-muted-foreground">
-                                                    <span>{track.artist}</span>
-                                                    <span className="mx-2">•</span>
-                                                    <span>{track.duration}</span>
+                                searchResults.map(track => {
+                                    const isSaved = isSongSaved(track.id);
+                                    return (
+                                        <Card key={track.id}>
+                                            <CardContent className="p-2 flex items-center gap-4">
+                                                <Image src={track.image} alt={track.title} width={48} height={48} className="rounded-md object-cover" />
+                                                <div className="flex-grow">
+                                                    <p className="font-semibold">{track.title}</p>
+                                                    <div className="flex text-sm text-muted-foreground">
+                                                        <span>{track.artist}</span>
+                                                        <span className="mx-2">•</span>
+                                                        <span>{track.duration}</span>
+                                                    </div>
                                                 </div>
-
-                                            </div>
-                                            <Button size="icon" variant="ghost" onClick={() => addToPlaylist(track)}>
-                                                <Plus className="h-5 w-5"/>
-                                            </Button>
-                                        </CardContent>
-                                    </Card>
-                                ))
+                                                <Button size="icon" variant="ghost" onClick={() => isSaved ? unsaveSong(track.id) : saveSong(track)}>
+                                                    <Bookmark className={cn("h-5 w-5", isSaved ? "text-primary fill-primary" : "text-muted-foreground")}/>
+                                                </Button>
+                                                <Button size="icon" variant="ghost" onClick={() => addToPlaylist(track)}>
+                                                    <Plus className="h-5 w-5"/>
+                                                </Button>
+                                            </CardContent>
+                                        </Card>
+                                    )
+                                })
                             ) : (
                                 <div className="text-center text-muted-foreground py-12">
                                     <p>{t('noTracksFound')}</p>
@@ -470,5 +474,3 @@ export default function MusicPage() {
     </>
   );
 }
-
-    

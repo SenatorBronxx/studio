@@ -11,6 +11,7 @@ import { ReactNode } from "react";
 import { LanguageProvider } from "@/context/language-context";
 import { TripProvider } from "@/context/trip-context";
 import { PlacesProvider } from "@/context/places-context";
+import { SavedSongsProvider } from "@/context/saved-songs-context";
 
 
 export function ClientProviders({ children }: { children: ReactNode }) {
@@ -33,17 +34,19 @@ export function ClientProviders({ children }: { children: ReactNode }) {
             <UserProvider clearAllData={clearAllData}>
                 <WalletProvider>
                     <TripProvider>
-                        <MusicProvider>
-                            <NotificationSettingsProvider>
-                                <SecuritySettingsProvider>
-                                    <DiscountProvider>
-                                        <PlacesProvider>
-                                            {children}
-                                        </PlacesProvider>
-                                    </DiscountProvider>
-                                </SecuritySettingsProvider>
-                            </NotificationSettingsProvider>
-                        </MusicProvider>
+                        <SavedSongsProvider>
+                            <MusicProvider>
+                                <NotificationSettingsProvider>
+                                    <SecuritySettingsProvider>
+                                        <DiscountProvider>
+                                            <PlacesProvider>
+                                                {children}
+                                            </PlacesProvider>
+                                        </DiscountProvider>
+                                    </SecuritySettingsProvider>
+                                </NotificationSettingsProvider>
+                            </MusicProvider>
+                        </SavedSongsProvider>
                     </TripProvider>
                 </WalletProvider>
             </UserProvider>
