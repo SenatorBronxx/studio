@@ -545,10 +545,6 @@ export default function SearchPage() {
 
                             {activeTrip ? (
                                 <div className={cn("relative p-3 bg-primary/10 rounded-lg text-center", isTransitioning && 'overflow-hidden')}>
-                                    <Bus className={cn(
-                                        "absolute top-1/2 -translate-y-1/2 h-8 w-8 text-primary/50",
-                                        isTransitioning ? 'animate-slide-across' : '-left-12'
-                                    )} />
                                     <div className={cn("transition-opacity duration-500", isTransitioning ? 'opacity-0' : 'opacity-100')}>
                                         <p className='text-sm text-primary/80'>
                                         {isOnBus ? (
@@ -800,4 +796,5 @@ export default function SearchPage() {
   );
 }
 
+    
     
