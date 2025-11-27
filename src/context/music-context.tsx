@@ -28,17 +28,6 @@ const initialPlaylist: PlaylistItem[] = [
     { id: '3ODKjzmHanT7p12zG3zzxP', title: 'Accra Night', artist: 'E.L', image: musicArtworks[1]?.imageUrl || '', duration: '3:15', addedByUser: false, votes: 3, userVote: null },
 ];
 
-const mockCollaboratorSong: PlaylistItem = { 
-    id: '4uUG5RXrOk84mYEfFvj3cK', 
-    title: 'Strub Tha Ground (Feat. Yung Miami)', 
-    artist: 'Quavo, Yung Miami, Migos, City Girls', 
-    image: musicArtworks[4]?.imageUrl || '', 
-    duration: '3:15', 
-    addedByUser: false, 
-    votes: 1, 
-    userVote: null 
-};
-
 
 type MusicContextType = {
   playlist: PlaylistItem[];
@@ -166,22 +155,6 @@ export function MusicProvider({ children }: { children: ReactNode }) {
       setSongProgress(0);
     }
   }, [songProgress, isOnBus, playlist, nowPlaying, toast, t, clearActiveTrip, nextSongId]);
-
-  // Mock collaborator adding a song
-  useEffect(() => {
-    if (isOnBus) {
-        const timer = setTimeout(() => {
-            if (!playlist.some(t => t.id === mockCollaboratorSong.id)) {
-                setPlaylist(prev => [...prev, mockCollaboratorSong]);
-                toast({
-                    title: "Someone added a song!",
-                    description: `'${mockCollaboratorSong.title}' by ${mockCollaboratorSong.artist} was added to the playlist.`,
-                });
-            }
-        }, 15000); // Simulate after 15 seconds
-        return () => clearTimeout(timer);
-    }
-  }, [isOnBus, playlist, toast]);
 
 
   const addToPlaylist = (track: Track) => {
