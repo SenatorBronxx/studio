@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ListMusic, Plus, X, Search, Bus, LogIn, Loader2, Info, MusicIcon, ArrowUp, ArrowDown, Bookmark } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { BottomNav } from '@/components/bottom-nav';
+import { BottomNav } from '@/components/ui/bottom-nav';
 import { Separator } from '@/components/ui/separator';
 import { NowPlayingIcon } from '@/components/icons/now-playing-icon';
 import { Progress } from '@/components/ui/progress';
@@ -45,8 +45,6 @@ export default function MusicPage() {
         addToPlaylist,
         removeFromPlaylist,
         isOnBus,
-        upvoteSong,
-        downvoteSong,
     } = useMusic();
     const { savedSongs, saveSong, unsaveSong, isSongSaved } = useSavedSongs();
 
@@ -118,8 +116,7 @@ export default function MusicPage() {
     }
 
     const upNextPlaylist = playlist
-        .filter(p => p.id !== nowPlaying?.id)
-        .sort((a, b) => b.votes - a.votes);
+        .filter(p => p.id !== nowPlaying?.id);
 
   return (
     <>
@@ -214,7 +211,7 @@ export default function MusicPage() {
                                         <p className="text-sm font-medium text-muted-foreground mb-2">{t('upNext')}</p>
                                         <div className="space-y-3">
                                         {upNextPlaylist.map((track: PlaylistItem, index: number) => (
-                                            <div key={`${track.id}-${index}`} className="flex items-center gap-2 group">
+                                            <div key={`${track.id}-${index}`} className="flex items-center gap-4 group">
                                                 <Image src={track.image} alt={track.title} width={48} height={48} className="rounded-md object-cover" />
                                                 <div className="flex-grow">
                                                     <p className="font-semibold">{track.title}</p>
@@ -223,15 +220,6 @@ export default function MusicPage() {
                                                         <span className="mx-2">•</span>
                                                         <span>{track.duration}</span>
                                                     </div>
-                                                </div>
-                                                <div className="flex flex-col items-center">
-                                                    <Button size="icon" variant="ghost" className={cn("h-6 w-6", track.userVote === 'up' && 'text-primary')} onClick={() => upvoteSong(track.id)}>
-                                                        <ArrowUp className="h-4 w-4" />
-                                                    </Button>
-                                                    <span className="text-sm font-bold w-6 text-center">{track.votes}</span>
-                                                    <Button size="icon" variant="ghost" className={cn("h-6 w-6", track.userVote === 'down' && 'text-destructive')} onClick={() => downvoteSong(track.id)}>
-                                                        <ArrowDown className="h-4 w-4" />
-                                                    </Button>
                                                 </div>
                                                 {track.addedByUser && (
                                                     <Button size="icon" variant="ghost" className="opacity-0 group-hover:opacity-100" onClick={() => removeFromPlaylist(track.id)}>
@@ -363,5 +351,3 @@ export default function MusicPage() {
     </>
   );
 }
-
-    

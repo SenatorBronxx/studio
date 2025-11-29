@@ -19,13 +19,11 @@ export type Track = {
 
 export type PlaylistItem = Track & { 
     addedByUser: boolean;
-    votes: number;
-    userVote: 'up' | 'down' | null;
 };
 
 const initialPlaylist: PlaylistItem[] = [
-    { id: '55mJdeMOo22iO3p2sQW3n3', title: 'Adonai', artist: 'Sarkodie', image: musicArtworks[3]?.imageUrl || '', duration: '4:02', addedByUser: false, votes: 5, userVote: 'up' },
-    { id: '3ODKjzmHanT7p12zG3zzxP', title: 'Accra Night', artist: 'E.L', image: musicArtworks[1]?.imageUrl || '', duration: '3:15', addedByUser: false, votes: 3, userVote: null },
+    { id: '55mJdeMOo22iO3p2sQW3n3', title: 'Adonai', artist: 'Sarkodie', image: musicArtworks[3]?.imageUrl || '', duration: '4:02', addedByUser: false },
+    { id: '3ODKjzmHanT7p12zG3zzxP', title: 'Accra Night', artist: 'E.L', image: musicArtworks[1]?.imageUrl || '', duration: '3:15', addedByUser: false },
 ];
 
 
@@ -40,8 +38,6 @@ type MusicContextType = {
   addToPlaylist: (track: Track) => void;
   removeFromPlaylist: (trackId: string) => void;
   setNowPlaying: (track: PlaylistItem | null) => void;
-  upvoteSong: (trackId: string) => void;
-  downvoteSong: (trackId: string) => void;
 };
 
 const MusicContext = createContext<MusicContextType | undefined>(undefined);
@@ -56,8 +52,6 @@ export function MusicProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   const { t } = useLanguage();
   const { clearActiveTrip } = useTrip();
-  const [nextSongId, setNextSongId] = useState<string | null>(null);
-
 
    useEffect(() => {
     // Force reset to initial playlist for testing
@@ -83,8 +77,6 @@ export function MusicProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if(isHydrated) {
         try {
-            // Persist the playlist state for real-time updates during a session
-            // localStorage.setItem('eritas-music-playlist', JSON.stringify(playlist));
             localStorage.setItem('eritas-music-isonbus', JSON.stringify(isOnBus));
             if (nowPlaying) {
                 localStorage.setItem('eritas-music-nowplaying', JSON.stringify(nowPlaying));
@@ -95,7 +87,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
             console.error("Failed to write music state to localStorage", error);
         }
     }
-  }, [playlist, nowPlaying, isHydrated, isOnBus]);
+  }, [nowPlaying, isHydrated, isOnBus]);
 
 
   useEffect(() => {
@@ -121,27 +113,13 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     if (songProgress >= 100 && isOnBus) {
       const finishedSongId = nowPlaying?.id;
       
-      let remainingPlaylist = playlist;
+      let newPlaylist = playlist;
       if (finishedSongId) {
-        remainingPlaylist = playlist.filter(p => p.id !== finishedSongId);
+        newPlaylist = playlist.filter(p => p.id !== finishedSongId);
+        setPlaylist(newPlaylist);
       }
       
-      let nextSong: PlaylistItem | undefined;
-
-      if (nextSongId) {
-        nextSong = remainingPlaylist.find(song => song.id === nextSongId);
-        setNextSongId(null); // Reset after playing
-      }
-
-      if (!nextSong) {
-        const sortedPlaylist = [...remainingPlaylist].sort((a, b) => b.votes - a.votes);
-        nextSong = sortedPlaylist[0];
-      }
-
-      // Update the main playlist to remove the song that just finished
-      if (finishedSongId) {
-        setPlaylist(prev => prev.filter(p => p.id !== finishedSongId));
-      }
+      const nextSong = newPlaylist.find(song => song.id !== finishedSongId) || null;
       
       if (nextSong) {
         setNowPlaying(nextSong);
@@ -154,7 +132,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
       }
       setSongProgress(0);
     }
-  }, [songProgress, isOnBus, playlist, nowPlaying, toast, t, clearActiveTrip, nextSongId]);
+  }, [songProgress, isOnBus, playlist, nowPlaying, toast, t, clearActiveTrip]);
 
 
   const addToPlaylist = (track: Track) => {
@@ -175,9 +153,8 @@ export function MusicProvider({ children }: { children: ReactNode }) {
       });
       return;
     }
-    const newTrack: PlaylistItem = { ...track, addedByUser: true, votes: 1, userVote: 'up' };
+    const newTrack: PlaylistItem = { ...track, addedByUser: true };
     setPlaylist(prev => [...prev, newTrack]);
-    setNextSongId(newTrack.id);
 
 
     if (!nowPlaying) {
@@ -206,8 +183,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     if (nowPlaying?.id === trackId) {
       // Logic for when the currently playing song is removed
       const remainingPlaylist = newPlaylist.filter(p => p.id !== trackId);
-      const sortedPlaylist = [...remainingPlaylist].sort((a, b) => b.votes - a.votes);
-      const nextSong = sortedPlaylist[0] || null;
+      const nextSong = remainingPlaylist[0] || null;
       setNowPlaying(nextSong);
     }
     
@@ -217,46 +193,6 @@ export function MusicProvider({ children }: { children: ReactNode }) {
       title: t('songRemovedToastTitle'),
       description: t('songRemovedToastDescription'),
     });
-  };
-
-  const upvoteSong = (trackId: string) => {
-    setPlaylist(prev => 
-        prev.map(song => {
-            if (song.id === trackId) {
-                if (song.userVote === 'up') {
-                    // User is retracting their upvote
-                    return { ...song, votes: song.votes - 1, userVote: null };
-                } else if (song.userVote === 'down') {
-                    // User is changing their downvote to an upvote
-                    return { ...song, votes: song.votes + 2, userVote: 'up' };
-                } else {
-                    // User is casting a new upvote
-                    return { ...song, votes: song.votes + 1, userVote: 'up' };
-                }
-            }
-            return song;
-        })
-    );
-  };
-  
-  const downvoteSong = (trackId: string) => {
-    setPlaylist(prev => 
-        prev.map(song => {
-            if (song.id === trackId) {
-                if (song.userVote === 'down') {
-                    // User is retracting their downvote
-                    return { ...song, votes: song.votes + 1, userVote: null };
-                } else if (song.userVote === 'up') {
-                    // User is changing their upvote to a downvote
-                    return { ...song, votes: song.votes - 2, userVote: 'down' };
-                } else {
-                    // User is casting a new downvote
-                    return { ...song, votes: song.votes - 1, userVote: 'down' };
-                }
-            }
-            return song;
-        })
-    );
   };
   
   if (!isHydrated) return null;
@@ -273,8 +209,6 @@ export function MusicProvider({ children }: { children: ReactNode }) {
         setNowPlaying, 
         isOnBus, 
         setIsOnBus,
-        upvoteSong,
-        downvoteSong
     }}>
       {children}
     </MusicContext.Provider>
