@@ -131,8 +131,6 @@ export default function SearchPage() {
   const [busHasArrived, setBusHasArrived] = useState(false);
   const { bookingAlerts } = useNotificationSettings();
   const [tripToRate, setTripToRate] = useState<ActiveTrip | null>(null);
-  const [isMusicBarExpanded, setIsMusicBarExpanded] = useState(false);
-
 
   useBusArrivalNotification(busHasArrived);
 
@@ -495,51 +493,7 @@ export default function SearchPage() {
                         </div>
                     </div>
                 ) : displayedBus && (
-                <div className="p-2 sm:p-4 pointer-events-auto relative">
-                     {isOnBus && nowPlaying && (
-                        <div className='absolute bottom-4 left-4 z-30'>
-                            {!isMusicBarExpanded && (
-                                <Button 
-                                    size="icon" 
-                                    className='rounded-full h-14 w-14 shadow-lg scale-100 active:scale-95 transition-transform'
-                                    onClick={() => setIsMusicBarExpanded(true)}
-                                >
-                                    <NowPlayingIcon />
-                                </Button>
-                            )}
-                            <div 
-                                className={cn(
-                                    "transition-all duration-300 ease-in-out w-full max-w-sm",
-                                    isMusicBarExpanded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'
-                                )}
-                            >
-                                <Card 
-                                    className="bg-secondary/80 backdrop-blur-md cursor-pointer"
-                                    onClick={() => setIsPlaylistOpen(true)}
-                                >
-                                    <CardContent className='p-2 flex items-center gap-4 relative'>
-                                        <Image src={nowPlaying.image} alt={nowPlaying.title} width={40} height={40} className="rounded-md object-cover" />
-                                        <div className="flex-grow">
-                                            <p className="font-semibold text-sm">{nowPlaying.title}</p>
-                                            <p className="text-xs text-muted-foreground">{nowPlaying.artist}</p>
-                                        </div>
-                                        <NowPlayingIcon />
-                                        <Button 
-                                            size="icon" 
-                                            variant="ghost" 
-                                            className='absolute -top-1 -right-1 h-7 w-7'
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setIsMusicBarExpanded(false);
-                                            }}
-                                        >
-                                            <X className='h-4 w-4' />
-                                        </Button>
-                                    </CardContent>
-                                </Card>
-                            </div>
-                        </div>
-                    )}
+                <div className="p-2 sm:p-4 pointer-events-auto">
                     <div className="bg-background/75 backdrop-blur-sm rounded-t-2xl max-w-md mx-auto shadow-lg p-4 space-y-3">
                     <Card>
                         <CardContent className="p-4 space-y-3">
@@ -839,5 +793,3 @@ export default function SearchPage() {
     </div>
   );
 }
-
-    

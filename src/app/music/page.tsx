@@ -1,12 +1,12 @@
 
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ListMusic, Plus, X, Search, Bus, LogIn, Loader2, Info, MusicIcon, ArrowUp, ArrowDown, Bookmark } from 'lucide-react';
+import { ListMusic, Plus, X, Search, Bus, LogIn, Loader2, Bookmark } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { BottomNav } from '@/components/bottom-nav';
@@ -20,8 +20,6 @@ import { useUser } from '@/context/user-context';
 import { useRouter } from 'next/navigation';
 import { useDebounce } from '@/hooks/use-debounce';
 import { searchMusic } from '@/ai/flows/search-music';
-import { getSongInsights, type SongInsightsOutput } from '@/ai/flows/get-song-insights';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { useSavedSongs } from '@/context/saved-songs-context';
 
@@ -333,5 +331,3 @@ export default function MusicPage() {
     </>
   );
 }
-
-    
