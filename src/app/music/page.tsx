@@ -85,23 +85,6 @@ export default function MusicPage() {
         handleSearch(debouncedSearchQuery);
     }, [debouncedSearchQuery, handleSearch]);
 
-    const NowPlayingBar = () => {
-        if (!nowPlaying) return null;
-
-        return (
-            <div className="bg-background/75 backdrop-blur-sm p-2 max-w-md mx-auto" onClick={() => setIsPlaylistOpen(true)}>
-                 <div className="p-2 bg-secondary rounded-lg flex items-center gap-4 cursor-pointer">
-                    <Image src={nowPlaying.image} alt={nowPlaying.title} width={40} height={40} className="rounded-md object-cover" />
-                    <div className="flex-grow">
-                        <p className="font-semibold text-sm">{nowPlaying.title}</p>
-                        <p className="text-xs text-muted-foreground">{nowPlaying.artist}</p>
-                    </div>
-                    <NowPlayingIcon />
-                </div>
-            </div>
-        )
-    }
-
     if (!user) {
         return (
             <div className="flex flex-col min-h-screen bg-background items-center justify-center text-center p-4">
@@ -344,10 +327,11 @@ export default function MusicPage() {
 
       {/* Now Playing Bar and Bottom Nav */}
       <div className="fixed bottom-0 left-0 right-0 z-10">
-        {isOnBus && nowPlaying && <NowPlayingBar />}
         <BottomNav />
       </div>
     </div>
     </>
   );
 }
+
+    

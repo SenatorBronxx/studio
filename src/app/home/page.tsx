@@ -61,6 +61,7 @@ import {
 import { useBusArrivalNotification } from '@/hooks/use-bus-arrival-notification';
 import { useUser } from '@/context/user-context';
 import { TripRating } from '@/components/trip-rating';
+import { NowPlayingIcon } from '@/components/icons/now-playing-icon';
 
 
 const initialBusData = [
@@ -116,7 +117,7 @@ export default function HomePage() {
   const { user } = useUser();
   const { toast } = useToast();
   const { balance, deductBalance, addTransaction, addLoyaltyPoints, addBalance: refundBalance } = useWallet();
-  const { setIsOnBus, isOnBus, setNowPlaying } = useMusic();
+  const { setIsOnBus, isOnBus, setNowPlaying, nowPlaying, setIsPlaylistOpen } = useMusic();
   const { activeTrip, setActiveTrip, isHydrated: isTripHydrated, setDynamicEta, clearActiveTrip, setCurrentStopIndex } = useTrip();
   const { bookingAlerts } = useNotificationSettings();
   const { activeDiscount, isDiscountBannerDismissed, dismissDiscountBanner } = useDiscount();
@@ -136,6 +137,7 @@ export default function HomePage() {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [busHasArrived, setBusHasArrived] = useState(false);
   const [tripToRate, setTripToRate] = useState<ActiveTrip | null>(null);
+  const [isMusicBarExpanded, setIsMusicBarExpanded] = useState(false);
 
   useBusArrivalNotification(busHasArrived);
   
@@ -560,7 +562,51 @@ export default function HomePage() {
         </div>
 
       <div className="fixed bottom-0 left-0 right-0 z-20 pointer-events-none pb-[80px]">
-        <div className="p-2 sm:p-4 pointer-events-auto">
+        <div className="p-2 sm:p-4 pointer-events-auto relative">
+            {isOnBus && nowPlaying && (
+                <div className='absolute bottom-4 left-4 z-30'>
+                    {!isMusicBarExpanded && (
+                        <Button 
+                            size="icon" 
+                            className='rounded-full h-14 w-14 shadow-lg scale-100 active:scale-95 transition-transform'
+                            onClick={() => setIsMusicBarExpanded(true)}
+                        >
+                            <NowPlayingIcon />
+                        </Button>
+                    )}
+                    <div 
+                        className={cn(
+                            "transition-all duration-300 ease-in-out w-full max-w-sm",
+                            isMusicBarExpanded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'
+                        )}
+                    >
+                        <Card 
+                            className="bg-secondary/80 backdrop-blur-md cursor-pointer"
+                            onClick={() => setIsPlaylistOpen(true)}
+                        >
+                            <CardContent className='p-2 flex items-center gap-4 relative'>
+                                <Image src={nowPlaying.image} alt={nowPlaying.title} width={40} height={40} className="rounded-md object-cover" />
+                                <div className="flex-grow">
+                                    <p className="font-semibold text-sm">{nowPlaying.title}</p>
+                                    <p className="text-xs text-muted-foreground">{nowPlaying.artist}</p>
+                                </div>
+                                <NowPlayingIcon />
+                                <Button 
+                                    size="icon" 
+                                    variant="ghost" 
+                                    className='absolute -top-1 -right-1 h-7 w-7'
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setIsMusicBarExpanded(false);
+                                    }}
+                                >
+                                    <X className='h-4 w-4' />
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </div>
+            )}
             <div className="bg-background/75 backdrop-blur-sm rounded-t-2xl max-w-md mx-auto p-4 flex flex-col gap-4 shadow-lg">
                 {showDiscountBanner && activeDiscount && (
                     <div className="relative bg-primary/10 border-l-4 border-primary text-primary-foreground p-4 rounded-lg animate-in fade-in-50 slide-in-from-bottom-5">
@@ -804,3 +850,5 @@ export default function HomePage() {
     </div>
   );
 }
+
+    
