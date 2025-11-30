@@ -90,7 +90,7 @@ export default function EritasPayPage() {
         // Remove the notification if balance is no longer low
         setNotifications(prev => prev.filter(n => n.id !== -1));
     }
-  }, [isLowBalance, t, router, notifications]);
+  }, [isLowBalance, t, router]);
 
 
   if (!user) {

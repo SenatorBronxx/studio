@@ -216,7 +216,7 @@ export default function HomePage() {
     } else {
         setNotifications(prev => prev.filter(n => n.id !== -1));
     }
-  }, [isLowBalance, t, router, notifications]);
+  }, [isLowBalance, t, router]);
 
 
   const handleSearch = () => {
@@ -493,7 +493,7 @@ export default function HomePage() {
 
       <header className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-20">
         <Image
-            src="https://i.imgur.com/Avu0y2Y.png"
+            src="https://jklylnqjwfrmjrsqfzys.supabase.co/storage/v1/object/public/images/eritas-logo-1763267730211.png"
             alt="Eritas Transport Company Logo"
             width={120}
             height={60}
