@@ -21,6 +21,7 @@ import {
   Bus,
   UserCircle,
   Send,
+  ArrowUpRight,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
@@ -56,7 +57,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useBusArrivalNotification } from '@/hooks/use-bus-arrival-notification';
 import { useUser } from '@/context/user-context';
@@ -114,7 +114,7 @@ export default function HomePage() {
   const router = useRouter();
   const { user } = useUser();
   const { toast } = useToast();
-  const { balance, deductBalance, addTransaction, addLoyaltyPoints, addBalance: refundBalance } = useWallet();
+  const { balance, deductBalance, addTransaction, addLoyaltyPoints, addBalance: refundBalance, isLowBalance } = useWallet();
   const { setIsOnBus, isOnBus, setNowPlaying } = useMusic();
   const { activeTrip, setActiveTrip, isHydrated: isTripHydrated, setDynamicEta, clearActiveTrip, setCurrentStopIndex } = useTrip();
   const { bookingAlerts } = useNotificationSettings();
@@ -132,7 +132,6 @@ export default function HomePage() {
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showDiscountBanner, setShowDiscountBanner] = useState(false);
-  const [isTransitioning, setIsTransitioning] = useState(false);
   const [busHasArrived, setBusHasArrived] = useState(false);
   const [tripToRate, setTripToRate] = useState<ActiveTrip | null>(null);
 
@@ -182,25 +181,42 @@ export default function HomePage() {
         if (!busHasArrived) {
           setBusHasArrived(true);
         }
-        setIsTransitioning(true);
-        setTimeout(() => {
-          setIsOnBus(true);
-          const destinationStop = [...activeTrip.bus.stops, activeTrip.bus.finalDestination].find(s => s.name === activeTrip.destination);
-          if (destinationStop) {
+        setIsOnBus(true);
+        const destinationStop = [...activeTrip.bus.stops, activeTrip.bus.finalDestination].find(s => s.name === activeTrip.destination);
+        if (destinationStop) {
             setDynamicEta(destinationStop.eta);
             setCurrentStopIndex(0); // Start tracking stops
-          }
-          toast({
+        }
+        toast({
             title: t('onTheBusToastTitle'),
             description: t('onTheBusToastDescription'),
-          });
-          setIsTransitioning(false);
-        }, 2000); // Duration of the animation
+        });
       }
     }
 
     return () => clearInterval(interval);
   }, [activeTrip, isOnBus, setDynamicEta, setIsOnBus, t, toast, clearActiveTrip, setCurrentStopIndex, busHasArrived, setNowPlaying]);
+
+  useEffect(() => {
+    if (isLowBalance) {
+        if (!notifications.some(n => n.id === -1)) {
+            const lowBalanceNotification: Notification = {
+                id: -1,
+                title: t('lowBalanceWarningToastTitle'),
+                description: t('lowBalanceWarningToastDescription'),
+                action: (
+                    <Button onClick={() => router.push('/top-up')} size="sm">
+                        <ArrowUpRight className="mr-2 h-4 w-4" />
+                        {t('topUp')}
+                    </Button>
+                ),
+            };
+            setNotifications(prev => [lowBalanceNotification, ...prev.filter(n => n.id !== -1)]);
+        }
+    } else {
+        setNotifications(prev => prev.filter(n => n.id !== -1));
+    }
+  }, [isLowBalance, t, router, notifications]);
 
 
   const handleSearch = () => {
@@ -496,8 +512,8 @@ export default function HomePage() {
                         <Bell className="h-5 w-5" />
                         {notifications.length > 0 && (
                             <span className="absolute -top-1 -right-1 flex h-4 w-4">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-4 w-4 bg-primary text-primary-foreground text-xs items-center justify-center">
+                                <span className={cn("animate-ping absolute inline-flex h-full w-full rounded-full opacity-75", isLowBalance ? "bg-destructive" : "bg-primary")}></span>
+                                <span className={cn("relative inline-flex rounded-full h-4 w-4 text-primary-foreground text-xs items-center justify-center", isLowBalance ? "bg-destructive" : "bg-primary")}>
                                     {notifications.length}
                                 </span>
                             </span>
@@ -513,7 +529,7 @@ export default function HomePage() {
                             <>
                                 <div className="flex-grow space-y-4 overflow-y-auto">
                                     {notifications.map(notification => (
-                                        <Card key={notification.id}>
+                                        <Card key={notification.id} className={cn(notification.id === -1 && "bg-destructive/10 border-destructive")}>
                                             <CardContent className='p-4 space-y-2'>
                                                 <h3 className="font-semibold">{notification.title}</h3>
                                                 <p className="text-sm text-muted-foreground">{notification.description}</p>
@@ -522,10 +538,30 @@ export default function HomePage() {
                                         </Card>
                                     ))}
                                 </div>
-                                <Button variant="outline" className="mt-4" onClick={() => setNotifications([])}>
-                                    <Trash2 className="mr-2 h-4 w-4" />
-                                    {t('clearAll')}
-                                </Button>
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <Button variant="outline" className="mt-4">
+                                            <Trash2 className="mr-2 h-4 w-4" />
+                                            {t('clearAll')}
+                                        </Button>
+                                    </AlertDialogTrigger>
+                                     <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                        <AlertDialogTitle>{t('clearNotificationsTitle')}</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            {t('clearNotificationsDescription')}
+                                        </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                        <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                                        <AlertDialogAction
+                                            onClick={() => setNotifications(isLowBalance ? notifications.filter(n => n.id === -1) : [])}
+                                        >
+                                            {t('confirmClear')}
+                                        </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
                             </>
                         ) : (
                             <div className="flex flex-col items-center justify-center text-center h-full text-muted-foreground">
@@ -625,8 +661,8 @@ export default function HomePage() {
                     </div>
 
                     {activeTrip ? (
-                    <div className={cn("relative p-3 bg-primary/10 rounded-lg text-center", isTransitioning && 'overflow-hidden')}>
-                            <div className={cn("transition-opacity duration-500", isTransitioning ? 'opacity-0' : 'opacity-100')}>
+                    <div className={cn("relative p-3 bg-primary/10 rounded-lg text-center")}>
+                            <div className={cn("transition-opacity duration-500")}>
                                 <p className='text-sm text-primary/80'>
                                 {isOnBus ? (
                                     <>

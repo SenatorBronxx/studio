@@ -18,6 +18,7 @@ type WalletContextType = {
   balance: number;
   transactions: Transaction[];
   loyaltyPoints: number;
+  isLowBalance: boolean;
   deductBalance: (amount: number) => void;
   addBalance: (amount: number) => void;
   addTransaction: (transaction: Omit<Transaction, 'id' | 'amount'> & { amount: number }) => void;
@@ -50,16 +51,18 @@ const initialTransactions: Transaction[] = [
 
 const INITIAL_BALANCE = 250.00;
 const INITIAL_LOYALTY_POINTS = 500;
+const LOW_BALANCE_THRESHOLD = 10.00;
+
 
 export function WalletProvider({ children }: { children: ReactNode }) {
   const [balance, setBalance] = useState<number>(INITIAL_BALANCE);
   const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
   const [loyaltyPoints, setLoyaltyPoints] = useState<number>(INITIAL_LOYALTY_POINTS);
   const [isHydrated, setIsHydrated] = useState(false);
+  const [isLowBalance, setIsLowBalance] = useState(false);
   const { toast } = useToast();
   const isOnline = useOnlineStatus();
   const { t } = useLanguage();
-  const lowBalanceThreshold = 10.00;
   const [hasShownLowBalanceWarning, setHasShownLowBalanceWarning] = useState(false);
 
   useEffect(() => {
@@ -106,21 +109,28 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   }, [transactions, isHydrated]);
 
   useEffect(() => {
-    if (isHydrated && isOnline) {
-      if (balance < lowBalanceThreshold) {
-        if (!hasShownLowBalanceWarning) {
-          toast({
-            variant: 'destructive',
-            title: t('lowBalanceWarningToastTitle'),
-            description: t('lowBalanceWarningToastDescription'),
-          });
-          setHasShownLowBalanceWarning(true);
+    const checkLowBalance = () => {
+      if (balance < LOW_BALANCE_THRESHOLD) {
+        setIsLowBalance(true);
+        if (isOnline && !hasShownLowBalanceWarning) {
+            toast({
+                variant: 'destructive',
+                title: t('lowBalanceWarningToastTitle'),
+                description: t('lowBalanceWarningToastDescription'),
+            });
+            setHasShownLowBalanceWarning(true);
         }
       } else {
-        setHasShownLowBalanceWarning(false);
+        setIsLowBalance(false);
+        setHasShownLowBalanceWarning(false); // Reset warning flag when balance is topped up
       }
+    };
+
+    if (isHydrated) {
+      checkLowBalance();
     }
-  }, [balance, isHydrated, toast, isOnline, hasShownLowBalanceWarning, t]);
+  }, [balance, isHydrated, isOnline, hasShownLowBalanceWarning, t, toast]);
+
 
   const deductBalance = (amount: number) => {
     setBalance((prevBalance) => prevBalance - amount);
@@ -143,7 +153,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     setLoyaltyPoints(prev => prev + points);
   }, []);
   
-  const value = { balance, transactions, loyaltyPoints, deductBalance, addBalance, addTransaction, removeTransaction, addLoyaltyPoints };
+  const value = { balance, transactions, loyaltyPoints, deductBalance, addBalance, addTransaction, removeTransaction, addLoyaltyPoints, isLowBalance };
 
   if (!isHydrated) {
     return null; 

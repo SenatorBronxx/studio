@@ -255,7 +255,7 @@
     "favouriteDestinationLabel": "Ghana Beae a Wopɛ",
     "favouriteDestinationPlaceholder": "nhwɛso, Cape Coast Abankɛse, Kakum National Park",
     "lowBalanceWarningToastTitle": "Sika a Aka Sua",
-    "lowBalanceWarningToastDescription": "ERITAS Pay bɔtɔm mu sika a aka no sua, fa gu mu seesei ara na toa so nya anigye wɔ yɛn akwantu ahorow no mu.",
+    "lowBalanceWarningToastDescription": "Wo bɔtɔm mu sika sua. Fa gu mu ntɛm na w’akwantu anyɛ basaa.",
     "notOnBusToastTitle": "Wɔnni Bɔs no mu",
     "notOnBusToastDescription": "Ɛsɛ sɛ wowɔ bɔs mu ansa na wode nnwom aka playlist no ho.",
     "alreadyInPlaylistToastTitle": "Ɛwɔ Playlist no mu dedaw",
@@ -340,7 +340,10 @@
     "noTripQrs": "Yɛnhunu QR Mfonini Biara",
     "noTripQrsDescription": "Wo nwiee akwantu biara a wobɛhwɛ QR mfonini ahorow.",
     "nextStop": "Gyinabea a Edi Hɔ",
-    "finalDestination": "Awiei Gyinabea"
+    "finalDestination": "Awiei Gyinabea",
+    "clearNotificationsTitle": "Popa nkaebɔ nyinaa anaa?",
+    "clearNotificationsDescription": "Wopɛ sɛ wopopa wo nkaebɔ nyinaa? Wei deɛ worentumi nsan anyɛ.",
+    "confirmClear": "Popa"
 }
 
     

@@ -12,6 +12,7 @@ import {
   UserCircle,
   Bus,
   ArrowDownToLine,
+  AlertCircle,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -24,7 +25,7 @@ import { Progress } from '@/components/ui/progress';
 import { VisaIcon } from '@/components/icons/visa';
 import { useWallet } from '@/context/wallet-context';
 import { DeletableItem } from '@/components/deletable-item';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import Image from 'next/image';
 import { Loader2 } from 'lucide-react';
@@ -32,6 +33,18 @@ import { useLanguage } from '@/context/language-context';
 import { useUser } from '@/context/user-context';
 import { useRouter } from 'next/navigation';
 import { IconMosaicBackground } from '@/components/icon-mosaic-background';
+import { cn } from '@/lib/utils';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+
 
 type Notification = {
     id: number;
@@ -41,7 +54,7 @@ type Notification = {
 };
 
 export default function EritasPayPage() {
-  const { balance, transactions, removeTransaction } = useWallet();
+  const { balance, transactions, removeTransaction, isLowBalance } = useWallet();
   const { t } = useLanguage();
   const { user } = useUser();
   const router = useRouter();
@@ -54,6 +67,31 @@ export default function EritasPayPage() {
   const [selectedBus, setSelectedBus] = useState<{ plate: string } | null>(null);
   const [selectedSeat, setSelectedSeat] = useState<string | null>(null);
   const [showAllTransactions, setShowAllTransactions] = useState(false);
+  const [showLowBalanceMessage, setShowLowBalanceMessage] = useState(false);
+
+  useEffect(() => {
+    if (isLowBalance) {
+        // Check if the notification already exists to avoid duplicates
+        if (!notifications.some(n => n.id === -1)) {
+            const lowBalanceNotification: Notification = {
+                id: -1, // Use a fixed ID for easy identification
+                title: t('lowBalanceWarningToastTitle'),
+                description: t('lowBalanceWarningToastDescription'),
+                 action: (
+                    <Button onClick={() => router.push('/top-up')} size="sm">
+                        <ArrowUpRight className="mr-2 h-4 w-4" />
+                        {t('topUp')}
+                    </Button>
+                ),
+            };
+            setNotifications(prev => [lowBalanceNotification, ...prev.filter(n => n.id !== -1)]);
+        }
+    } else {
+        // Remove the notification if balance is no longer low
+        setNotifications(prev => prev.filter(n => n.id !== -1));
+    }
+  }, [isLowBalance, t, router, notifications]);
+
 
   if (!user) {
     return (
@@ -84,8 +122,8 @@ export default function EritasPayPage() {
                         <Bell className="h-5 w-5" />
                         {notifications.length > 0 && (
                             <span className="absolute -top-1 -right-1 flex h-4 w-4">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-4 w-4 bg-primary text-primary-foreground text-xs items-center justify-center">
+                                <span className={cn("animate-ping absolute inline-flex h-full w-full rounded-full opacity-75", isLowBalance ? "bg-destructive" : "bg-primary")}></span>
+                                <span className={cn("relative inline-flex rounded-full h-4 w-4 text-primary-foreground text-xs items-center justify-center", isLowBalance ? "bg-destructive" : "bg-primary")}>
                                     {notifications.length}
                                 </span>
                             </span>
@@ -101,7 +139,7 @@ export default function EritasPayPage() {
                             <>
                                 <div className="flex-grow space-y-4 overflow-y-auto">
                                     {notifications.map(notification => (
-                                        <Card key={notification.id}>
+                                        <Card key={notification.id} className={cn(notification.id === -1 && "bg-destructive/10 border-destructive")}>
                                             <CardContent className='p-4 space-y-2'>
                                                 <h3 className="font-semibold">{notification.title}</h3>
                                                 <p className="text-sm text-muted-foreground">{notification.description}</p>
@@ -110,10 +148,30 @@ export default function EritasPayPage() {
                                         </Card>
                                     ))}
                                 </div>
-                                <Button variant="outline" className="mt-4" onClick={() => setNotifications([])}>
-                                    <Trash2 className="mr-2 h-4 w-4" />
-                                    {t('clearAll')}
-                                </Button>
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <Button variant="outline" className="mt-4">
+                                            <Trash2 className="mr-2 h-4 w-4" />
+                                            {t('clearAll')}
+                                        </Button>
+                                    </AlertDialogTrigger>
+                                     <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                        <AlertDialogTitle>{t('clearNotificationsTitle')}</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            {t('clearNotificationsDescription')}
+                                        </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                        <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                                        <AlertDialogAction
+                                            onClick={() => setNotifications(isLowBalance ? notifications.filter(n => n.id === -1) : [])}
+                                        >
+                                            {t('confirmClear')}
+                                        </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
                             </>
                         ) : (
                             <div className="flex flex-col items-center justify-center text-center h-full text-muted-foreground">
@@ -138,13 +196,25 @@ export default function EritasPayPage() {
                 <CardTitle className="text-sm font-medium">
                   {t('eritasPayBalance')}
                 </CardTitle>
+                <div className='flex items-center gap-2'>
+                  {isLowBalance && (
+                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full bg-destructive/20 text-destructive hover:bg-destructive/30" onClick={() => setShowLowBalanceMessage(!showLowBalanceMessage)}>
+                        <AlertCircle className="h-5 w-5" />
+                    </Button>
+                  )}
                   <div className='p-2 bg-primary/10 rounded-lg'>
                       <Banknote className="h-4 w-4 text-primary" />
                   </div>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="text-4xl font-bold">GH₵ {balance.toFixed(2)}</div>
-                <Badge variant="secondary" className="mt-2">{t('cashBackOnBusTickets')}</Badge>
+                {showLowBalanceMessage && isLowBalance && (
+                    <div className="mt-2 text-sm text-destructive-foreground bg-destructive/90 p-3 rounded-lg animate-in fade-in-50">
+                        {t('lowBalanceWarningToastDescription')}
+                    </div>
+                )}
+                {!showLowBalanceMessage && <Badge variant="secondary" className="mt-2">{t('cashBackOnBusTickets')}</Badge>}
               </CardContent>
             </div>
           </Card>

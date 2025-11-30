@@ -255,7 +255,7 @@
     "favouriteDestinationLabel": "Favourite Ghanaian Destination",
     "favouriteDestinationPlaceholder": "e.g., Cape Coast Castle, Kakum National Park",
     "lowBalanceWarningToastTitle": "Low Balance Warning",
-    "lowBalanceWarningToastDescription": "ERITAS Pay wallet's balance is running low, top-up now to continue enjoying our trips.",
+    "lowBalanceWarningToastDescription": "Your wallet balance is running low. Top-Up now to avoid any trip-related issues.",
     "notOnBusToastTitle": "Not on Bus",
     "notOnBusToastDescription": "You must be on a bus to add songs to the playlist.",
     "alreadyInPlaylistToastTitle": "Already in Playlist",
@@ -340,7 +340,10 @@
     "noTripQrs": "No QR Codes Found",
     "noTripQrsDescription": "You haven't completed any trips yet to see QR codes.",
     "nextStop": "Next Stop",
-    "finalDestination": "Final Destination"
+    "finalDestination": "Final Destination",
+    "clearNotificationsTitle": "Clear all notifications?",
+    "clearNotificationsDescription": "Are you sure you want to clear all your notifications? This action cannot be undone.",
+    "confirmClear": "Clear"
 }
 
     
