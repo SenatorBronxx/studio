@@ -17,7 +17,7 @@ type UserContextType = {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-export function UserProvider({ children, clearAllData }: { children: ReactNode, clearAllData: () => void }) {
+export function UserProvider({ children }: { children: ReactNode }) {
   const [user, setUserState] = useState<User | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
 
@@ -31,6 +31,20 @@ export function UserProvider({ children, clearAllData }: { children: ReactNode, 
       console.error("Failed to read user from localStorage", error);
     }
     setIsHydrated(true);
+  }, []);
+
+  const clearAllData = useCallback(() => {
+    console.log('Clearing all user-specific data from localStorage...');
+    const language = localStorage.getItem('eritas-language');
+    const theme = localStorage.getItem('eritas-theme');
+    
+    localStorage.clear();
+
+    if (language) localStorage.setItem('eritas-language', language);
+    if (theme) localStorage.setItem('eritas-theme', theme);
+    
+    // Redirect to home and reload to ensure all context state is cleared
+    window.location.assign('/');
   }, []);
 
   const setUser = useCallback((newUser: User | null) => {
@@ -77,5 +91,3 @@ export function useUser() {
   }
   return context;
 }
-
-    

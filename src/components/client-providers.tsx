@@ -15,23 +15,9 @@ import { SavedSongsProvider } from "@/context/saved-songs-context";
 
 
 export function ClientProviders({ children }: { children: ReactNode }) {
-    
-    const clearAllData = () => {
-        console.log('Clearing all user-specific data from localStorage...');
-        const language = localStorage.getItem('eritas-language');
-        const theme = localStorage.getItem('eritas-theme');
-        
-        localStorage.clear();
-
-        if (language) localStorage.setItem('eritas-language', language);
-        if (theme) localStorage.setItem('eritas-theme', theme);
-        
-        window.location.assign('/');
-    };
-    
     return (
         <LanguageProvider>
-            <UserProvider clearAllData={clearAllData}>
+            <UserProvider>
                 <WalletProvider>
                     <TripProvider>
                         <SavedSongsProvider>
@@ -52,22 +38,4 @@ export function ClientProviders({ children }: { children: ReactNode }) {
             </UserProvider>
         </LanguageProvider>
     );
-}
-
-export function useAppState() {
-    // This is a placeholder. In a real app, you might have a shared state context here.
-    const clearAllData = () => {
-        console.log('Clearing all user-specific data from localStorage...');
-        const language = localStorage.getItem('eritas-language');
-        const theme = localStorage.getItem('eritas-theme');
-        
-        localStorage.clear();
-
-        if (language) localStorage.setItem('eritas-language', language);
-        if (theme) localStorage.setItem('eritas-theme', theme);
-        
-        window.location.assign('/');
-    };
-    
-    return { clearAllData };
 }
