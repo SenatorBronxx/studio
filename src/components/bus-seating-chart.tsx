@@ -75,7 +75,7 @@ export function BusSeatingChart({ seating, selectedSeats, onSeatSelect, busPlate
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="w-4 h-4 rounded bg-primary/60 border border-primary flex items-center justify-center"><Armchair className="w-3 h-3 text-primary-foreground" /></div>
-                    <span>{t('reserved')}</span>
+                    <span>{t('selected')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="w-4 h-4 rounded bg-primary border border-primary flex items-center justify-center"><User className="w-3 h-3 text-primary-foreground" /></div>
