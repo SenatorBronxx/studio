@@ -43,6 +43,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 
 
@@ -71,10 +72,9 @@ export default function EritasPayPage() {
 
   useEffect(() => {
     if (isLowBalance) {
-        // Check if the notification already exists to avoid duplicates
         if (!notifications.some(n => n.id === -1)) {
             const lowBalanceNotification: Notification = {
-                id: -1, // Use a fixed ID for easy identification
+                id: -1,
                 title: t('lowBalanceWarningToastTitle'),
                 description: t('lowBalanceWarningToastDescription'),
                  action: (
@@ -87,7 +87,6 @@ export default function EritasPayPage() {
             setNotifications(prev => [lowBalanceNotification, ...prev.filter(n => n.id !== -1)]);
         }
     } else {
-        // Remove the notification if balance is no longer low
         setNotifications(prev => prev.filter(n => n.id !== -1));
     }
   }, [isLowBalance, t, router]);
