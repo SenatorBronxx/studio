@@ -22,7 +22,7 @@ import {
   UserCircle,
   Send,
   ArrowUpRight,
-  Walking,
+  Footprints,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
@@ -219,7 +219,7 @@ export default function HomePage() {
                     </Button>
                 ),
             };
-            setNotifications(prev => [lowBalanceNotification, ...prev]);
+            setNotifications(prev => [lowBalanceNotification, ...prev.filter(n => n.id !== -1)]);
         }
     } else {
         setNotifications(prev => prev.filter(n => n.id !== -1));
@@ -708,7 +708,7 @@ export default function HomePage() {
                                     <p className='text-base'>{passedBusInfo.nextStop.name}</p>
                                     <div className='flex justify-center items-center gap-4 text-xs mt-1'>
                                         <span className='flex items-center gap-1'><Bus className='h-3 w-3' /> Bus ETA: {passedBusInfo.nextStop.eta} min</span>
-                                        <span className='flex items-center gap-1'><Walking className='h-3 w-3' /> Your ETA: {passedBusInfo.walkingTime} min</span>
+                                        <span className='flex items-center gap-1'><Footprints className='h-3 w-3' /> Your ETA: {passedBusInfo.walkingTime} min</span>
                                     </div>
                                 </div>
                                 <Button className='w-full' onClick={() => handleBoard(passedBusInfo.nextStop)} disabled={selectedSeats.length === 0}>
@@ -874,3 +874,5 @@ export default function HomePage() {
     </div>
   );
 }
+
+    
