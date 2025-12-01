@@ -3,7 +3,7 @@
 
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowRight, Search, BusFront, X, Flag, Users, Loader2, Clock, Armchair, QrCode, Bell, Trash2, MapPin, Bus, Send } from 'lucide-react';
+import { ArrowRight, Search, BusFront, X, Flag, Users, Loader2, Clock, Armchair, QrCode, Bell, Trash2, MapPin, Bus, Send, Walking } from 'lucide-react';
 import { BottomNav } from '@/components/bottom-nav';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -82,12 +82,17 @@ const initialBusData = [
 ];
 
 type BusData = typeof initialBusData[0];
+type StopInfo = { name: string; fare: number; eta: number };
 type Notification = {
     id: number;
     title: string;
     description: string;
     tripId?: string;
     action?: React.ReactNode;
+};
+type PassedBusInfo = {
+    nextStop: StopInfo;
+    walkingTime: number;
 };
 
 export default function SearchPage() {
@@ -131,6 +136,7 @@ export default function SearchPage() {
   const [busHasArrived, setBusHasArrived] = useState(false);
   const { bookingAlerts } = useNotificationSettings();
   const [tripToRate, setTripToRate] = useState<ActiveTrip | null>(null);
+  const [passedBusInfo, setPassedBusInfo] = useState<PassedBusInfo | null>(null);
 
   useBusArrivalNotification(busHasArrived);
 
@@ -227,11 +233,19 @@ export default function SearchPage() {
     }
     setSelectedBus(bus);
     setSelectedSeats([]);
+    setPassedBusInfo(null); // Reset
+
+    if (bus.eta <= 0 && bus.stops.length > 0) {
+        const nextStop = bus.stops[0];
+        const walkingTime = 5 + Math.floor(Math.random() * 10);
+        setPassedBusInfo({ nextStop, walkingTime });
+    }
   }
   
   const clearSelectedBus = () => {
     setSelectedBus(null);
     setSelectedSeats([]);
+    setPassedBusInfo(null);
   }
 
   const handleBoard = (stop: {name: string, fare: number, eta: number}) => {
@@ -565,6 +579,22 @@ export default function SearchPage() {
                                         {isOnBus && <p className='text-xs text-primary/60 mt-1'>{`${t('finalDestination')}: ${activeTrip.destination}`}</p>}
                                     </div>
                                 </div>
+                            ) : passedBusInfo ? (
+                                <Card className="bg-amber-50 border border-amber-200">
+                                    <CardContent className="p-4 text-sm text-amber-900 space-y-3">
+                                        <p>This bus has passed your current location. The next available stop you can board is:</p>
+                                        <div className='font-semibold text-center bg-amber-100 p-2 rounded-md'>
+                                            <p className='text-base'>{passedBusInfo.nextStop.name}</p>
+                                            <div className='flex justify-center items-center gap-4 text-xs mt-1'>
+                                                <span className='flex items-center gap-1'><Bus className='h-3 w-3' /> Bus ETA: {passedBusInfo.nextStop.eta} min</span>
+                                                <span className='flex items-center gap-1'><Walking className='h-3 w-3' /> Your ETA: {passedBusInfo.walkingTime} min</span>
+                                            </div>
+                                        </div>
+                                        <Button className='w-full' onClick={() => handleBoard(passedBusInfo.nextStop)} disabled={selectedSeats.length === 0}>
+                                            {selectedSeats.length > 0 ? `Reserve Seat for ${passedBusInfo.nextStop.name}` : "Select a seat first"}
+                                        </Button>
+                                    </CardContent>
+                                </Card>
                             ) : (
                                 <Sheet open={isSeatSheetOpen} onOpenChange={setIsSeatSheetOpen}>
                                     <SheetTrigger asChild>
@@ -624,6 +654,8 @@ export default function SearchPage() {
                                                     <div className="px-3 pt-2 pb-2 text-center">
                                                     {activeTrip ? (
                                                         <p className='text-sm text-muted-foreground'>{t('tripInProgress')}</p>
+                                                    ) : passedBusInfo ? (
+                                                        <p className="text-sm text-destructive font-medium p-2 bg-destructive/10 rounded-md">This bus has passed. Please use the option above.</p>
                                                     ) : displayedBus.capacity.current + selectedSeats.length > displayedBus.capacity.max ? (
                                                         <p className="text-sm text-destructive font-medium p-2 bg-destructive/10 rounded-md">{t('notEnoughSeats')}</p>
                                                     ) : (
