@@ -281,12 +281,10 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
           Google
         </Button>
         <Button variant="outline" onClick={() => handleSocialLogin('Apple')}>
-          <AppleIcon className="mr-2 h-4 w-4" />
+          <Image src="https://www.svgrepo.com/show/303110/apple-black-logo.svg" alt="Apple" width={16} height={16} className="mr-2 h-4 w-4" />
           Apple
         </Button>
       </div>
     </Tabs>
   );
 }
-
-    
