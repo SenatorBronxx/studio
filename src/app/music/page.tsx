@@ -222,9 +222,15 @@ export default function MusicPage() {
                             </>
                         ) : (
                             <div className="flex flex-col items-center justify-center text-center h-full text-muted-foreground">
-                                <Bus className="h-12 w-12 mb-4" />
-                                <h3 className="font-semibold">{t('boardBusToSeePlaylist')}</h3>
-                                <p className="text-sm mt-1">{t('playlistOnlyOnTrip')}</p>
+                                <div className="flex-grow flex flex-col items-center justify-center">
+                                    <Bus className="h-12 w-12 mb-4" />
+                                    <h3 className="font-semibold">{t('boardBusToSeePlaylist')}</h3>
+                                    <p className="text-sm mt-1">{t('playlistOnlyOnTrip')}</p>
+                                </div>
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground/80 mt-4">
+                                    <Image src="https://pub-141831e61e69445289222976a15b6fb3.r2.dev/1764638068678-hdzom2wlrc-1764681257541_t52h6c_841e99e1b760a1900280.png" alt="Spotify Logo" width={20} height={20} />
+                                    <span>Powered by Spotify Web API</span>
+                                </div>
                             </div>
                         )}
                         </div>
