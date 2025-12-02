@@ -508,9 +508,9 @@ export default function HomePage() {
         </div>
       
 
-      <header className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-20">
+      <header className="absolute top-0 left-0 right-0 py-2 px-4 flex justify-between items-center z-20">
         <Image
-            src="https://jklylnqjwfrmjrsqfzys.supabase.co/storage/v1/object/public/images/eritas-logo-1763267730211.png"
+            src="/eritas-logo.png"
             alt="Eritas Transport Company Logo"
             width={120}
             height={60}
@@ -874,5 +874,3 @@ export default function HomePage() {
     </div>
   );
 }
-
-    
