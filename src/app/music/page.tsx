@@ -271,6 +271,10 @@ export default function MusicPage() {
                                 </Card>
                             ))}
                         </div>
+                        <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground/80 mt-6">
+                            <Image src="https://pub-141831e61e69445289222976a15b6fb3.r2.dev/1764638068678-hdzom2wlrc-1764681257541_t52h6c_841e99e1b760a1900280.png" alt="Spotify Logo" width={20} height={20} />
+                            <span>Powered by Spotify Web API</span>
+                        </div>
                     </TabsContent>
                     <TabsContent value="moods">
                          <div className="text-center text-muted-foreground py-12">
