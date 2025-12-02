@@ -149,8 +149,14 @@ export default function SearchPage() {
         if (fromQuery || toQuery) {
             const results = buses.filter(bus => {
                 const allStops = [...bus.stops.map(s => s.name.toLowerCase()), bus.finalDestination.name.toLowerCase()];
-                const fromMatch = fromQuery ? allStops.some(stop => stop.includes(fromQuery.toLowerCase())) : true;
+                const isFromCurrentLocation = fromQuery === 'Your Current Location';
+                
+                // If "From" is the user's current location, we only need to match the "To" location.
+                // Otherwise, we check if the "From" location is one of the stops.
+                const fromMatch = isFromCurrentLocation ? true : allStops.some(stop => stop.includes(fromQuery.toLowerCase()));
+                
                 const toMatch = toQuery ? allStops.some(stop => stop.includes(toQuery.toLowerCase())) : true;
+                
                 return fromMatch && toMatch;
             });
             setFilteredBuses(results);
@@ -158,7 +164,8 @@ export default function SearchPage() {
             setFilteredBuses([]);
         }
     }
-  }, [fromQuery, toQuery, buses, isHydrated]);
+}, [fromQuery, toQuery, buses, isHydrated]);
+
 
   useEffect(() => {
     if (isTripHydrated && activeTrip) {
@@ -460,7 +467,7 @@ export default function SearchPage() {
             <div className="max-w-md mx-auto space-y-4">
                  <div className="flex justify-center">
                     <Image
-                        src="https://i.imgur.com/Avu0y2Y.png"
+                        src="https://i.ibb.co/VYS1yVx/eritas-logo.png"
                         alt="Eritas Transport Company Logo"
                         width={120}
                         height={60}
@@ -825,5 +832,3 @@ export default function SearchPage() {
     </div>
   );
 }
-
-    
