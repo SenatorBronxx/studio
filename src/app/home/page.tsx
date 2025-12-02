@@ -128,7 +128,7 @@ export default function HomePage() {
   const { activeDiscount, isDiscountBannerDismissed, dismissDiscountBanner } = useDiscount();
   const { t } = useLanguage();
   
-  const [fromLocation, setFromLocation] = useState('');
+  const [fromLocation, setFromLocation] = useState('Your Current Location');
   const [toLocation, setToLocation] = useState('');
   const [buses, setBuses] = useState(initialBusData);
   const [selectedBus, setSelectedBus] = useState<BusData | null>(null);
