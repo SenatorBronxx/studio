@@ -276,8 +276,8 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
       </div>
       <div className="mt-6 grid grid-cols-2 gap-4">
         <Button variant="outline" onClick={() => handleSocialLogin('Google')}>
-          <Image src="https://pub-141831e61e69445289222976a15b6fb3.r2.dev/1764638068678-hdzom2wlrc-1764681257541_t52h6c_841e99e1b760a1900280.png" alt="Google" width={16} height={16} className="mr-2 h-4 w-4" />
-          Google
+          <Image src="https://pub-141831e61e69445289222976a15b6fb3.r2.dev/1764638068678-hdzom2wlrc-1764681257541_t52h6c_841e99e1b760a1900280.png" alt="Spotify" width={16} height={16} className="mr-2 h-4 w-4" />
+          Spotify
         </Button>
         <Button variant="outline" onClick={() => handleSocialLogin('Apple')}>
           <Image src="https://cdn-icons-png.flaticon.com/512/0/747.png" alt="Apple" width={16} height={16} className="mr-2 h-4 w-4" />
