@@ -227,9 +227,9 @@ export default function MusicPage() {
                                     <h3 className="font-semibold">{t('boardBusToSeePlaylist')}</h3>
                                     <p className="text-sm mt-1">{t('playlistOnlyOnTrip')}</p>
                                 </div>
-                                <div className="text-xs text-muted-foreground/50 mt-4 flex items-center gap-1">
-                                    Powered by
-                                    <Image src="https://i.scdn.co/image/ab67706c0000da845c824c29d0563456317772c2" alt="Spotify" width={60} height={18} />
+                                <div className="text-xs text-muted-foreground/50 mt-4 flex items-center justify-center gap-2">
+                                    <Image src="https://i.postimg.cc/yxGLTbF8/841e99e1b760a190028030076e4c907f-removebg-preview.png" alt="Spotify" width={24} height={24} />
+                                    <span>Powered by Spotify Web API</span>
                                 </div>
                             </div>
                         )}
@@ -270,9 +270,6 @@ export default function MusicPage() {
                                     </CardContent>
                                 </Card>
                             ))}
-                        </div>
-                        <div className="text-xs text-muted-foreground/50 mt-6 flex items-center justify-center gap-1">
-                            Powered by Spotify Web API
                         </div>
                     </TabsContent>
                     <TabsContent value="moods">
@@ -340,5 +337,3 @@ export default function MusicPage() {
     </>
   );
 }
-
-    
