@@ -22,6 +22,7 @@ import { useUser } from "@/context/user-context";
 import { useLanguage } from "@/context/language-context";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { AppleIcon } from "@/components/icons/apple";
 
 // Schemas
 const signInSchema = z.object({
@@ -110,7 +111,7 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
     }, 1500);
   };
   
-  const handleSocialLogin = async (provider: 'Apple' | 'Spotify') => {
+  const handleSocialLogin = async (provider: 'Google' | 'Apple') => {
     setIsSubmitting(true);
     
     setTimeout(() => {
@@ -275,12 +276,12 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
         </div>
       </div>
       <div className="mt-6 grid grid-cols-2 gap-4">
-        <Button variant="outline" onClick={() => handleSocialLogin('Spotify')}>
-          <Image src="https://pub-141831e61e69445289222976a15b6fb3.r2.dev/1764638068678-hdzom2wlrc-1764681257541_t52h6c_841e99e1b760a1900280.png" alt="Spotify" width={16} height={16} className="mr-2 h-4 w-4" />
-          Spotify
+        <Button variant="outline" onClick={() => handleSocialLogin('Google')}>
+          <Image src="https://www.svgrepo.com/show/303108/google-icon-logo.svg" alt="Google" width={16} height={16} className="mr-2 h-4 w-4" />
+          Google
         </Button>
         <Button variant="outline" onClick={() => handleSocialLogin('Apple')}>
-          <Image src="https://cdn-icons-png.flaticon.com/512/0/747.png" alt="Apple" width={16} height={16} className="mr-2 h-4 w-4" />
+          <AppleIcon className="mr-2 h-4 w-4" />
           Apple
         </Button>
       </div>

@@ -78,7 +78,7 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       },
       {
-        protocol: 'https',
+        protocol: 'https,',
         hostname: 'img.freepik.com',
         port: '',
         pathname: '/**',
@@ -100,7 +100,13 @@ const nextConfig: NextConfig = {
         hostname: 'pub-141831e61e69445289222976a15b6fb3.r2.dev',
         port: '',
         pathname: '/**',
-      }
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.svgrepo.com',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
 };
