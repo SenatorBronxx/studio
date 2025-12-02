@@ -510,7 +510,7 @@ export default function HomePage() {
 
       <header className="absolute top-0 left-0 right-0 py-2 px-4 flex justify-between items-center z-20">
         <Image
-            src="/eritas-logo.png"
+            src="https://i.ibb.co/VYS1yVx/eritas-logo.png"
             alt="Eritas Transport Company Logo"
             width={120}
             height={60}
