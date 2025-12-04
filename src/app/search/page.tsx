@@ -467,7 +467,7 @@ export default function SearchPage() {
             <div className="max-w-md mx-auto space-y-4">
                  <div className="flex justify-center">
                     <Image
-                        src="https://i.ibb.co/VYS1yVx/eritas-logo.png"
+                        src="https://i.postimg.cc/ZqqHw7kv/Screenshot-2025-10-29-154152-removebg-preview-removebg-preview.png"
                         alt="Eritas Transport Company Logo"
                         width={120}
                         height={60}
