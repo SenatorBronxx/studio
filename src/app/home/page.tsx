@@ -318,7 +318,6 @@ export default function HomePage() {
                 from: "Your Location", // Mock user's current location
                 destination: stop.name,
                 eta: updatedBus.eta, // ETA for bus to arrive at user's location
-                seats: selectedSeats,
                 destinationEta: stop.eta, // ETA from boarding stop to destination
                 currentStopIndex: -1, // Not on bus yet
             };
@@ -544,7 +543,7 @@ export default function HomePage() {
                     <div className="py-4 h-full flex flex-col">
                         {notifications.length > 0 ? (
                             <>
-                                <div className="flex-grow space-y-4 overflow-y-auto">
+                                <div className="flex-grow space-y-4 overflow-y-auto no-scrollbar">
                                     {notifications.map(notification => (
                                         <Card key={notification.id} className={cn(notification.id === -1 && "bg-destructive/10 border-destructive")}>
                                             <CardContent className='p-4 space-y-2'>

@@ -136,7 +136,7 @@ export default function EritasPayPage() {
                     <div className="py-4 h-full flex flex-col">
                         {notifications.length > 0 ? (
                             <>
-                                <div className="flex-grow space-y-4 overflow-y-auto">
+                                <div className="flex-grow space-y-4 overflow-y-auto no-scrollbar">
                                     {notifications.map(notification => (
                                         <Card key={notification.id} className={cn(notification.id === -1 && "bg-destructive/10 border-destructive")}>
                                             <CardContent className='p-4 space-y-2'>
