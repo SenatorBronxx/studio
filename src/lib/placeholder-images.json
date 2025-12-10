@@ -62,9 +62,9 @@
     },
     {
       "id": "music-art-1",
-      "description": "Abstract colorful waveform for music cover.",
-      "imageUrl": "https://images.unsplash.com/photo-1762503634762-c62f68160aed?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxhYnN0cmFjdCUyMG11c2ljfGVufDB8fHx8MTc2MjY4MzQyNXww&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "abstract music"
+      "description": "A highlife guitarist on a Ghanaian beach.",
+      "imageUrl": "https://img.freepik.com/premium-psd/highlife-guitarist-ghanaian-beach-with-fishing-boats-vector-illustration-music-poster-idea_1020495-438011.jpg",
+      "imageHint": "highlife guitarist"
     },
     {
       "id": "music-art-2",
@@ -87,7 +87,7 @@
     {
       "id": "music-art-5",
       "description": "Vibrant synthwave style artwork.",
-      "imageUrl": "https://images.unsplash.com/photo-1658232190602-be6cd5b976f1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHx2aWJyYW50JTIwc3ludGh3YXZlfGVufDB8fHx8MTc2MjczNDY5Nnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1658232190602-be6cd5b976f1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHx2aWJyYW50JTIwc3ludGh3YXZlfGVufDB8fHx8MTc2MjczNDY5Nnww&ixlib.rb-4.1.0&q=80&w=1080",
       "imageHint": "vibrant synthwave"
     }
   ]
