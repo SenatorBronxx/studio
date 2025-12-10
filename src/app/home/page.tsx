@@ -318,6 +318,7 @@ export default function HomePage() {
                 from: "Your Location", // Mock user's current location
                 destination: stop.name,
                 eta: updatedBus.eta, // ETA for bus to arrive at user's location
+                seats: selectedSeats,
                 destinationEta: stop.eta, // ETA from boarding stop to destination
                 currentStopIndex: -1, // Not on bus yet
             };
@@ -477,7 +478,8 @@ export default function HomePage() {
   }
 
   const displayedBus = activeTrip?.bus || selectedBus;
-  const primarySeat = activeTrip?.seats[0] || selectedSeats[0];
+  const primarySeat = (activeTrip?.seats && activeTrip.seats.length > 0) ? activeTrip.seats[0] : (selectedSeats.length > 0 ? selectedSeats[0] : null);
+
 
     const allStops = displayedBus ? [...displayedBus.stops, displayedBus.finalDestination] : [];
     const nextStop = (activeTrip && activeTrip.currentStopIndex >= 0 && activeTrip.currentStopIndex < allStops.length)
@@ -864,7 +866,7 @@ export default function HomePage() {
                         <p className="text-sm text-muted-foreground">{t('showQrToDriver')}</p>
                         <div className="flex items-center gap-4 justify-center">
                             <Badge variant="outline">{displayedBus?.plate}</Badge>
-                            <Badge>{t('seat')}: {primarySeat}</Badge>
+                           {primarySeat && <Badge>{t('seat')}: {primarySeat}</Badge>}
                         </div>
                     </div>
                 </div>

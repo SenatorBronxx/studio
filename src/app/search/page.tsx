@@ -454,7 +454,8 @@ export default function SearchPage() {
   }
 
   const displayedBus = activeTrip?.bus || selectedBus;
-  const primarySeat = activeTrip?.seats[0] || selectedSeats[0];
+  const primarySeat = (activeTrip?.seats && activeTrip.seats.length > 0) ? activeTrip.seats[0] : (selectedSeats.length > 0 ? selectedSeats[0] : null);
+
 
     const allStops = displayedBus ? [...displayedBus.stops, displayedBus.finalDestination] : [];
     const nextStop = (activeTrip && activeTrip.currentStopIndex >= 0 && activeTrip.currentStopIndex < allStops.length)
@@ -747,7 +748,7 @@ export default function SearchPage() {
                         <p className="text-sm text-muted-foreground">{t('showQrToDriver')}</p>
                         <div className="flex items-center gap-4 justify-center">
                             <Badge variant="outline">{displayedBus?.plate}</Badge>
-                            <Badge>{t('seat')}: {primarySeat}</Badge>
+                            {primarySeat && <Badge>{t('seat')}: {primarySeat}</Badge>}
                         </div>
                     </div>
                 </div>
