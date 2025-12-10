@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
@@ -58,7 +59,7 @@ export default function MusicPage() {
     const [artists, setArtists] = useState<ApiArtist[]>([]);
     const [isLoadingArtists, setIsLoadingArtists] = useState(true);
 
-    const defaultArtists = useMemo(() => ['Sarkodie', 'Stonebwoy', 'Shatta Wale', 'E.L.'], []);
+    const defaultArtists = useMemo(() => ['Sarkodie', 'Stonebwoy', 'Shatta Wale', 'E.L.', 'KiDi', 'Kuami Eugene', 'Efya', 'R2Bees'], []);
 
     useEffect(() => {
         const fetchArtists = async () => {
