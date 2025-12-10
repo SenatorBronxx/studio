@@ -89,6 +89,54 @@
       "description": "Vibrant synthwave style artwork.",
       "imageUrl": "https://images.unsplash.com/photo-1658232190602-be6cd5b976f1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHx2aWJyYW50JTIwc3ludGh3YXZlfGVufDB8fHx8MTc2MjczNDY5Nnww&ixlib.rb-4.1.0&q=80&w=1080",
       "imageHint": "vibrant synthwave"
+    },
+    {
+      "id": "mood-chill",
+      "description": "A relaxing image for a chill mood.",
+      "imageUrl": "https://images.unsplash.com/photo-1543362906-acfc16c67564?q=80&w=2565&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imageHint": "relaxing mood"
+    },
+    {
+      "id": "mood-road-trip",
+      "description": "An image suitable for a road trip mood.",
+      "imageUrl": "https://images.unsplash.com/photo-1533106418989-88406e7c8ca1?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imageHint": "road trip"
+    },
+    {
+      "id": "mood-focus",
+      "description": "An image for a focus mood playlist.",
+      "imageUrl": "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?q=80&w=2672&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imageHint": "focus work"
+    },
+    {
+      "id": "mood-party",
+      "description": "An image representing a party atmosphere.",
+      "imageUrl": "https://images.unsplash.com/photo-1517457373958-b7bdd4e87205?q=80&w=2669&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imageHint": "party crowd"
+    },
+    {
+      "id": "artist-sarkodie",
+      "description": "Image of the artist Sarkodie.",
+      "imageUrl": "https://images.unsplash.com/photo-1609193167194-9b5a353d7120?q=80&w=2535&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imageHint": "male artist"
+    },
+    {
+      "id": "artist-stonebwoy",
+      "description": "Image of the artist Stonebwoy.",
+      "imageUrl": "https://images.unsplash.com/photo-1619841819074-f8b1a37c0cad?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imageHint": "male artist"
+    },
+    {
+      "id": "artist-shatta-wale",
+      "description": "Image of the artist Shatta Wale.",
+      "imageUrl": "https://images.unsplash.com/photo-1520330999036-628d08a5439a?q=80&w=2592&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imageHint": "male artist"
+    },
+    {
+      "id": "artist-el",
+      "description": "Image of the artist E.L.",
+      "imageUrl": "https://images.unsplash.com/photo-1594241614769-6d8f8d95d13a?q=80&w=2574&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imageHint": "male artist"
     }
   ]
 }

@@ -22,15 +22,30 @@ import { useDebounce } from '@/hooks/use-debounce';
 import { searchMusic } from '@/ai/flows/search-music';
 import { cn } from '@/lib/utils';
 import { useSavedSongs } from '@/context/saved-songs-context';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const musicArtworks = PlaceHolderImages.filter(p => p.id.startsWith('music-art-'));
 const fallbackImage = PlaceHolderImages.find(p => p.id === 'music-art-1')?.imageUrl || '';
 
 const genres = [
-  { name: 'Highlife', image: musicArtworks[0]?.imageUrl || '' },
-  { name: 'Hiphop', image: musicArtworks[1]?.imageUrl || '' },
-  { name: 'Afrobeat', image: musicArtworks[2]?.imageUrl || '' },
-  { name: 'Gospel', image: musicArtworks[3]?.imageUrl || '' },
+  { name: 'Highlife', image: PlaceHolderImages.find(p => p.id === 'music-art-1')?.imageUrl || '' },
+  { name: 'Hiphop', image: PlaceHolderImages.find(p => p.id === 'music-art-2')?.imageUrl || '' },
+  { name: 'Afrobeat', image: PlaceHolderImages.find(p => p.id === 'music-art-3')?.imageUrl || '' },
+  { name: 'Gospel', image: PlaceHolderImages.find(p => p.id === 'music-art-4')?.imageUrl || '' },
+];
+
+const moods = [
+    { name: 'Chill', image: PlaceHolderImages.find(p => p.id === 'mood-chill')?.imageUrl || '' },
+    { name: 'Road Trip', image: PlaceHolderImages.find(p => p.id === 'mood-road-trip')?.imageUrl || '' },
+    { name: 'Focus', image: PlaceHolderImages.find(p => p.id === 'mood-focus')?.imageUrl || '' },
+    { name: 'Party', image: PlaceHolderImages.find(p => p.id === 'mood-party')?.imageUrl || '' },
+];
+
+const artists = [
+    { name: 'Sarkodie', image: PlaceHolderImages.find(p => p.id === 'artist-sarkodie')?.imageUrl || '' },
+    { name: 'Stonebwoy', image: PlaceHolderImages.find(p => p.id === 'artist-stonebwoy')?.imageUrl || '' },
+    { name: 'Shatta Wale', image: PlaceHolderImages.find(p => p.id === 'artist-shatta-wale')?.imageUrl || '' },
+    { name: 'E.L.', image: PlaceHolderImages.find(p => p.id === 'artist-el')?.imageUrl || '' },
 ];
 
 export default function MusicPage() {
@@ -272,14 +287,32 @@ export default function MusicPage() {
                             ))}
                         </div>
                     </TabsContent>
-                    <TabsContent value="moods">
-                         <div className="text-center text-muted-foreground py-12">
-                            <p>{t('moodsComingSoon')}</p>
+                    <TabsContent value="moods" className="mt-6">
+                        <div className="grid grid-cols-2 gap-4">
+                            {moods.map(mood => (
+                                <Card key={mood.name} className="overflow-hidden relative aspect-video group">
+                                    <Image src={mood.image} alt={mood.name} fill className="object-cover transition-transform group-hover:scale-110"/>
+                                    <div className="absolute inset-0 bg-black/40"></div>
+                                    <CardContent className="relative flex h-full items-center justify-center p-4">
+                                        <h3 className="text-lg font-bold text-white text-center">{mood.name}</h3>
+                                    </CardContent>
+                                </Card>
+                            ))}
                         </div>
                     </TabsContent>
-                    <TabsContent value="artists">
-                         <div className="text-center text-muted-foreground py-12">
-                            <p>{t('artistsComingSoon')}</p>
+                    <TabsContent value="artists" className="mt-6">
+                        <div className="space-y-4">
+                            {artists.map(artist => (
+                                <Card key={artist.name}>
+                                    <CardContent className="p-3 flex items-center gap-4">
+                                        <Avatar className='h-12 w-12'>
+                                            <AvatarImage src={artist.image} alt={artist.name} />
+                                            <AvatarFallback>{artist.name.charAt(0)}</AvatarFallback>
+                                        </Avatar>
+                                        <h3 className="text-md font-semibold">{artist.name}</h3>
+                                    </CardContent>
+                                </Card>
+                            ))}
                         </div>
                     </TabsContent>
                 </Tabs>
