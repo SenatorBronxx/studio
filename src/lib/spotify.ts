@@ -71,3 +71,26 @@ export async function searchTracks(query: string, limit: number = 10): Promise<a
     const data = await response.json();
     return data.tracks.items;
 }
+
+/**
+ * Searches for artists on Spotify.
+ * @param {string} query The search query for the artist.
+ * @param {number} [limit=1] The maximum number of results to return.
+ * @returns {Promise<any[]>} A promise that resolves to an array of artist items.
+ */
+export async function searchArtists(query: string, limit: number = 1): Promise<any[]> {
+    const token = await getAccessToken();
+
+    const response = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=artist&limit=${limit}`, {
+        headers: {
+            "Authorization": `Bearer ${token}`,
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error(`Failed to search Spotify artists: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.artists.items;
+}

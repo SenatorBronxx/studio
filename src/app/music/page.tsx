@@ -1,7 +1,6 @@
-
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -11,7 +10,6 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { BottomNav } from '@/components/bottom-nav';
 import { Separator } from '@/components/ui/separator';
-import { NowPlayingIcon } from '@/components/icons/now-playing-icon';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { useMusic, type Track, PlaylistItem } from '@/context/music-context';
@@ -20,11 +18,11 @@ import { useUser } from '@/context/user-context';
 import { useRouter } from 'next/navigation';
 import { useDebounce } from '@/hooks/use-debounce';
 import { searchMusic } from '@/ai/flows/search-music';
+import { searchArtists, type Artist as ApiArtist } from '@/ai/flows/search-artists';
 import { cn } from '@/lib/utils';
 import { useSavedSongs } from '@/context/saved-songs-context';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-const musicArtworks = PlaceHolderImages.filter(p => p.id.startsWith('music-art-'));
 const fallbackImage = PlaceHolderImages.find(p => p.id === 'music-art-1')?.imageUrl || '';
 
 const genres = [
@@ -34,12 +32,6 @@ const genres = [
   { name: 'Gospel', image: PlaceHolderImages.find(p => p.id === 'music-art-4')?.imageUrl || '' },
 ];
 
-const artists = [
-    { name: 'Sarkodie', image: PlaceHolderImages.find(p => p.id === 'artist-sarkodie')?.imageUrl || '' },
-    { name: 'Stonebwoy', image: PlaceHolderImages.find(p => p.id === 'artist-stonebwoy')?.imageUrl || '' },
-    { name: 'Shatta Wale', image: PlaceHolderImages.find(p => p.id === 'artist-shatta-wale')?.imageUrl || '' },
-    { name: 'E.L.', image: PlaceHolderImages.find(p => p.id === 'artist-el')?.imageUrl || '' },
-];
 
 export default function MusicPage() {
     const { 
@@ -62,8 +54,29 @@ export default function MusicPage() {
     const [searchResults, setSearchResults] = useState<Track[]>([]);
     const [isSearching, setIsSearching] = useState(false);
     const [isSavedSongsSheetOpen, setIsSavedSongsSheetOpen] = useState(false);
+    
+    const [artists, setArtists] = useState<ApiArtist[]>([]);
+    const [isLoadingArtists, setIsLoadingArtists] = useState(true);
 
-    const handleSearch = useCallback(async (query: string) => {
+    const defaultArtists = useMemo(() => ['Sarkodie', 'Stonebwoy', 'Shatta Wale', 'E.L.'], []);
+
+    useEffect(() => {
+        const fetchArtists = async () => {
+            setIsLoadingArtists(true);
+            try {
+                const response = await searchArtists({ queries: defaultArtists });
+                setArtists(response.artists);
+            } catch (error) {
+                console.error("Error fetching artists:", error);
+                setArtists([]);
+            } finally {
+                setIsLoadingArtists(false);
+            }
+        };
+        fetchArtists();
+    }, [defaultArtists]);
+
+    const handleTrackSearch = useCallback(async (query: string) => {
         if (query.trim() === '') {
             setSearchResults([]);
             return;
@@ -88,8 +101,8 @@ export default function MusicPage() {
     }, []);
 
     useEffect(() => {
-        handleSearch(debouncedSearchQuery);
-    }, [debouncedSearchQuery, handleSearch]);
+        handleTrackSearch(debouncedSearchQuery);
+    }, [debouncedSearchQuery, handleTrackSearch]);
 
     if (!user) {
         return (
@@ -187,7 +200,7 @@ export default function MusicPage() {
                                                 <p className='text-xs font-semibold uppercase tracking-wider'>{t('nowPlaying')}</p>
                                                 <h3 className="font-bold text-2xl truncate">{nowPlaying.title}</h3>
                                                 <p className="text-sm opacity-80">{nowPlaying.artist}</p>
-                                                <Progress value={songProgress} className="h-1 bg-white/20 mt-2" indicatorClassName="bg-white" />
+                                                <Progress value={songProgress} className="h-1 bg-white/20 mt-2" />
                                             </div>
                                         </div>
                                         <Separator />
@@ -280,19 +293,25 @@ export default function MusicPage() {
                         </div>
                     </TabsContent>
                     <TabsContent value="artists" className="mt-6">
-                        <div className="space-y-4">
-                            {artists.map(artist => (
-                                <Card key={artist.name}>
-                                    <CardContent className="p-3 flex items-center gap-4">
-                                        <Avatar className='h-12 w-12'>
-                                            <AvatarImage src={artist.image} alt={artist.name} />
-                                            <AvatarFallback>{artist.name.charAt(0)}</AvatarFallback>
-                                        </Avatar>
-                                        <h3 className="text-md font-semibold">{artist.name}</h3>
-                                    </CardContent>
-                                </Card>
-                            ))}
-                        </div>
+                        {isLoadingArtists ? (
+                            <div className="flex justify-center items-center py-12">
+                                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                {artists.map(artist => (
+                                    <Card key={artist.id}>
+                                        <CardContent className="p-3 flex items-center gap-4">
+                                            <Avatar className='h-12 w-12'>
+                                                <AvatarImage src={artist.image} alt={artist.name} />
+                                                <AvatarFallback>{artist.name.charAt(0)}</AvatarFallback>
+                                            </Avatar>
+                                            <h3 className="text-md font-semibold">{artist.name}</h3>
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </div>
+                        )}
                     </TabsContent>
                 </Tabs>
             ) : (
