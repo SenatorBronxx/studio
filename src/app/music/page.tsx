@@ -34,13 +34,6 @@ const genres = [
   { name: 'Gospel', image: PlaceHolderImages.find(p => p.id === 'music-art-4')?.imageUrl || '' },
 ];
 
-const moods = [
-    { name: 'Chill', image: PlaceHolderImages.find(p => p.id === 'mood-chill')?.imageUrl || '' },
-    { name: 'Road Trip', image: PlaceHolderImages.find(p => p.id === 'mood-road-trip')?.imageUrl || '' },
-    { name: 'Focus', image: PlaceHolderImages.find(p => p.id === 'mood-focus')?.imageUrl || '' },
-    { name: 'Party', image: PlaceHolderImages.find(p => p.id === 'mood-party')?.imageUrl || '' },
-];
-
 const artists = [
     { name: 'Sarkodie', image: PlaceHolderImages.find(p => p.id === 'artist-sarkodie')?.imageUrl || '' },
     { name: 'Stonebwoy', image: PlaceHolderImages.find(p => p.id === 'artist-stonebwoy')?.imageUrl || '' },
@@ -269,8 +262,7 @@ export default function MusicPage() {
         <div className="max-w-md mx-auto space-y-6">
             {searchQuery.trim() === '' ? (
                 <Tabs defaultValue="genres">
-                    <TabsList className="grid w-full grid-cols-3">
-                        <TabsTrigger value="moods">{t('moods')}</TabsTrigger>
+                    <TabsList className="grid w-full grid-cols-2">
                         <TabsTrigger value="genres">{t('genres')}</TabsTrigger>
                         <TabsTrigger value="artists">{t('artists')}</TabsTrigger>
                     </TabsList>
@@ -282,19 +274,6 @@ export default function MusicPage() {
                                     <div className="absolute inset-0 bg-black/40"></div>
                                     <CardContent className="relative flex h-full items-end justify-center p-4">
                                         <h3 className="text-lg font-bold text-white text-center">{genre.name}</h3>
-                                    </CardContent>
-                                </Card>
-                            ))}
-                        </div>
-                    </TabsContent>
-                    <TabsContent value="moods" className="mt-6">
-                        <div className="grid grid-cols-2 gap-4">
-                            {moods.map(mood => (
-                                <Card key={mood.name} className="overflow-hidden relative aspect-video group">
-                                    <Image src={mood.image} alt={mood.name} fill className="object-cover transition-transform group-hover:scale-110"/>
-                                    <div className="absolute inset-0 bg-black/40"></div>
-                                    <CardContent className="relative flex h-full items-center justify-center p-4">
-                                        <h3 className="text-lg font-bold text-white text-center">{mood.name}</h3>
                                     </CardContent>
                                 </Card>
                             ))}
