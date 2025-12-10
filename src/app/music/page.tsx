@@ -65,7 +65,7 @@ export default function MusicPage() {
     const [selectedArtistDetails, setSelectedArtistDetails] = useState<ArtistAlbum | null>(null);
     const [isFetchingArtistDetails, setIsFetchingArtistDetails] = useState(false);
     
-    const defaultArtists = useMemo(() => ['Sarkodie', 'Stonebwoy', 'Shatta Wale', 'E.L.', 'KiDi', 'Kuami Eugene', 'Efya', 'R2Bees'], []);
+    const defaultArtists = useMemo(() => ['Sarkodie', 'Stonebwoy', 'Shatta Wale', 'E.L.', 'KiDi', 'Kuami Eugene', 'Efya', 'R2Bees', 'Wizkid', 'Burna Boy', 'Davido', 'Tems', 'Drake', 'Beyoncé', 'Kendrick Lamar', 'Taylor Swift'], []);
 
     useEffect(() => {
         const fetchArtists = async () => {
@@ -504,5 +504,7 @@ export default function MusicPage() {
     </>
   );
 }
+
+    
 
     
