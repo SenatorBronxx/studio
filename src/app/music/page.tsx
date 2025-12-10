@@ -104,6 +104,10 @@ export default function MusicPage() {
     useEffect(() => {
         handleTrackSearch(debouncedSearchQuery);
     }, [debouncedSearchQuery, handleTrackSearch]);
+    
+    const handleArtistClick = (artistId: string) => {
+        router.push(`/music/artist/${artistId}`);
+    };
 
     if (!user) {
         return (
@@ -275,7 +279,7 @@ export default function MusicPage() {
       <main className="flex-grow p-4 pb-24">
         <div className="max-w-md mx-auto space-y-6">
             {searchQuery.trim() === '' ? (
-                <Tabs defaultValue="genres">
+                <Tabs defaultValue="genres" className="w-full">
                     <TabsList className="grid w-full grid-cols-2">
                         <TabsTrigger value="genres">{t('genres')}</TabsTrigger>
                         <TabsTrigger value="artists">{t('artists')}</TabsTrigger>
@@ -301,7 +305,7 @@ export default function MusicPage() {
                         ) : (
                             <div className="space-y-4">
                                 {artists.map(artist => (
-                                    <Card key={artist.id}>
+                                    <Card key={artist.id} className='cursor-pointer hover:bg-muted/50' onClick={() => handleArtistClick(artist.id)}>
                                         <CardContent className="p-3 flex items-center gap-4">
                                             <Avatar className='h-12 w-12'>
                                                 <AvatarImage src={artist.image} alt={artist.name} />

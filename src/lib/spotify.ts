@@ -1,3 +1,4 @@
+
 /**
  * @fileOverview A service for interacting with the Spotify Web API.
  */
@@ -93,4 +94,50 @@ export async function searchArtists(query: string, limit: number = 1): Promise<a
 
     const data = await response.json();
     return data.artists.items;
+}
+
+/**
+ * Gets details for a single artist from Spotify.
+ * @param {string} artistId The Spotify ID of the artist.
+ * @returns {Promise<any>} A promise that resolves to the artist object.
+ */
+export async function getArtist(artistId: string): Promise<any> {
+    const token = await getAccessToken();
+    const response = await fetch(`https://api.spotify.com/v1/artists/${artistId}`, {
+        headers: { "Authorization": `Bearer ${token}` },
+    });
+    if (!response.ok) throw new Error(`Failed to fetch artist: ${response.statusText}`);
+    return await response.json();
+}
+
+/**
+ * Gets an artist's albums from Spotify.
+ * @param {string} artistId The Spotify ID of the artist.
+ * @param {number} [limit=20] The maximum number of albums to return.
+ * @returns {Promise<any[]>} A promise that resolves to an array of album items.
+ */
+export async function getArtistAlbums(artistId: string, limit: number = 20): Promise<any[]> {
+    const token = await getAccessToken();
+    const response = await fetch(`https://api.spotify.com/v1/artists/${artistId}/albums?include_groups=album,single&market=US&limit=${limit}`, {
+        headers: { "Authorization": `Bearer ${token}` },
+    });
+    if (!response.ok) throw new Error(`Failed to fetch artist albums: ${response.statusText}`);
+    const data = await response.json();
+    return data.items;
+}
+
+/**
+ * Gets tracks for a specific album from Spotify.
+ * @param {string} albumId The Spotify ID of the album.
+ * @param {number} [limit=50] The maximum number of tracks to return.
+ * @returns {Promise<any[]>} A promise that resolves to an array of track items.
+ */
+export async function getAlbumTracks(albumId: string, limit: number = 50): Promise<any[]> {
+    const token = await getAccessToken();
+    const response = await fetch(`https://api.spotify.com/v1/albums/${albumId}/tracks?limit=${limit}`, {
+        headers: { "Authorization": `Bearer ${token}` },
+    });
+    if (!response.ok) throw new Error(`Failed to fetch album tracks: ${response.statusText}`);
+    const data = await response.json();
+    return data.items;
 }
