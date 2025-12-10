@@ -454,7 +454,7 @@ export default function SearchPage() {
   }
 
   const displayedBus = activeTrip?.bus || selectedBus;
-  const primarySeat = (activeTrip?.seats && activeTrip.seats.length > 0) ? activeTrip.seats[0] : (selectedSeats.length > 0 ? selectedSeats[0] : null);
+  const primarySeat = (activeTrip?.seats && activeTrip.seats.length > 0) ? activeTrip.seats[0] : (Array.isArray(selectedSeats) && selectedSeats.length > 0 ? selectedSeats[0] : null);
 
 
     const allStops = displayedBus ? [...displayedBus.stops, displayedBus.finalDestination] : [];
