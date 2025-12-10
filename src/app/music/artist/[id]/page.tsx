@@ -15,6 +15,7 @@ import { useSavedSongs } from '@/context/saved-songs-context';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { BottomNav } from '@/components/bottom-nav';
+import { Card } from '@/components/ui/card';
 
 
 export default function ArtistDetailPage() {
