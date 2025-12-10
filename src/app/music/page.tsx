@@ -135,6 +135,10 @@ export default function MusicPage() {
         setSelectedArtistDetails(null);
     };
 
+    const handleGenreClick = (genreName: string) => {
+        setSearchQuery(genreName);
+    };
+
     const convertToTrack = (albumTrack: ApiAlbumTrack, albumImage: string): Track => {
         return {
             id: albumTrack.id,
@@ -414,7 +418,7 @@ export default function MusicPage() {
                     <TabsContent value="genres" className="mt-6">
                         <div className="grid grid-cols-2 gap-4">
                             {genres.map(genre => (
-                                <Card key={genre.name} className="overflow-hidden relative aspect-square group">
+                                <Card key={genre.name} className="overflow-hidden relative aspect-square group cursor-pointer" onClick={() => handleGenreClick(genre.name)}>
                                     <Image src={genre.image} alt={genre.name} fill className="object-cover transition-transform group-hover:scale-110"/>
                                     <div className="absolute inset-0 bg-black/40"></div>
                                     <CardContent className="relative flex h-full items-end justify-center p-4">
@@ -500,3 +504,5 @@ export default function MusicPage() {
     </>
   );
 }
+
+    
