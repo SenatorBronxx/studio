@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ListMusic, Plus, X, Search, Bus, LogIn, Loader2, Bookmark } from 'lucide-react';
+import { ListMusic, Plus, X, Search, Bus, LogIn, Loader2, Bookmark, ArrowLeft } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { BottomNav } from '@/components/bottom-nav';
@@ -23,6 +23,9 @@ import { searchArtists, type Artist as ApiArtist } from '@/ai/flows/search-artis
 import { cn } from '@/lib/utils';
 import { useSavedSongs } from '@/context/saved-songs-context';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { getArtistAlbums, type ArtistAlbum, type AlbumTrack as ApiAlbumTrack } from '@/ai/flows/get-artist-albums';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Badge } from '@/components/ui/badge';
 
 const fallbackImage = PlaceHolderImages.find(p => p.id === 'music-art-1')?.imageUrl || '';
 
@@ -59,6 +62,9 @@ export default function MusicPage() {
     const [artists, setArtists] = useState<ApiArtist[]>([]);
     const [isLoadingArtists, setIsLoadingArtists] = useState(true);
 
+    const [selectedArtistDetails, setSelectedArtistDetails] = useState<ArtistAlbum | null>(null);
+    const [isFetchingArtistDetails, setIsFetchingArtistDetails] = useState(false);
+    
     const defaultArtists = useMemo(() => ['Sarkodie', 'Stonebwoy', 'Shatta Wale', 'E.L.', 'KiDi', 'Kuami Eugene', 'Efya', 'R2Bees'], []);
 
     useEffect(() => {
@@ -105,8 +111,38 @@ export default function MusicPage() {
         handleTrackSearch(debouncedSearchQuery);
     }, [debouncedSearchQuery, handleTrackSearch]);
     
-    const handleArtistClick = (artistId: string) => {
-        router.push(`/music/artist/${artistId}`);
+    const handleArtistClick = async (artistId: string) => {
+        if (!artistId) return;
+
+        setIsFetchingArtistDetails(true);
+        setSelectedArtistDetails(null);
+        try {
+            const response = await getArtistAlbums({ artistId });
+            if (response.artist && response.albums) {
+                setSelectedArtistDetails(response);
+            } else {
+                // setError("Could not find details for this artist.");
+            }
+        } catch (err) {
+            console.error("Error fetching artist details:", err);
+            // setError("Failed to fetch artist details. Please try again later.");
+        } finally {
+            setIsFetchingArtistDetails(false);
+        }
+    };
+    
+    const handleBackToMusicHome = () => {
+        setSelectedArtistDetails(null);
+    };
+
+    const convertToTrack = (albumTrack: ApiAlbumTrack, albumImage: string): Track => {
+        return {
+            id: albumTrack.id,
+            title: albumTrack.name,
+            artist: albumTrack.artists,
+            duration: albumTrack.duration,
+            image: albumImage
+        };
     };
 
     if (!user) {
@@ -130,8 +166,17 @@ export default function MusicPage() {
     <div className="flex flex-col min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background/75 backdrop-blur-sm p-4 space-y-4">
-        <div className="max-w-md mx-auto flex justify-between items-center">
-            <h1 className="text-2xl font-bold">{t('browse')}</h1>
+        <div className="max-w-4xl mx-auto flex justify-between items-center">
+            {selectedArtistDetails ? (
+                 <div className="flex items-center gap-4">
+                    <Button variant="ghost" size="icon" onClick={handleBackToMusicHome}>
+                        <ArrowLeft className="h-6 w-6" />
+                    </Button>
+                    <h1 className="text-2xl font-bold">{selectedArtistDetails.artist?.name}</h1>
+                </div>
+            ) : (
+                <h1 className="text-2xl font-bold">{t('browse')}</h1>
+            )}
             <div className="flex items-center gap-2">
                 <Sheet open={isSavedSongsSheetOpen} onOpenChange={setIsSavedSongsSheetOpen}>
                     <SheetTrigger asChild>
@@ -264,21 +309,103 @@ export default function MusicPage() {
                 </Sheet>
             </div>
         </div>
-        <div className="max-w-md mx-auto relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-          <Input 
-            placeholder={t('searchSongsPlaceholder')}
-            className="pl-10"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
+        {!selectedArtistDetails && (
+            <div className="max-w-4xl mx-auto relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input 
+                    placeholder={t('searchSongsPlaceholder')}
+                    className="pl-10"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                />
+            </div>
+        )}
       </header>
       
       {/* Main Content */}
       <main className="flex-grow p-4 pb-24">
-        <div className="max-w-md mx-auto space-y-6">
-            {searchQuery.trim() === '' ? (
+        <div className="max-w-4xl mx-auto space-y-6">
+            {isFetchingArtistDetails ? (
+                <div className="flex flex-col min-h-[50vh] items-center justify-center bg-background">
+                    <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                    <p className="mt-4 text-muted-foreground">Loading artist details...</p>
+                </div>
+            ) : selectedArtistDetails && selectedArtistDetails.artist ? (
+                <>
+                {/* Artist Hero */}
+                <div className="relative h-48 md:h-64 w-full -mt-4">
+                    <Image
+                        src={selectedArtistDetails.artist.image}
+                        alt={selectedArtistDetails.artist.name}
+                        fill
+                        className="object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-transparent" />
+                    <div className="absolute bottom-0 left-0 p-4 md:p-8 w-full max-w-4xl mx-auto">
+                       <div className='flex items-end gap-4'>
+                         <Avatar className="h-24 w-24 md:h-32 md:w-32 border-4 border-background shadow-lg">
+                            <AvatarImage src={selectedArtistDetails.artist.image} alt={selectedArtistDetails.artist.name} />
+                            <AvatarFallback>{selectedArtistDetails.artist.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                             <h1 className="text-3xl md:text-5xl font-bold">{selectedArtistDetails.artist.name}</h1>
+                             <div className='flex flex-wrap gap-2 mt-2'>
+                                {selectedArtistDetails.artist.genres.map(genre => (
+                                    <Badge key={genre} variant="secondary" className='capitalize'>{genre}</Badge>
+                                ))}
+                             </div>
+                        </div>
+                       </div>
+                    </div>
+                </div>
+                
+                <div className="p-4 max-w-4xl mx-auto space-y-6">
+                    <h2 className='text-2xl font-bold'>Albums</h2>
+                     <Accordion type="single" collapsible className="w-full space-y-4">
+                        {selectedArtistDetails.albums.map((album) => (
+                             <Card key={album.id} className="bg-muted/30">
+                                <AccordionItem value={album.id} className='border-b-0'>
+                                     <AccordionTrigger className='p-4 hover:no-underline'>
+                                        <div className='flex items-center gap-4 text-left'>
+                                            <Image src={album.image} alt={album.name} width={64} height={64} className='rounded-md aspect-square object-cover'/>
+                                            <div>
+                                                <p className='font-semibold'>{album.name}</p>
+                                                <p className='text-sm text-muted-foreground'>{album.releaseYear} • {album.totalTracks} songs</p>
+                                            </div>
+                                        </div>
+                                     </AccordionTrigger>
+                                     <AccordionContent>
+                                        <div className='px-4 pb-4'>
+                                            <Separator className='mb-4' />
+                                            <div className='space-y-2'>
+                                            {album.tracks.map((track, index) => {
+                                                const fullTrack = convertToTrack(track, album.image);
+                                                const isSaved = isSongSaved(fullTrack.id);
+                                                return (
+                                                <div key={track.id} className="flex items-center gap-4 group p-2 rounded-md hover:bg-muted">
+                                                    <span className="text-sm font-mono text-muted-foreground w-6 text-center">{index + 1}</span>
+                                                    <div className="flex-grow">
+                                                        <p className="font-semibold">{track.name}</p>
+                                                        <p className="text-sm text-muted-foreground">{track.duration}</p>
+                                                    </div>
+                                                    <Button size="icon" variant="ghost" className="shrink-0 opacity-0 group-hover:opacity-100" onClick={() => isSaved ? unsaveSong(fullTrack.id) : saveSong(fullTrack)}>
+                                                        <Bookmark className={cn("h-5 w-5", isSaved ? "text-primary fill-primary" : "text-muted-foreground")}/>
+                                                    </Button>
+                                                    <Button size="icon" variant="ghost" className="shrink-0 opacity-0 group-hover:opacity-100" onClick={() => addToPlaylist(fullTrack)}>
+                                                        <Plus className="h-5 w-5 text-muted-foreground"/>
+                                                    </Button>
+                                                </div>
+                                            )})}
+                                            </div>
+                                        </div>
+                                     </AccordionContent>
+                                </AccordionItem>
+                             </Card>
+                        ))}
+                     </Accordion>
+                </div>
+                </>
+            ) : searchQuery.trim() === '' ? (
                 <Tabs defaultValue="genres" className="w-full">
                     <TabsList className="grid w-full grid-cols-2">
                         <TabsTrigger value="genres">{t('genres')}</TabsTrigger>
