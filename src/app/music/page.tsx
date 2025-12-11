@@ -8,7 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ListMusic, Plus, X, Search, Bus, LogIn, Loader2, Bookmark, ArrowLeft } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { BottomNav } from '@/components/bottom-nav';
 import { Separator } from '@/components/ui/separator';
 import { Progress } from '@/components/ui/progress';
@@ -188,13 +188,13 @@ export default function MusicPage() {
                             <Bookmark className="h-6 w-6" />
                         </Button>
                     </SheetTrigger>
-                    <SheetContent>
+                    <SheetContent className="flex flex-col">
                         <SheetHeader>
                             <SheetTitle>Saved Songs</SheetTitle>
                         </SheetHeader>
-                        <div className="py-4 h-full flex flex-col">
+                        <div className="py-4 h-full flex flex-col overflow-hidden">
                             {savedSongs.length > 0 ? (
-                                <div className="space-y-3 overflow-y-auto">
+                                <div className="space-y-3 flex-grow overflow-y-auto">
                                     {savedSongs.map((track) => (
                                          <div key={track.id} className="flex items-center gap-4 group">
                                             <Image src={track.image} alt={track.title} width={48} height={48} className="rounded-md object-cover" />
@@ -222,6 +222,10 @@ export default function MusicPage() {
                                     <p className='text-xs'>Use the bookmark icon on a song to save it.</p>
                                 </div>
                             )}
+                             <div className="text-xs text-muted-foreground/50 mt-4 flex items-center justify-center gap-2 pt-4 border-t">
+                                <Image src="https://i.postimg.cc/yxGLTbF8/841e99e1b760a190028030076e4c907f-removebg-preview.png" alt="Spotify" width={24} height={24} />
+                                <span>Powered by Spotify Web API</span>
+                            </div>
                         </div>
                     </SheetContent>
                 </Sheet>
