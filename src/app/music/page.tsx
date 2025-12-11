@@ -8,7 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ListMusic, Plus, X, Search, Bus, LogIn, Loader2, Bookmark, ArrowLeft } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { BottomNav } from '@/components/bottom-nav';
 import { Separator } from '@/components/ui/separator';
 import { Progress } from '@/components/ui/progress';
@@ -512,3 +512,4 @@ export default function MusicPage() {
     
 
     
+
