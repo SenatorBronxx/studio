@@ -69,19 +69,18 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
     console.log("Sign in with:", values);
     
     setTimeout(() => {
-        const storedUser = localStorage.getItem('eritas-last-signup');
-        const lastSignedUpUser = storedUser ? JSON.parse(storedUser) : { name: 'John Doe', email: 'john.d@email.com' };
-
+        // In a real app, this would be an API call to verify credentials
+        // For this mock, we'll just log the user in.
         const mockUserData = {
-            name: lastSignedUpUser.name,
-            email: lastSignedUpUser.email,
+            name: 'Returning User', // Mock name for returning user
+            email: 'user@example.com',
             phone: values.phone
         };
         setUser(mockUserData);
 
         toast({
-        title: t('signInSuccessfulToastTitle'),
-        description: t('signInSuccessfulToastDescription'),
+          title: t('signInSuccessfulToastTitle'),
+          description: t('signInSuccessfulToastDescription'),
         });
         setIsSubmitting(false);
         onSignInSuccess();
@@ -99,12 +98,13 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
             phone: values.phone
         };
         
-        localStorage.setItem('eritas-last-signup', JSON.stringify(newUser));
+        // This flag will tell the parent page to show the slideshow
+        localStorage.setItem('eritas-is-new-signup', 'true');
         setUser(newUser);
 
         toast({
-        title: t('signUpSuccessfulToastTitle'),
-        description: t('signUpSuccessfulToastDescription'),
+          title: t('signUpSuccessfulToastTitle'),
+          description: t('signUpSuccessfulToastDescription'),
         });
         setIsSubmitting(false);
         onSignUpSuccess(values.firstName);

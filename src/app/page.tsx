@@ -6,7 +6,7 @@ import { Bus, MapPin, Ticket, Check } from 'lucide-react';
 import { AuthForm } from '@/components/auth-form';
 import { UserPreferences } from '@/components/user-preferences';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { SignupSlideshow } from '@/components/signup-slideshow';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/context/language-context';
@@ -17,6 +17,16 @@ export default function Home() {
   const [userName, setUserName] = useState('');
   const router = useRouter();
   const { t } = useLanguage();
+
+  useEffect(() => {
+    // Check if the user is a new sign-up after the component has mounted
+    const isNewSignup = localStorage.getItem('eritas-is-new-signup');
+    if (isNewSignup === 'true') {
+      setShowSlideshow(true);
+      // Clean up the flag so it doesn't show again on refresh
+      localStorage.removeItem('eritas-is-new-signup');
+    }
+  }, []);
 
   const handleSignUpSuccess = (name: string) => {
     setUserName(name);
@@ -98,5 +108,3 @@ export default function Home() {
     </div>
   );
 }
-
-    
