@@ -1,41 +1,78 @@
 {
   "entities": {
     "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "User",
-      "description": "A user of the application.",
       "type": "object",
+      "description": "Represents a user of the Eritas Gateway application.",
       "properties": {
-        "uid": {
+        "id": {
           "type": "string",
-          "description": "The user's unique ID."
+          "description": "Unique identifier for the user entity."
         },
         "email": {
           "type": "string",
-          "format": "email",
-          "description": "The user's email address."
+          "description": "Email address of the user.",
+          "format": "email"
         },
-        "displayName": {
+        "firstName": {
           "type": "string",
-          "description": "The user's display name."
+          "description": "First name of the user."
         },
-        "photoURL": {
+        "lastName": {
           "type": "string",
-          "format": "uri",
-          "description": "The URL of the user's profile photo."
+          "description": "Last name of the user."
+        },
+        "signUpDate": {
+          "type": "string",
+          "description": "Date and time when the user signed up.",
+          "format": "date-time"
+        },
+        "lastLogin": {
+          "type": "string",
+          "description": "Date and time of the user's last login.",
+          "format": "date-time"
+        },
+        "profilePicture": {
+          "type": "string",
+          "description": "Url to the user's profile picture.",
+          "format": "uri"
         }
       },
-      "required": ["uid", "email"]
+      "required": [
+        "id",
+        "email",
+        "firstName",
+        "lastName",
+        "signUpDate"
+      ]
     }
   },
   "auth": {
-    "providers": ["google.com"]
+    "providers": [
+      "password",
+      "anonymous"
+    ]
   },
   "firestore": {
-    "/users/{userId}": {
-      "schema": {
-        "$ref": "#/entities/User"
-      },
-      "description": "User profile information."
-    }
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "user",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profile information. Uses path-based ownership for simplicity and security. This path structure isolates user data, avoiding the need for `get()` calls in rules and enabling QAPs (rules are not filters).",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user, corresponding to their Firebase Auth UID."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "Based on the provided entities and application requirements, the primary data structure revolves around user management. The structure prioritizes authorization independence and supports Query Atomic Properties (QAPs) by segregating user data based on ownership. The structure is designed to provide easy scalability and robust security rules.\n\nThe core entity is `User`, stored under `/users/{userId}`. This path-based ownership model immediately establishes clear ownership for user-specific data and simplifies security rules.\n\nThis structure avoids `get()` calls in security rules, crucial for authorization independence. Each user's data is self-contained, allowing atomic operations (transactions/batches) without relying on external data.\n\nQAPs are supported naturally by this segregation. Listing operations are inherently limited to the specific user's data. No filtering is required in the rules, as each collection is homogeneous in its security posture."
   }
 }
