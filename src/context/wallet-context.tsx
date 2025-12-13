@@ -51,7 +51,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
   const addTransaction = (transaction: Omit<Transaction, 'id'>) => {
     const newTransaction = { ...transaction, id: uuidv4() };
-    setPreference('transactions', [newTransaction, ...transactions]);
+    // Add the new transaction to the beginning of the array
+    const updatedTransactions = [newTransaction, ...transactions];
+    setPreference('transactions', updatedTransactions);
   };
   
   const removeTransaction = (id: string) => {
