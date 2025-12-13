@@ -29,7 +29,6 @@ import {
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useRouter } from 'next/navigation';
 import {
     Accordion,
@@ -37,7 +36,6 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from '@/components/ui/accordion';
-import { useUser } from '@/context/user-context';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -58,6 +56,7 @@ import { useTrip } from '@/context/trip-context';
 import { usePlaces, type SavedPlace } from '@/context/places-context';
 import { PlacesDialog, PlaceAction } from './places-dialog';
 import { useState } from 'react';
+import { useAuth, useUser } from '@/firebase';
 
 const menuItems = [
     { id: 'settings', icon: Settings, labelKey: 'profileSettings', href: '/settings' },
@@ -80,8 +79,8 @@ const discountOffer = {
 };
 
 export function ProfileSidebar() {
-    const { user, setUser } = useUser();
-    const userImage = PlaceHolderImages.find((p) => p.id === 'user-avatar')?.imageUrl;
+    const { user } = useUser();
+    const auth = useAuth();
     const router = useRouter();
     const { toast } = useToast();
     const { activeDiscount, activateDiscount, deactivateDiscount } = useDiscount();
@@ -92,21 +91,42 @@ export function ProfileSidebar() {
 
 
     const handleLogout = () => {
-        setUser(null);
-        router.push('/');
+        auth.signOut().then(() => {
+            router.push('/');
+            toast({
+                title: 'Logged Out',
+                description: 'You have been successfully logged out.',
+            });
+            // Also clear any local storage data if needed
+            localStorage.clear();
+        }).catch((error) => {
+            console.error('Logout error:', error);
+            toast({
+                variant: 'destructive',
+                title: 'Logout Failed',
+                description: 'An error occurred while logging out. Please try again.',
+            });
+        });
     };
 
     const handleDeleteAccount = () => {
-        // In a real app, this would trigger a backend process to delete the user.
-        console.log('Deleting user account and all local data...');
-        
-        setUser(null); // This will also trigger the data clearing
-        
-        toast({
-            title: t('accountDeletedToastTitle'),
-            description: t('accountDeletedToastDescription')
-        });
-        
+        const currentUser = auth.currentUser;
+        if (currentUser) {
+            currentUser.delete().then(() => {
+                toast({
+                    title: t('accountDeletedToastTitle'),
+                    description: t('accountDeletedToastDescription')
+                });
+                router.push('/');
+                localStorage.clear();
+            }).catch((error) => {
+                 toast({
+                    variant: 'destructive',
+                    title: 'Deletion Failed',
+                    description: 'This operation requires recent authentication. Please log in again to delete your account.',
+                });
+            });
+        }
     };
     
     const handleNavigate = (href?: string) => {
@@ -180,13 +200,13 @@ export function ProfileSidebar() {
                     {user ? (
                         <div className="flex items-center gap-4">
                             <Avatar className="h-16 w-16">
-                                {userImage && <AvatarImage src={userImage} alt={user.name} />}
+                                {user.photoURL && <AvatarImage src={user.photoURL} alt={user.displayName || 'User'} />}
                                 <AvatarFallback>
-                                    <User />
+                                    {user.displayName ? user.displayName.charAt(0).toUpperCase() : <User />}
                                 </AvatarFallback>
                             </Avatar>
                             <div>
-                                <p className="text-lg font-semibold">{user.name}</p>
+                                <p className="text-lg font-semibold">{user.displayName}</p>
                                 <p className="text-sm text-muted-foreground">{user.email}</p>
                             </div>
                         </div>
@@ -417,7 +437,3 @@ export function ProfileSidebar() {
         </>
     );
 }
-
-    
-
-    

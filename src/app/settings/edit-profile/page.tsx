@@ -9,89 +9,112 @@ import { ArrowLeft, Loader2, Save, User as UserIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { useUser } from '@/context/user-context';
+import { useUser, useAuth } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
 import { useLanguage } from '@/context/language-context';
+import { updateProfile, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
 
 const profileSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters.'),
+  displayName: z.string().min(2, 'Name must be at least 2 characters.'),
   email: z.string().email('Please enter a valid email address.').optional().or(z.literal('')),
-  phone: z.string().min(10, 'Please enter a valid phone number.'),
-  password: z.string().min(8, 'Password must be at least 8 characters.').optional().or(z.literal('')),
+  currentPassword: z.string().optional().or(z.literal('')),
+  newPassword: z.string().min(8, 'Password must be at least 8 characters.').optional().or(z.literal('')),
   confirmPassword: z.string().optional().or(z.literal('')),
 }).refine((data) => {
-    if (data.password && data.password !== data.confirmPassword) {
+    if (data.newPassword && data.newPassword !== data.confirmPassword) {
         return false;
     }
     return true;
 }, {
     message: "Passwords don't match",
     path: ['confirmPassword'],
+}).refine(data => {
+    if(data.newPassword && !data.currentPassword) {
+        return false;
+    }
+    return true;
+}, {
+    message: "Current password is required to set a new one.",
+    path: ["currentPassword"],
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
 
 export default function EditProfilePage() {
   const router = useRouter();
-  const { user, setUser, isHydrated } = useUser();
+  const { user, isUserLoading } = useUser();
+  const auth = useAuth();
   const { toast } = useToast();
   const { t } = useLanguage();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const userImage = PlaceHolderImages.find((p) => p.id === 'user-avatar')?.imageUrl;
-
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      name: '',
+      displayName: '',
       email: '',
-      phone: '',
-      password: '',
+      currentPassword: '',
+      newPassword: '',
       confirmPassword: '',
     },
   });
   
   useEffect(() => {
-    if (isHydrated && user) {
+    if (!isUserLoading && user) {
         form.reset({
-            name: user.name,
-            email: user.email,
-            phone: user.phone,
-            password: '',
-            confirmPassword: '',
+            displayName: user.displayName || '',
+            email: user.email || '',
         });
     }
-  }, [isHydrated, user, form]);
+  }, [isUserLoading, user, form]);
 
-  const onSubmit = (data: ProfileFormValues) => {
+  const onSubmit = async (data: ProfileFormValues) => {
+    if (!user) return;
     setIsSubmitting(true);
-    setTimeout(() => {
-      setUser({
-        name: data.name,
-        email: data.email || '',
-        phone: data.phone,
-      });
 
-      let description = t('profileUpdatedToastDescription');
-      if (data.password) {
-        console.log("Password change requested. In a real app, this would be a secure backend call.");
-        description += ` ${t('passwordUpdatedToastDescription')}`;
-      }
-      
-      toast({
-        title: t('profileUpdatedToastTitle'),
-        description: description,
-      });
-      setIsSubmitting(false);
-      router.back();
-    }, 1000);
+    try {
+        // Update display name if changed
+        if (data.displayName !== user.displayName) {
+            await updateProfile(user, { displayName: data.displayName });
+        }
+
+        // Update password if a new one is provided
+        if (data.newPassword && data.currentPassword) {
+            const credential = EmailAuthProvider.credential(user.email!, data.currentPassword);
+            await reauthenticateWithCredential(user, credential);
+            await updatePassword(user, data.newPassword);
+            toast({
+                title: t('passwordUpdatedToastDescription'),
+            });
+        }
+        
+        toast({
+            title: t('profileUpdatedToastTitle'),
+            description: t('profileUpdatedToastDescription'),
+        });
+        
+        router.back();
+
+    } catch (error: any) {
+        console.error("Profile update error:", error);
+        let message = "An error occurred while updating your profile.";
+        if (error.code === 'auth/wrong-password') {
+            message = "The current password you entered is incorrect.";
+        }
+        toast({
+            variant: "destructive",
+            title: "Update Failed",
+            description: message,
+        });
+    } finally {
+        setIsSubmitting(false);
+    }
   };
   
-  if (!isHydrated) {
+  if (isUserLoading) {
     return (
         <div className="flex flex-col min-h-screen bg-background items-center justify-center">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -130,7 +153,7 @@ export default function EditProfilePage() {
           <div className="flex flex-col items-center justify-center mb-6">
             <div className='relative'>
               <Avatar className="h-24 w-24 border-4 border-background shadow-md">
-                {userImage && <AvatarImage src={userImage} alt={user.name} />}
+                {user.photoURL && <AvatarImage src={user.photoURL} alt={user.displayName || 'User'} />}
                 <AvatarFallback>
                   <UserIcon className="h-10 w-10" />
                 </AvatarFallback>
@@ -147,7 +170,7 @@ export default function EditProfilePage() {
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                   <FormField
                     control={form.control}
-                    name="name"
+                    name="displayName"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>{t('fullNameLabel')}</FormLabel>
@@ -165,7 +188,7 @@ export default function EditProfilePage() {
                       <FormItem>
                         <FormLabel>{t('emailAddressLabel')}</FormLabel>
                         <FormControl>
-                          <Input type="email" placeholder={t('emailAddressPlaceholder')} {...field} />
+                          <Input type="email" placeholder={t('emailAddressPlaceholder')} {...field} disabled />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -173,12 +196,12 @@ export default function EditProfilePage() {
                   />
                    <FormField
                     control={form.control}
-                    name="phone"
+                    name="currentPassword"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{t('phoneNumberLabel')}</FormLabel>
+                        <FormLabel>Current Password</FormLabel>
                         <FormControl>
-                          <Input type="tel" placeholder="+233 24 123 4567" {...field} />
+                          <Input type="password" placeholder="Enter current password to change it" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -186,7 +209,7 @@ export default function EditProfilePage() {
                   />
                    <FormField
                     control={form.control}
-                    name="password"
+                    name="newPassword"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>{t('newPasswordLabel')}</FormLabel>

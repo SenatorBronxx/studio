@@ -61,7 +61,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useBusArrivalNotification } from '@/hooks/use-bus-arrival-notification';
-import { useUser } from '@/context/user-context';
+import { useUser } from '@/firebase';
 import { TripRating } from '@/components/trip-rating';
 
 const initialBusData = [
@@ -119,7 +119,7 @@ type PassedBusInfo = {
 
 export default function HomePage() {
   const router = useRouter();
-  const { user } = useUser();
+  const { user, isUserLoading } = useUser();
   const { toast } = useToast();
   const { balance, deductBalance, addTransaction, addLoyaltyPoints, addBalance: refundBalance, isLowBalance } = useWallet();
   const { setIsOnBus, isOnBus, setNowPlaying } = useMusic();
@@ -487,6 +487,14 @@ export default function HomePage() {
         : null;
 
 
+  if (isUserLoading) {
+      return (
+        <div className="flex flex-col min-h-screen bg-background items-center justify-center">
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        </div>
+    );
+  }
+
   if (!user) {
     return (
         <div className="flex flex-col min-h-screen bg-background items-center justify-center text-center p-4">
@@ -809,7 +817,7 @@ export default function HomePage() {
                 ) : (
                 <>
                     <div className='text-center'>
-                        <h2 className="text-xl font-bold text-foreground">{t('homeGreeting', { name: user?.name.split(' ')[0] || t('friend') })}</h2>
+                        <h2 className="text-xl font-bold text-foreground">{t('homeGreeting', { name: user?.displayName?.split(' ')[0] || t('friend') })}</h2>
                         <p className="text-sm text-muted-foreground">{t('homeSubGreeting')}</p>
                     </div>
                     <div className='flex items-center gap-2'>
@@ -875,5 +883,3 @@ export default function HomePage() {
     </div>
   );
 }
-
-    

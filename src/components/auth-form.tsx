@@ -18,23 +18,32 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
-import { useUser } from "@/context/user-context";
 import { useLanguage } from "@/context/language-context";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { AppleIcon } from "@/components/icons/apple";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
+  OAuthProvider,
+  updateProfile,
+} from "firebase/auth";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { useFirebase } from "@/firebase";
+import { errorEmitter } from "@/firebase/error-emitter";
+import { FirestorePermissionError } from "@/firebase/errors";
 
 // Schemas
 const signInSchema = z.object({
-  phone: z.string().min(10, { message: "Invalid phone number." }),
+  email: z.string().email({ message: "Invalid email address." }),
   password: z.string().min(1, { message: "Password is required." }),
 });
 
 const signUpSchema = z.object({
   firstName: z.string().min(1, { message: "First name is required." }),
   lastName: z.string().min(1, { message: "Last name is required." }),
-  email: z.string().email({ message: "Invalid email address." }).optional().or(z.literal('')),
-  phone: z.string().min(10, { message: "A valid phone number is required." }),
+  email: z.string().email({ message: "Invalid email address." }),
   password: z.string().min(8, { message: "Password must be at least 8 characters." }),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
@@ -50,87 +59,148 @@ type AuthFormProps = {
 export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  const { setUser } = useUser();
   const { t } = useLanguage();
-  const router = useRouter();
-  
+  const { auth, firestore } = useFirebase();
+
   const signInForm = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
-    defaultValues: { phone: "", password: "" },
+    defaultValues: { email: "", password: "" },
   });
 
   const signUpForm = useForm<z.infer<typeof signUpSchema>>({
     resolver: zodResolver(signUpSchema),
-    defaultValues: { firstName: "", lastName: "", email: "", phone: "", password: "", confirmPassword: "" },
+    defaultValues: { firstName: "", lastName: "", email: "", password: "", confirmPassword: "" },
   });
+
+  const handleError = (error: any) => {
+    console.error("Authentication error:", error);
+    let message = "An unexpected error occurred. Please try again.";
+    if (error.code) {
+        switch (error.code) {
+            case 'auth/user-not-found':
+            case 'auth/wrong-password':
+                message = 'Invalid email or password.';
+                break;
+            case 'auth/email-already-in-use':
+                message = 'This email address is already in use.';
+                break;
+            case 'auth/weak-password':
+                message = 'The password is too weak.';
+                break;
+            case 'auth/invalid-email':
+                message = 'Please enter a valid email address.';
+                break;
+             case 'auth/popup-closed-by-user':
+                message = 'Sign-in process was cancelled.';
+                break;
+            default:
+                message = error.message;
+        }
+    }
+    toast({
+        variant: 'destructive',
+        title: 'Authentication Failed',
+        description: message,
+    });
+    setIsSubmitting(false);
+  };
+  
+  const createUserProfileDocument = (user: import("firebase/auth").User, firstName: string, lastName: string) => {
+      const userRef = doc(firestore, "users", user.uid);
+      const userData = {
+        id: user.uid,
+        email: user.email,
+        firstName: firstName,
+        lastName: lastName,
+        signUpDate: serverTimestamp(),
+        lastLogin: serverTimestamp(),
+        profilePicture: user.photoURL || '',
+      };
+      
+      setDoc(userRef, userData, { merge: true }).catch(err => {
+          const permissionError = new FirestorePermissionError({
+              path: userRef.path,
+              operation: 'create',
+              requestResourceData: userData,
+          });
+          errorEmitter.emit('permission-error', permissionError);
+      });
+  };
 
   const handleSignIn = async (values: z.infer<typeof signInSchema>) => {
     setIsSubmitting(true);
-    console.log("Sign in with:", values);
-    
-    setTimeout(() => {
-        // In a real app, this would be an API call to verify credentials
-        // For this mock, we'll just log the user in.
-        const mockUserData = {
-            name: 'Returning User', // Mock name for returning user
-            email: 'user@example.com',
-            phone: values.phone
-        };
-        setUser(mockUserData);
-
+    signInWithEmailAndPassword(auth, values.email, values.password)
+      .then((userCredential) => {
+        const user = userCredential.user;
+        const userRef = doc(firestore, "users", user.uid);
+        setDoc(userRef, { lastLogin: serverTimestamp() }, { merge: true }).catch(err => {
+            console.warn("Could not update last login time for user:", err);
+        });
         toast({
           title: t('signInSuccessfulToastTitle'),
           description: t('signInSuccessfulToastDescription'),
         });
-        setIsSubmitting(false);
         onSignInSuccess();
-    }, 1500);
+      })
+      .catch(handleError)
+      .finally(() => setIsSubmitting(false));
   };
 
   const handleSignUp = async (values: z.infer<typeof signUpSchema>) => {
     setIsSubmitting(true);
-    console.log("Sign up with:", values);
-    
-    setTimeout(() => {
-        const newUser = {
-            name: `${values.firstName} ${values.lastName}`,
-            email: values.email || '',
-            phone: values.phone
-        };
-        
-        // This flag will tell the parent page to show the slideshow
-        localStorage.setItem('eritas-is-new-signup', 'true');
-        setUser(newUser);
+    createUserWithEmailAndPassword(auth, values.email, values.password)
+        .then(async (userCredential) => {
+            const user = userCredential.user;
+            const fullName = `${values.firstName} ${values.lastName}`;
+            await updateProfile(user, { displayName: fullName });
+            
+            createUserProfileDocument(user, values.firstName, values.lastName);
 
-        toast({
-          title: t('signUpSuccessfulToastTitle'),
-          description: t('signUpSuccessfulToastDescription'),
-        });
-        setIsSubmitting(false);
-        onSignUpSuccess(values.firstName);
-    }, 1500);
+            toast({
+              title: t('signUpSuccessfulToastTitle'),
+              description: t('signUpSuccessfulToastDescription'),
+            });
+            onSignUpSuccess(values.firstName);
+        })
+        .catch(handleError)
+        .finally(() => setIsSubmitting(false));
   };
   
-  const handleSocialLogin = async (provider: 'Google' | 'Apple') => {
+  const handleSocialLogin = async (providerName: 'Google' | 'Apple') => {
     setIsSubmitting(true);
     
-    setTimeout(() => {
-        console.log(`Signing in with ${provider}`);
-        const mockSocialUser = {
-            name: 'Jane Smith',
-            email: 'jane.s@email.com',
-            phone: '+233 55 555 5555'
-        };
-        setUser(mockSocialUser);
-        
+    let provider;
+    if (providerName === 'Google') {
+        provider = new GoogleAuthProvider();
+    } else { // Apple
+        provider = new OAuthProvider('apple.com');
+    }
+
+    signInWithPopup(auth, provider)
+      .then((result) => {
+        const user = result.user;
+        const isNewUser = result.additionalUserInfo?.isNewUser;
+
+        if (isNewUser) {
+          const nameParts = user.displayName?.split(' ') || ['New', 'User'];
+          const firstName = nameParts[0];
+          const lastName = nameParts.slice(1).join(' ') || ' ';
+          createUserProfileDocument(user, firstName, lastName);
+          onSignUpSuccess(firstName);
+        } else {
+          const userRef = doc(firestore, "users", user.uid);
+          setDoc(userRef, { lastLogin: serverTimestamp() }, { merge: true }).catch(err => {
+            console.warn("Could not update last login time for user:", err);
+          });
+          onSignInSuccess();
+        }
         toast({
-            title: t('socialSignInToastTitle', { provider }),
+            title: t('socialSignInToastTitle', { provider: providerName }),
             description: t('welcome'),
         });
-        
-        setIsSubmitting(false);
-        router.push('/home');
-    }, 1500);
+      })
+      .catch(handleError)
+      .finally(() => setIsSubmitting(false));
   }
 
   return (
@@ -144,12 +214,12 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
           <form onSubmit={signInForm.handleSubmit(handleSignIn)} className="space-y-4 mt-4">
             <FormField
               control={signInForm.control}
-              name="phone"
+              name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('phoneNumberLabel')}</FormLabel>
+                  <FormLabel>{t('emailAddressLabel')}</FormLabel>
                   <FormControl>
-                    <Input placeholder="+233 24 123 4567" {...field} />
+                    <Input placeholder="m@example.com" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -177,7 +247,7 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
       </TabsContent>
       <TabsContent value="sign-up">
         <Form {...signUpForm}>
-          <form onSubmit={signUpForm. handleSubmit(handleSignUp)} className="space-y-4 mt-4">
+          <form onSubmit={signUpForm.handleSubmit(handleSignUp)} className="space-y-4 mt-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                 control={signUpForm.control}
@@ -208,23 +278,10 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
             </div>
              <FormField
               control={signUpForm.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('phoneNumberLabel')}</FormLabel>
-                  <FormControl>
-                    <Input placeholder="+233 24 123 4567" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={signUpForm.control}
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('emailOptionalLabel')}</FormLabel>
+                  <FormLabel>{t('emailAddressLabel')}</FormLabel>
                   <FormControl>
                     <Input placeholder="m@example.com" {...field} />
                   </FormControl>

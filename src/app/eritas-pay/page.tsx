@@ -13,6 +13,7 @@ import {
   Bus,
   ArrowDownToLine,
   AlertCircle,
+  Loader2
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -28,9 +29,8 @@ import { DeletableItem } from '@/components/deletable-item';
 import { useState, useEffect } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import Image from 'next/image';
-import { Loader2 } from 'lucide-react';
 import { useLanguage } from '@/context/language-context';
-import { useUser } from '@/context/user-context';
+import { useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { IconMosaicBackground } from '@/components/icon-mosaic-background';
 import { cn } from '@/lib/utils';
@@ -57,7 +57,7 @@ type Notification = {
 export default function EritasPayPage() {
   const { balance, transactions, removeTransaction, isLowBalance } = useWallet();
   const { t } = useLanguage();
-  const { user } = useUser();
+  const { user, isUserLoading } = useUser();
   const router = useRouter();
   const maxBalance = 400.00;
   const progressPercentage = (balance / maxBalance) * 100;
@@ -91,6 +91,13 @@ export default function EritasPayPage() {
     }
   }, [isLowBalance, t, router]);
 
+  if (isUserLoading) {
+      return (
+        <div className="flex flex-col min-h-screen bg-background items-center justify-center">
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        </div>
+    );
+  }
 
   if (!user) {
     return (

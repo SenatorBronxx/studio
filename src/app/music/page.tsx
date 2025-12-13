@@ -15,7 +15,7 @@ import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { useMusic, type Track, PlaylistItem } from '@/context/music-context';
 import { useLanguage } from '@/context/language-context';
-import { useUser } from '@/context/user-context';
+import { useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { useDebounce } from '@/hooks/use-debounce';
 import { searchMusic } from '@/ai/flows/search-music';
@@ -51,7 +51,7 @@ export default function MusicPage() {
     const { savedSongs, saveSong, unsaveSong, isSongSaved } = useSavedSongs();
 
     const { t } = useLanguage();
-    const { user } = useUser();
+    const { user, isUserLoading } = useUser();
     const router = useRouter();
     const [searchQuery, setSearchQuery] = useState('');
     const debouncedSearchQuery = useDebounce(searchQuery, 500);
@@ -148,6 +148,14 @@ export default function MusicPage() {
             image: albumImage
         };
     };
+
+    if (isUserLoading) {
+        return (
+            <div className="flex flex-col min-h-screen bg-background items-center justify-center">
+                <Loader2 className="h-12 w-12 animate-spin text-primary" />
+            </div>
+        );
+    }
 
     if (!user) {
         return (
@@ -508,8 +516,3 @@ export default function MusicPage() {
     </>
   );
 }
-
-    
-
-    
-

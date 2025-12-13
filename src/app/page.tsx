@@ -10,26 +10,29 @@ import { useState, useEffect } from 'react';
 import { SignupSlideshow } from '@/components/signup-slideshow';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/context/language-context';
+import { useUser, useFirebase } from '@/firebase';
 
 export default function Home() {
   const busImage = PlaceHolderImages.find(p => p.id === 'bus-side-view');
   const [showSlideshow, setShowSlideshow] = useState(false);
-  const [userName, setUserName] = useState('');
   const router = useRouter();
   const { t } = useLanguage();
+  const { user, isUserLoading } = useUser();
 
   useEffect(() => {
-    // Check if the user is a new sign-up after the component has mounted
-    const isNewSignup = localStorage.getItem('eritas-is-new-signup');
-    if (isNewSignup === 'true') {
-      setShowSlideshow(true);
-      // Clean up the flag so it doesn't show again on refresh
-      localStorage.removeItem('eritas-is-new-signup');
+    if (!isUserLoading && user) {
+        const isNewSignup = localStorage.getItem('eritas-is-new-signup');
+        if (isNewSignup === 'true') {
+            setShowSlideshow(true);
+            localStorage.removeItem('eritas-is-new-signup');
+        } else {
+            router.push('/home');
+        }
     }
-  }, []);
+  }, [user, isUserLoading, router]);
 
   const handleSignUpSuccess = (name: string) => {
-    setUserName(name);
+    localStorage.setItem('eritas-is-new-signup', 'true');
     setShowSlideshow(true);
   };
   
@@ -43,6 +46,16 @@ export default function Home() {
 
   if (showSlideshow) {
     return <SignupSlideshow onFinish={handleSlideshowFinish} />;
+  }
+  
+  if (isUserLoading || user) {
+      // Show a loading indicator or a blank screen while checking auth state
+      // or if the user is already logged in and we are about to redirect.
+      return (
+          <div className="flex items-center justify-center min-h-screen bg-background">
+              {/* You can add a spinner here if you like */}
+          </div>
+      );
   }
 
   return (
@@ -63,7 +76,7 @@ export default function Home() {
             <div className="grid gap-2 text-center">
               <div className="flex justify-center">
                 <Image
-                  src="https://jklylnqjwfrmjrsqfzys.supabase.co/storage/v1/object/public/images/eritas-logo-1763267730211.png"
+                  src="https://i.postimg.cc/htqrt1Dn/Screenshot-2025-11-06-192038-removebg-preview-(1).png"
                   alt="Eritas Transport Company Logo"
                   width={200}
                   height={100}
@@ -108,5 +121,3 @@ export default function Home() {
     </div>
   );
 }
-
-    
