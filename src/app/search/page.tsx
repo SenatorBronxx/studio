@@ -39,7 +39,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useDiscount } from '@/context/discount-context';
 import { useBusArrivalNotification } from '@/hooks/use-bus-arrival-notification';
-import { useNotificationSettings } from '@/hooks/use-notification-settings';
+import { useNotificationSettings } from '@/context/notification-settings-context';
 import { TripRating } from '@/components/trip-rating';
 
 const initialBusData = [
