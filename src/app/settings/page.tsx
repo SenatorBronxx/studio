@@ -10,15 +10,16 @@ import {
   Bell,
   Lock,
   ChevronRight,
+  Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import Link from 'next/link';
 import { ThemeSwitcher } from '@/components/theme-switcher';
 import { Palette } from 'lucide-react';
 import { useLanguage } from '@/context/language-context';
+import { useUser } from '@/firebase';
 
 const settingsOptions = [
   {
@@ -56,7 +57,7 @@ const settingsOptions = [
 export default function SettingsPage() {
   const router = useRouter();
   const { t } = useLanguage();
-  const userImage = PlaceHolderImages.find((p) => p.id === 'user-avatar')?.imageUrl;
+  const { user, isUserLoading } = useUser();
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -77,12 +78,30 @@ export default function SettingsPage() {
       <main className="flex-grow p-4">
         <div className="max-w-md mx-auto">
           <div className="flex flex-col items-center justify-center -mt-2 mb-6">
-            <Avatar className="h-24 w-24 border-4 border-background shadow-md">
-                {userImage && <AvatarImage src={userImage} alt="User Name" />}
-                <AvatarFallback>
-                    <User className="h-10 w-10"/>
-                </AvatarFallback>
-            </Avatar>
+            {isUserLoading ? (
+                <div className='h-24 w-24 flex items-center justify-center'>
+                    <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                </div>
+            ) : user ? (
+                <>
+                <Avatar className="h-24 w-24 border-4 border-background shadow-md">
+                    {user.photoURL && <AvatarImage src={user.photoURL} alt={user.displayName || 'User'} />}
+                    <AvatarFallback>
+                        {user.displayName ? user.displayName.charAt(0).toUpperCase() : <User className="h-10 w-10"/>}
+                    </AvatarFallback>
+                </Avatar>
+                <div className='text-center mt-2'>
+                    <p className='font-bold text-xl'>{user.displayName}</p>
+                    <p className='text-sm text-muted-foreground'>{user.email}</p>
+                </div>
+                </>
+            ) : (
+                 <Avatar className="h-24 w-24 border-4 border-background shadow-md">
+                    <AvatarFallback>
+                        <User className="h-10 w-10"/>
+                    </AvatarFallback>
+                </Avatar>
+            )}
           </div>
           <Card>
             <CardContent className="p-0">
