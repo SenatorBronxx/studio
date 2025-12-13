@@ -26,7 +26,6 @@ import {
   signInWithEmailAndPassword,
   signInWithPopup,
   GoogleAuthProvider,
-  OAuthProvider,
   updateProfile,
 } from "firebase/auth";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
@@ -79,6 +78,7 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
         switch (error.code) {
             case 'auth/user-not-found':
             case 'auth/wrong-password':
+            case 'auth/invalid-credential':
                 message = 'Invalid email or password.';
                 break;
             case 'auth/email-already-in-use':
@@ -173,7 +173,6 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
     if (providerName === 'Google') {
         provider = new GoogleAuthProvider();
     } else {
-        // This should not happen now
         setIsSubmitting(false);
         return;
     }
