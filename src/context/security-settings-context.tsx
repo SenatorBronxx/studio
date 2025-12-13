@@ -1,7 +1,8 @@
 
 'use client';
 
-import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
+import { createContext, useContext, ReactNode, useCallback } from 'react';
+import { useUserPreferences } from './user-preferences-context';
 
 type SecuritySettings = {
   isPinEnabled: boolean;
@@ -18,49 +19,26 @@ type SecuritySettingsContextType = SecuritySettings & {
 
 const SecuritySettingsContext = createContext<SecuritySettingsContextType | undefined>(undefined);
 
-const defaultSettings: SecuritySettings = {
-  isPinEnabled: false,
-  isBiometricEnabled: true,
-  is2faEnabled: false,
-};
-
 export function SecuritySettingsProvider({ children }: { children: ReactNode }) {
-  const [settings, setSettings] = useState<SecuritySettings>(defaultSettings);
-  const [isHydrated, setIsHydrated] = useState(false);
+  const { preferences, setPreference, isHydrated } = useUserPreferences();
 
-  useEffect(() => {
-    try {
-      const storedSettings = localStorage.getItem('eritas-security-settings');
-      if (storedSettings) {
-        setSettings(JSON.parse(storedSettings));
-      }
-    } catch (error) {
-      console.error("Failed to read security settings from localStorage", error);
-    }
-    setIsHydrated(true);
-  }, []);
-
-  useEffect(() => {
-    if (isHydrated) {
-      try {
-        localStorage.setItem('eritas-security-settings', JSON.stringify(settings));
-      } catch (error) {
-        console.error("Failed to write security settings to localStorage", error);
-      }
-    }
-  }, [settings, isHydrated]);
+  const settings = preferences?.securitySettings || {
+    isPinEnabled: false,
+    isBiometricEnabled: true,
+    is2faEnabled: false,
+  };
 
   const setIsPinEnabled = useCallback((value: boolean) => {
-    setSettings(s => ({ ...s, isPinEnabled: value }));
-  }, []);
+    setPreference('securitySettings', { ...settings, isPinEnabled: value });
+  }, [setPreference, settings]);
   
   const setIsBiometricEnabled = useCallback((value: boolean) => {
-    setSettings(s => ({ ...s, isBiometricEnabled: value }));
-  }, []);
+    setPreference('securitySettings', { ...settings, isBiometricEnabled: value });
+  }, [setPreference, settings]);
 
   const setIs2faEnabled = useCallback((value: boolean) => {
-    setSettings(s => ({ ...s, is2faEnabled: value }));
-  }, []);
+    setPreference('securitySettings', { ...settings, is2faEnabled: value });
+  }, [setPreference, settings]);
   
   const value = {
     ...settings,

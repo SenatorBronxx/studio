@@ -1,10 +1,11 @@
 
 'use client';
 
-import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
+import { createContext, useContext, ReactNode, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from './language-context';
 import type { Track } from './music-context';
+import { useUserPreferences } from './user-preferences-context';
 
 type SavedSongsContextType = {
   savedSongs: Track[];
@@ -17,32 +18,11 @@ type SavedSongsContextType = {
 const SavedSongsContext = createContext<SavedSongsContextType | undefined>(undefined);
 
 export function SavedSongsProvider({ children }: { children: ReactNode }) {
-  const [savedSongs, setSavedSongs] = useState<Track[]>([]);
-  const [isHydrated, setIsHydrated] = useState(false);
+  const { preferences, setPreference, isHydrated } = useUserPreferences();
   const { toast } = useToast();
   const { t } = useLanguage();
 
-  useEffect(() => {
-    try {
-      const storedSongs = localStorage.getItem('eritas-saved-songs');
-      if (storedSongs) {
-        setSavedSongs(JSON.parse(storedSongs));
-      }
-    } catch (error) {
-      console.error("Failed to read saved songs from localStorage", error);
-    }
-    setIsHydrated(true);
-  }, []);
-
-  useEffect(() => {
-    if (isHydrated) {
-      try {
-        localStorage.setItem('eritas-saved-songs', JSON.stringify(savedSongs));
-      } catch (error) {
-        console.error("Failed to write saved songs to localStorage", error);
-      }
-    }
-  }, [savedSongs, isHydrated]);
+  const savedSongs = preferences?.savedSongs || [];
 
   const isSongSaved = useCallback((trackId: string) => {
     return savedSongs.some(song => song.id === trackId);
@@ -51,23 +31,27 @@ export function SavedSongsProvider({ children }: { children: ReactNode }) {
   const saveSong = useCallback((track: Track) => {
     if (isSongSaved(track.id)) return;
     
-    setSavedSongs(prevSongs => [track, ...prevSongs]);
+    const newSavedSongs = [track, ...savedSongs];
+    setPreference('savedSongs', newSavedSongs);
+
     toast({
       title: "Song Saved",
       description: `'${track.title}' has been added to your library.`,
     });
-  }, [isSongSaved, t, toast]);
+  }, [isSongSaved, savedSongs, setPreference, t, toast]);
 
   const unsaveSong = useCallback((trackId: string) => {
     const songToRemove = savedSongs.find(song => song.id === trackId);
-    setSavedSongs(prevSongs => prevSongs.filter(song => song.id !== trackId));
-    if (songToRemove) {
-      toast({
-        title: "Song Unsaved",
-        description: `'${songToRemove.title}' has been removed from your library.`,
-      });
-    }
-  }, [savedSongs, t, toast]);
+    if (!songToRemove) return;
+
+    const newSavedSongs = savedSongs.filter(song => song.id !== trackId);
+    setPreference('savedSongs', newSavedSongs);
+    
+    toast({
+      title: "Song Unsaved",
+      description: `'${songToRemove.title}' has been removed from your library.`,
+    });
+  }, [savedSongs, setPreference, t, toast]);
 
   const value = { savedSongs, saveSong, unsaveSong, isSongSaved, isHydrated };
 

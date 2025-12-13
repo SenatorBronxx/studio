@@ -1,7 +1,8 @@
 
 'use client';
 
-import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
+import { createContext, useContext, ReactNode, useCallback } from 'react';
+import { useUserPreferences } from './user-preferences-context';
 
 type Discount = {
   code: string;
@@ -21,56 +22,24 @@ type DiscountContextType = {
 const DiscountContext = createContext<DiscountContextType | undefined>(undefined);
 
 export function DiscountProvider({ children }: { children: ReactNode }) {
-  const [activeDiscount, setActiveDiscount] = useState<Discount | null>(null);
-  const [isDiscountBannerDismissed, setIsDiscountBannerDismissed] = useState(false);
-  const [isHydrated, setIsHydrated] = useState(false);
-
-  useEffect(() => {
-    try {
-      const storedDiscount = localStorage.getItem('eritas-active-discount');
-      if (storedDiscount) {
-        setActiveDiscount(JSON.parse(storedDiscount));
-      }
-      const storedDismissed = localStorage.getItem('eritas-discount-banner-dismissed');
-      if (storedDismissed) {
-        setIsDiscountBannerDismissed(JSON.parse(storedDismissed));
-      }
-    } catch (error) {
-      console.error("Failed to read discount state from localStorage", error);
-    }
-    setIsHydrated(true);
-  }, []);
+  const { preferences, setPreference, isHydrated } = useUserPreferences();
+  
+  const activeDiscount = preferences?.activeDiscount || null;
+  const isDiscountBannerDismissed = preferences?.isDiscountBannerDismissed || false;
 
   const activateDiscount = useCallback((discount: Discount) => {
-    setActiveDiscount(discount);
-    setIsDiscountBannerDismissed(false); // Show banner when a new discount is activated
-    try {
-      localStorage.setItem('eritas-active-discount', JSON.stringify(discount));
-      localStorage.setItem('eritas-discount-banner-dismissed', JSON.stringify(false));
-    } catch (error) {
-      console.error("Failed to write discount state to localStorage", error);
-    }
-  }, []);
+    setPreference('activeDiscount', discount);
+    setPreference('isDiscountBannerDismissed', false);
+  }, [setPreference]);
 
   const deactivateDiscount = useCallback(() => {
-    setActiveDiscount(null);
-    setIsDiscountBannerDismissed(true); // Hide banner when deactivated
-    try {
-        localStorage.removeItem('eritas-active-discount');
-        localStorage.setItem('eritas-discount-banner-dismissed', JSON.stringify(true));
-    } catch (error) {
-        console.error("Failed to write discount state to localStorage", error);
-    }
-  }, []);
+    setPreference('activeDiscount', null);
+    setPreference('isDiscountBannerDismissed', true);
+  }, [setPreference]);
 
   const dismissDiscountBanner = useCallback(() => {
-    setIsDiscountBannerDismissed(true);
-    try {
-      localStorage.setItem('eritas-discount-banner-dismissed', JSON.stringify(true));
-    } catch (error) {
-        console.error("Failed to write discount state to localStorage", error);
-    }
-  }, []);
+    setPreference('isDiscountBannerDismissed', true);
+  }, [setPreference]);
 
   const value = {
     activeDiscount,

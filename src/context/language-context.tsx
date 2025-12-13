@@ -1,13 +1,10 @@
 
 'use client';
 
-import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
+import { createContext, useContext, ReactNode, useCallback } from 'react';
 import en from '@/locales/en.json';
 import tw from '@/locales/tw.json';
-
-
-// Add other language imports here
-// import ga from '@/locales/ga.json';
+import { useUserPreferences } from './user-preferences-context';
 
 const translations: Record<string, Record<string, string>> = {
   'en-us': en,
@@ -24,23 +21,13 @@ type LanguageContextType = {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguageState] = useState('en-us');
-  const [isHydrated, setIsHydrated] = useState(false);
+  const { preferences, setPreference, isHydrated } = useUserPreferences();
 
-  useEffect(() => {
-    const storedLanguage = localStorage.getItem('eritas-language');
-    if (storedLanguage && translations[storedLanguage]) {
-      setLanguageState(storedLanguage);
-    }
-    setIsHydrated(true);
-  }, []);
+  const language = preferences?.language || 'en-us';
   
   const setLanguage = useCallback((lang: string) => {
-    setLanguageState(lang);
-    if(isHydrated) {
-        localStorage.setItem('eritas-language', lang);
-    }
-  }, [isHydrated]);
+    setPreference('language', lang);
+  }, [setPreference]);
 
   const t = useCallback((key: string, options?: Record<string, string | number>) => {
     let translation = translations[language]?.[key] || translations['en-us'][key] || key;

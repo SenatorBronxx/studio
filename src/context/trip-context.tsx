@@ -8,12 +8,11 @@ type BusData = {
     driver: string;
     plate: string;
     driverImage?: string;
-    // Add other relevant bus properties
     seating: ({ id: string; isOccupied: boolean; } | null)[];
     capacity: { current: number, max: number };
     stops: { name: string; fare: number; eta: number; }[];
     finalDestination: { name: string; fare: number; eta: number; };
-    eta: number; // ETA for bus to arrive at user's location
+    eta: number;
 };
 
 export type ActiveTrip = {
@@ -21,9 +20,9 @@ export type ActiveTrip = {
     bus: BusData;
     from: string;
     destination: string;
-    eta: number; // This will now dynamically hold the current relevant ETA
+    eta: number;
     seats: string[];
-    destinationEta: number; // ETA from boarding stop to destination
+    destinationEta: number;
     currentStopIndex: number;
 };
 
@@ -43,12 +42,13 @@ export function TripProvider({ children }: { children: ReactNode }) {
     const [activeTrip, setActiveTripState] = useState<ActiveTrip | null>(null);
     const [isHydrated, setIsHydrated] = useState(false);
 
+    // This context will now use localStorage for client-side persistence only.
+    // The data is not yet synced with Firestore.
     useEffect(() => {
         try {
             const storedTrip = localStorage.getItem('eritas-active-trip');
             if (storedTrip) {
                 const parsedTrip = JSON.parse(storedTrip);
-                // Basic validation
                 if (parsedTrip && parsedTrip.bus && parsedTrip.destination) {
                     setActiveTripState(parsedTrip);
                 }
@@ -73,13 +73,8 @@ export function TripProvider({ children }: { children: ReactNode }) {
     }, []);
 
     const clearActiveTrip = useCallback(() => {
-        setActiveTripState(null);
-         try {
-            localStorage.removeItem('eritas-active-trip');
-        } catch (error) {
-            console.error("Failed to clear active trip from localStorage", error);
-        }
-    }, []);
+        setActiveTrip(null);
+    }, [setActiveTrip]);
 
     const setDynamicEta = useCallback((eta: number) => {
         setActiveTripState(prevTrip => {
@@ -148,5 +143,3 @@ export function useTrip() {
     }
     return context;
 }
-
-    

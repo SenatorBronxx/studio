@@ -12,30 +12,33 @@ import { TripProvider } from "@/context/trip-context";
 import { PlacesProvider } from "@/context/places-context";
 import { SavedSongsProvider } from "@/context/saved-songs-context";
 import { UserProvider } from "@/context/user-context";
+import { UserPreferencesProvider } from "@/context/user-preferences-context";
 
 
 export function ClientProviders({ children }: { children: ReactNode }) {
     return (
-        <LanguageProvider>
-            <UserProvider>
-                <WalletProvider>
-                    <TripProvider>
-                        <SavedSongsProvider>
-                            <MusicProvider>
-                                <NotificationSettingsProvider>
-                                    <SecuritySettingsProvider>
-                                        <DiscountProvider>
-                                            <PlacesProvider>
-                                                {children}
-                                            </PlacesProvider>
-                                        </DiscountProvider>
-                                    </SecuritySettingsProvider>
-                                </NotificationSettingsProvider>
-                            </MusicProvider>
-                        </SavedSongsProvider>
-                    </TripProvider>
-                </WalletProvider>
-            </UserProvider>
-        </LanguageProvider>
+        <UserProvider>
+            <UserPreferencesProvider>
+                <LanguageProvider>
+                    <WalletProvider>
+                        <TripProvider>
+                            <SavedSongsProvider>
+                                <MusicProvider>
+                                    <NotificationSettingsProvider>
+                                        <SecuritySettingsProvider>
+                                            <DiscountProvider>
+                                                <PlacesProvider>
+                                                    {children}
+                                                </PlacesProvider>
+                                            </DiscountProvider>
+                                        </SecuritySettingsProvider>
+                                    </NotificationSettingsProvider>
+                                </MusicProvider>
+                            </SavedSongsProvider>
+                        </TripProvider>
+                    </WalletProvider>
+                </LanguageProvider>
+            </UserPreferencesProvider>
+        </UserProvider>
     );
 }

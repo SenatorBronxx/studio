@@ -1,11 +1,11 @@
 
 'use client';
 
-import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
+import { createContext, useContext, ReactNode, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useToast } from '@/hooks/use-toast';
-import { useOnlineStatus } from '@/hooks/use-online-status';
 import { useLanguage } from './language-context';
+import { useUserPreferences } from './user-preferences-context';
 
 type Transaction = {
   id: string;
@@ -28,130 +28,40 @@ type WalletContextType = {
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
 
-const initialTransactions: Transaction[] = [
-  {
-    id: uuidv4(),
-    type: 'payment',
-    plate: 'GT 4589-23',
-    amount: -75.0,
-  },
-  {
-    id: uuidv4(),
-    type: 'payment',
-    plate: 'AS 1234-24',
-    amount: -55.0,
-  },
-  {
-    id: uuidv4(),
-    type: 'payment',
-    plate: 'GN 2020-21',
-    amount: -80.0,
-  },
-];
-
-const INITIAL_BALANCE = 250.00;
-const INITIAL_LOYALTY_POINTS = 500;
 const LOW_BALANCE_THRESHOLD = 10.00;
 
 
 export function WalletProvider({ children }: { children: ReactNode }) {
-  const [balance, setBalance] = useState<number>(INITIAL_BALANCE);
-  const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
-  const [loyaltyPoints, setLoyaltyPoints] = useState<number>(INITIAL_LOYALTY_POINTS);
-  const [isHydrated, setIsHydrated] = useState(false);
-  const [isLowBalance, setIsLowBalance] = useState(false);
+  const { preferences, setPreference, isHydrated } = useUserPreferences();
   const { toast } = useToast();
-  const isOnline = useOnlineStatus();
   const { t } = useLanguage();
-  const [hasShownLowBalanceWarning, setHasShownLowBalanceWarning] = useState(false);
 
-  useEffect(() => {
-    try {
-      const storedBalance = localStorage.getItem('eritas-wallet-balance');
-      if (storedBalance) {
-        setBalance(parseFloat(storedBalance));
-      }
-
-      const storedTransactions = localStorage.getItem('eritas-wallet-transactions');
-      if (storedTransactions) {
-        setTransactions(JSON.parse(storedTransactions));
-      }
-
-      const storedLoyaltyPoints = localStorage.getItem('eritas-loyalty-points');
-      if (storedLoyaltyPoints) {
-        setLoyaltyPoints(parseInt(storedLoyaltyPoints, 10));
-      }
-    } catch (error) {
-      console.error("Failed to read from localStorage", error);
-    }
-    setIsHydrated(true);
-  }, []);
-
-  useEffect(() => {
-    if (isHydrated) {
-      try {
-        localStorage.setItem('eritas-wallet-balance', balance.toString());
-        localStorage.setItem('eritas-loyalty-points', loyaltyPoints.toString());
-      } catch (error) {
-        console.error("Failed to write to localStorage", error);
-      }
-    }
-  }, [balance, loyaltyPoints, isHydrated]);
-
-  useEffect(() => {
-    if (isHydrated) {
-      try {
-        localStorage.setItem('eritas-wallet-transactions', JSON.stringify(transactions));
-      } catch (error) {
-        console.error("Failed to write transactions to localStorage", error);
-      }
-    }
-  }, [transactions, isHydrated]);
-
-  useEffect(() => {
-    const checkLowBalance = () => {
-      if (balance < LOW_BALANCE_THRESHOLD) {
-        setIsLowBalance(true);
-        if (isOnline && !hasShownLowBalanceWarning) {
-            toast({
-                variant: 'destructive',
-                title: t('lowBalanceWarningToastTitle'),
-                description: t('lowBalanceWarningToastDescription'),
-            });
-            setHasShownLowBalanceWarning(true);
-        }
-      } else {
-        setIsLowBalance(false);
-        setHasShownLowBalanceWarning(false); // Reset warning flag when balance is topped up
-      }
-    };
-
-    if (isHydrated) {
-      checkLowBalance();
-    }
-  }, [balance, isHydrated, isOnline, hasShownLowBalanceWarning, t, toast]);
-
+  const balance = preferences?.walletBalance || 0;
+  const transactions = preferences?.transactions || [];
+  const loyaltyPoints = preferences?.loyaltyPoints || 0;
+  const isLowBalance = balance < LOW_BALANCE_THRESHOLD;
 
   const deductBalance = (amount: number) => {
-    setBalance((prevBalance) => prevBalance - amount);
+    setPreference('walletBalance', balance - amount);
   };
   
   const addBalance = (amount: number) => {
-    setBalance((prevBalance) => prevBalance + amount);
+    setPreference('walletBalance', balance + amount);
   };
 
   const addTransaction = (transaction: Omit<Transaction, 'id'>) => {
     const newTransaction = { ...transaction, id: uuidv4() };
-    setTransactions((prevTransactions) => [newTransaction, ...prevTransactions]);
+    setPreference('transactions', [newTransaction, ...transactions]);
   };
   
   const removeTransaction = (id: string) => {
-    setTransactions((prevTransactions) => prevTransactions.filter(tx => tx.id !== id));
+    const newTransactions = transactions.filter(tx => tx.id !== id);
+    setPreference('transactions', newTransactions);
   };
   
   const addLoyaltyPoints = useCallback((points: number) => {
-    setLoyaltyPoints(prev => prev + points);
-  }, []);
+    setPreference('loyaltyPoints', loyaltyPoints + points);
+  }, [loyaltyPoints, setPreference]);
   
   const value = { balance, transactions, loyaltyPoints, deductBalance, addBalance, addTransaction, removeTransaction, addLoyaltyPoints, isLowBalance };
 

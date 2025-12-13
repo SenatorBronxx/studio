@@ -1,3 +1,4 @@
+
 /**
  * Core Philosophy:
  * This ruleset enforces a strict user-ownership model for the Eritas Gateway
@@ -6,29 +7,18 @@
  * user data is completely isolated.
  *
  * Data Structure:
- * The data model is straightforward, with a single top-level collection `/users`.
- * Each document within this collection, identified by a user's unique ID (`userId`),
- * contains that user's profile information.
- * - /users/{userId} -> User Profile Document
+ * - /users/{userId}: Stores public-facing user profile information.
+ * - /users/{userId}/preferences/{prefsId}: Stores a single document with a
+ *   well-known ID containing all private user settings, wallet info, etc.
  *
  * Key Security Decisions:
- * - User Isolation: The primary security guarantee is that an authenticated user
- *   can only ever read or write their own document at `/users/{their_own_userId}`.
- * - No User Listing: To protect user privacy and prevent data scraping, it is
- *   impossible for any client to list all documents in the `/users` collection.
- * - Document Integrity: On creation, the `id` field within a user document must
- *   match the `userId` in the document path, ensuring a consistent link between
- *   the document's identity and its location. This ID is immutable.
- * - Default Deny: All operations are denied by default and only explicitly
- *   allowed by the rules defined below.
- *
- * Denormalization for Authorization:
- * This ruleset does not require complex denormalization as the data model is
- * simple. The `userId` in the document path serves as the sole authorization key.
- *
- * Structural Segregation:
- * Not applicable in this simple model, as all user data is considered private
- * and there is no public/private distinction.
+ * - User Isolation: A user can only read/write their own documents in their
+ *   own data tree (`/users/{their_own_userId}`).
+ * - No User Listing: It is impossible for any client to list all users.
+ * - Document Integrity: The `id` field in a user document must match the
+ *   `userId` in the path, and it is immutable.
+ * - Preferences Ownership: Access to the preferences subcollection is strictly
+ *   limited to the owner of the parent user document.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -53,32 +43,6 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    /**
-     * Returns true if the document already exists and the requesting user
-     * is the owner. Used for safe updates and deletes.
-     */
-    function isExistingOwner(userId) {
-      return isOwner(userId) && resource != null;
-    }
-
-
-    /**
-     * On create, validates that the document's internal 'id' field matches
-     * the document's ID in the path ({userId}). This enforces relational
-     * integrity from the start.
-     */
-    function hasValidUserIdOnCreate(userId) {
-      return request.resource.data.id == userId;
-    }
-
-    /**
-     * On update, ensures the document's internal 'id' field cannot be changed.
-     * This makes the core ownership link immutable.
-     */
-    function isUserIdImmutable() {
-      return request.resource.data.id == resource.data.id;
-    }
-
     // ----------------------------------------------------------------------
     // Collection Rules
     // ----------------------------------------------------------------------
@@ -86,16 +50,23 @@ service cloud.firestore {
     /**
      * @description Manages user profile documents.
      * @path /users/{userId}
-     * @allow (create) An authenticated user can create their own user document.
-     * @deny (get) An authenticated user cannot read another user's document.
-     * @principle Restricts access to a user's own data tree.
      */
     match /users/{userId} {
       allow get: if isOwner(userId);
-      allow list: if false;
-      allow create: if isOwner(userId) && hasValidUserIdOnCreate(userId);
-      allow update: if isExistingOwner(userId) && isUserIdImmutable();
-      allow delete: if isExistingOwner(userId);
+      allow list: if false; // Prevent listing all users
+
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
+      allow update: if isOwner(userId) && request.resource.data.id == resource.data.id;
+      allow delete: if isOwner(userId);
+
+      /**
+       * @description Manages a single document of user preferences.
+       * @path /users/{userId}/preferences/{prefsId}
+       */
+      match /preferences/{prefsId} {
+        // Only the owner of the parent user document can access preferences.
+        allow read, write: if isOwner(userId);
+      }
     }
   }
 }

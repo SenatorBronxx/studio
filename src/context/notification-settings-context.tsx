@@ -1,7 +1,8 @@
 
 'use client';
 
-import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
+import { createContext, useContext, ReactNode, useCallback } from 'react';
+import { useUserPreferences } from './user-preferences-context';
 
 type NotificationSettings = {
   routeAlerts: boolean;
@@ -18,49 +19,26 @@ type NotificationSettingsContextType = NotificationSettings & {
 
 const NotificationSettingsContext = createContext<NotificationSettingsContextType | undefined>(undefined);
 
-const defaultSettings: NotificationSettings = {
-  routeAlerts: true,
-  bookingAlerts: true,
-  systemAlerts: false,
-};
-
 export function NotificationSettingsProvider({ children }: { children: ReactNode }) {
-  const [settings, setSettings] = useState<NotificationSettings>(defaultSettings);
-  const [isHydrated, setIsHydrated] = useState(false);
+  const { preferences, setPreference, isHydrated } = useUserPreferences();
 
-  useEffect(() => {
-    try {
-      const storedSettings = localStorage.getItem('eritas-notification-settings');
-      if (storedSettings) {
-        setSettings(JSON.parse(storedSettings));
-      }
-    } catch (error) {
-      console.error("Failed to read notification settings from localStorage", error);
-    }
-    setIsHydrated(true);
-  }, []);
-
-  useEffect(() => {
-    if (isHydrated) {
-      try {
-        localStorage.setItem('eritas-notification-settings', JSON.stringify(settings));
-      } catch (error) {
-        console.error("Failed to write notification settings to localStorage", error);
-      }
-    }
-  }, [settings, isHydrated]);
+  const settings = preferences?.notificationSettings || {
+    routeAlerts: true,
+    bookingAlerts: true,
+    systemAlerts: false,
+  };
 
   const setRouteAlerts = useCallback((value: boolean) => {
-    setSettings(s => ({ ...s, routeAlerts: value }));
-  }, []);
+    setPreference('notificationSettings', { ...settings, routeAlerts: value });
+  }, [setPreference, settings]);
   
   const setBookingAlerts = useCallback((value: boolean) => {
-    setSettings(s => ({ ...s, bookingAlerts: value }));
-  }, []);
+    setPreference('notificationSettings', { ...settings, bookingAlerts: value });
+  }, [setPreference, settings]);
 
   const setSystemAlerts = useCallback((value: boolean) => {
-    setSettings(s => ({ ...s, systemAlerts: value }));
-  }, []);
+    setPreference('notificationSettings', { ...settings, systemAlerts: value });
+  }, [setPreference, settings]);
   
   const value = {
     ...settings,

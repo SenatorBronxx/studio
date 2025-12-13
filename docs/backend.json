@@ -51,6 +51,73 @@
         "lastName",
         "signUpDate"
       ]
+    },
+    "UserPreferences": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User Preferences",
+      "type": "object",
+      "description": "Stores all user-specific settings, preferences, and data.",
+      "properties": {
+        "id": { "type": "string" },
+        "language": { "type": "string", "default": "en-us" },
+        "walletBalance": { "type": "number" },
+        "loyaltyPoints": { "type": "number" },
+        "transactions": { "type": "array", "items": { "$ref": "#/entities/Transaction" } },
+        "savedSongs": { "type": "array", "items": { "$ref": "#/entities/Track" } },
+        "activeDiscount": { "type": ["object", "null"], "properties": {
+            "code": { "type": "string" },
+            "percentage": { "type": "number" },
+            "description": { "type": "string" }
+        }},
+        "isDiscountBannerDismissed": { "type": "boolean" },
+        "notificationSettings": {
+          "type": "object",
+          "properties": {
+            "routeAlerts": { "type": "boolean" },
+            "bookingAlerts": { "type": "boolean" },
+            "systemAlerts": { "type": "boolean" }
+          }
+        },
+        "securitySettings": {
+          "type": "object",
+          "properties": {
+            "isPinEnabled": { "type": "boolean" },
+            "isBiometricEnabled": { "type": "boolean" },
+            "is2faEnabled": { "type": "boolean" }
+          }
+        },
+        "savedPlaces": { "type": "array", "items": { "$ref": "#/entities/SavedPlace" } }
+      }
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "type": "string", "enum": ["payment", "top-up"] },
+        "plate": { "type": "string" },
+        "amount": { "type": "number" }
+      }
+    },
+    "Track": {
+      "title": "Track",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "artist": { "type": "string" },
+        "image": { "type": "string" },
+        "duration": { "type": "string" }
+      }
+    },
+    "SavedPlace": {
+      "title": "Saved Place",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "type": "string", "enum": ["home", "work", "other"] },
+        "address": { "type": "string" }
+      }
     }
   },
   "auth": {
@@ -76,8 +143,28 @@
             }
           ]
         }
+      },
+      {
+        "path": "/users/{userId}/preferences/{prefsId}",
+        "definition": {
+          "entityName": "userPreferences",
+          "schema": {
+            "$ref": "#/backend/entities/UserPreferences"
+          },
+          "description": "Stores a single document containing all preferences for a user.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "prefsId",
+              "description": "The unique identifier of the preferences document."
+            }
+          ]
+        }
       }
     ],
-    "reasoning": "This Firestore data structure is designed for the Eritas Gateway bus booking application. It prioritizes security and scalability following the core design principles of Authorization Independence, Clarity of Intent, DBAC (Database-Based Access Control), and QAPs (Rules are not Filters). User data is stored in a dedicated collection, ensuring clear ownership and simplified security rules. This design avoids complex hierarchical authorization dependencies and promotes atomic operations (transactions/batches). Because this application only contains Users, the design is quite simple and future entities can be easily integrated into this basic architecture. Path-Based ownership is used here because that is the correct access model."
+    "reasoning": "This Firestore data structure is designed for the Eritas Gateway bus booking application. It prioritizes security and scalability following the core design principles of Authorization Independence, Clarity of Intent, DBAC (Database-Based Access Control), and QAPs (Rules are not Filters). User data is stored in a dedicated collection, ensuring clear ownership and simplified security rules. A subcollection for user preferences is used to group all user-specific settings, making data management and access control straightforward."
   }
 }
