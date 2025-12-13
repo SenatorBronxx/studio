@@ -42,10 +42,6 @@
         "googleId": {
           "type": "string",
           "description": "Google identifier for users who signed up using Google."
-        },
-        "appleId": {
-          "type": "string",
-          "description": "Apple identifier for users who signed up using Apple."
         }
       },
       "required": [
@@ -60,8 +56,7 @@
   "auth": {
     "providers": [
       "password",
-      "google.com",
-      "apple.com"
+      "google.com"
     ]
   },
   "firestore": {

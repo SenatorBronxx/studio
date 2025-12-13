@@ -166,14 +166,16 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
         .finally(() => setIsSubmitting(false));
   };
   
-  const handleSocialLogin = async (providerName: 'Google' | 'Apple') => {
+  const handleSocialLogin = async (providerName: 'Google') => {
     setIsSubmitting(true);
     
     let provider;
     if (providerName === 'Google') {
         provider = new GoogleAuthProvider();
-    } else { // Apple
-        provider = new OAuthProvider('apple.com');
+    } else {
+        // This should not happen now
+        setIsSubmitting(false);
+        return;
     }
 
     signInWithPopup(auth, provider)
@@ -332,14 +334,10 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
           </span>
         </div>
       </div>
-      <div className="mt-6 grid grid-cols-2 gap-4">
-        <Button variant="outline" onClick={() => handleSocialLogin('Google')}>
+      <div className="mt-6">
+        <Button variant="outline" className="w-full" onClick={() => handleSocialLogin('Google')}>
           <Image src="https://www.svgrepo.com/show/303108/google-icon-logo.svg" alt="Google" width={16} height={16} className="mr-2 h-4 w-4" />
           Google
-        </Button>
-        <Button variant="outline" onClick={() => handleSocialLogin('Apple')}>
-          <Image src="https://www.svgrepo.com/show/303110/apple-black-logo.svg" alt="Apple" width={16} height={16} className="mr-2 h-4 w-4" />
-          Apple
         </Button>
       </div>
     </Tabs>
