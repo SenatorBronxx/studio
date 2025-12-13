@@ -1,110 +1,100 @@
 /**
- * Core Philosophy: This ruleset enforces a strict user-ownership model. All data is scoped
- * directly to the authenticated user, ensuring that a user can only ever access their own
- * information. This is the most secure posture for applications handling private user data.
+ * Core Philosophy:
+ * This ruleset enforces a strict user-ownership model for the Eritas Gateway
+ * application. All user-related data is private, and a user can only access
+ * their own information. This creates a secure, multi-tenant environment where
+ * user data is completely isolated.
  *
- * Data Structure: All data is organized under the top-level `/users` collection. Each user's
- * data is stored in a document where the document ID is the user's Firebase Authentication UID
- * (e.g., `/users/{userId}`). This path-based ownership is simple, performant, and highly secure.
+ * Data Structure:
+ * The data model is straightforward, with a single top-level collection `/users`.
+ * Each document within this collection, identified by a user's unique ID (`userId`),
+ * contains that user's profile information.
+ * - /users/{userId} -> User Profile Document
  *
  * Key Security Decisions:
- * - User Isolation: A user can only read, write, and delete their own document within the `/users`
- *   collection. Access to other users' data is strictly prohibited.
- * - No User Enumeration: Listing the entire `/users` collection is disallowed to prevent
- *   malicious actors from discovering the application's user base.
- * - Self-Service Profile Creation: A newly authenticated user is permitted to create their own
- *   initial user profile document.
+ * - User Isolation: The primary security guarantee is that an authenticated user
+ *   can only ever read or write their own document at `/users/{their_own_userId}`.
+ * - No User Listing: To protect user privacy and prevent data scraping, it is
+ *   impossible for any client to list all documents in the `/users` collection.
+ * - Document Integrity: On creation, the `id` field within a user document must
+ *   match the `userId` in the document path, ensuring a consistent link between
+ *   the document's identity and its location. This ID is immutable.
+ * - Default Deny: All operations are denied by default and only explicitly
+ *   allowed by the rules defined below.
  *
- * Denormalization for Authorization: This model uses the document ID (`userId`) as the sole
- * source of truth for ownership, which is the most efficient form of authorization. This avoids
- * costly `get()` calls to other documents, as all necessary information is present in the path.
+ * Denormalization for Authorization:
+ * This ruleset does not require complex denormalization as the data model is
+ * simple. The `userId` in the document path serves as the sole authorization key.
  *
- * Structural Segregation: Not applicable in this simple model, as all data is private user data.
- * If public data were introduced, it would be stored in a separate top-level collection.
+ * Structural Segregation:
+ * Not applicable in this simple model, as all user data is considered private
+ * and there is no public/private distinction.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ------------------------------------------------------------------------
-    // --- Helper Functions
-    // ------------------------------------------------------------------------
+    // ----------------------------------------------------------------------
+    // Helper Functions
+    // ----------------------------------------------------------------------
 
     /**
-     * Checks if the user is authenticated.
+     * Returns true if the user is signed in.
      */
     function isSignedIn() {
       return request.auth != null;
     }
 
     /**
-     * Checks if the requesting user's UID matches the document's ID from the path.
-     * This is the primary function for enforcing user ownership.
-     * @param userId The document ID, corresponding to a user's UID.
+     * Returns true if the requesting user's UID matches the provided userId.
+     * This is the core function for enforcing document ownership.
      */
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
     /**
-     * Checks for ownership on an existing document. Used for safe updates and deletes.
-     * Denies requests that target documents which do not exist.
-     * @param userId The document ID, corresponding to a user's UID.
+     * Returns true if the document already exists and the requesting user
+     * is the owner. Used for safe updates and deletes.
      */
     function isExistingOwner(userId) {
       return isOwner(userId) && resource != null;
     }
 
-    // ------------------------------------------------------------------------
-    // --- Validation Functions (Prototyping Mode)
-    // ------------------------------------------------------------------------
 
     /**
-     * Validates critical fields during user profile creation.
-     * Ensures the internal 'id' field matches the user's auth UID for relational integrity.
-     * @param userId The user's UID from the path.
+     * On create, validates that the document's internal 'id' field matches
+     * the document's ID in the path ({userId}). This enforces relational
+     * integrity from the start.
      */
-    function hasValidCreationData(userId) {
+    function hasValidUserIdOnCreate(userId) {
       return request.resource.data.id == userId;
     }
 
     /**
-     * Validates critical fields during a user profile update.
-     * Enforces immutability of the 'id' field to prevent re-assigning ownership.
+     * On update, ensures the document's internal 'id' field cannot be changed.
+     * This makes the core ownership link immutable.
      */
-    function hasValidUpdateData() {
-      // The internal 'id' field must never be changed after creation.
+    function isUserIdImmutable() {
       return request.resource.data.id == resource.data.id;
     }
 
-
-    // ------------------------------------------------------------------------
-    // --- Collection: users
-    // ------------------------------------------------------------------------
+    // ----------------------------------------------------------------------
+    // Collection Rules
+    // ----------------------------------------------------------------------
 
     /**
-     * @description Controls access to a user's own profile document.
+     * @description Manages user profile documents.
      * @path /users/{userId}
-     * @allow (get) A signed-in user (`uid: "user_abc"`) can get their own document at `/users/user_abc`.
-     * @allow (create) A new user (`uid: "user_abc"`) can create their profile at `/users/user_abc` if the document includes `{"id": "user_abc"}`.
-     * @deny (list) A user cannot list the entire `/users` collection to prevent user enumeration.
-     * @deny (update) A user (`uid: "user_abc"`) cannot update another user's document at `/users/user_xyz`.
-     * @principle Restricts access to a user's own data tree and enforces relational integrity between the Auth UID and the document data.
+     * @allow (create) An authenticated user can create their own user document.
+     * @deny (get) An authenticated user cannot read another user's document.
+     * @principle Restricts access to a user's own data tree.
      */
     match /users/{userId} {
-      // READ: A user can only get their own profile.
       allow get: if isOwner(userId);
-
-      // LIST: Listing the users collection is denied for security and privacy.
       allow list: if false;
-
-      // CREATE: A user can create their own profile document, ensuring the internal `id` is set correctly.
-      allow create: if isOwner(userId) && hasValidCreationData(userId);
-
-      // UPDATE: The owner can update their profile, but cannot change the immutable `id` field.
-      allow update: if isExistingOwner(userId) && hasValidUpdateData();
-
-      // DELETE: The owner can delete their own profile document.
+      allow create: if isOwner(userId) && hasValidUserIdOnCreate(userId);
+      allow update: if isExistingOwner(userId) && isUserIdImmutable();
       allow delete: if isExistingOwner(userId);
     }
   }

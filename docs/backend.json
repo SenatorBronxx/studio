@@ -17,26 +17,34 @@
         },
         "firstName": {
           "type": "string",
-          "description": "First name of the user."
+          "description": "The first name of the user."
         },
         "lastName": {
           "type": "string",
-          "description": "Last name of the user."
+          "description": "The last name of the user."
         },
         "signUpDate": {
           "type": "string",
-          "description": "Date and time when the user signed up.",
+          "description": "The date and time when the user signed up.",
           "format": "date-time"
         },
         "lastLogin": {
           "type": "string",
-          "description": "Date and time of the user's last login.",
+          "description": "The date and time when the user last logged in.",
           "format": "date-time"
         },
         "profilePicture": {
           "type": "string",
-          "description": "Url to the user's profile picture.",
+          "description": "URL of the user's profile picture.",
           "format": "uri"
+        },
+        "googleId": {
+          "type": "string",
+          "description": "Google identifier for users who signed up using Google."
+        },
+        "appleId": {
+          "type": "string",
+          "description": "Apple identifier for users who signed up using Apple."
         }
       },
       "required": [
@@ -63,16 +71,16 @@
           "schema": {
             "$ref": "#/backend/entities/User"
           },
-          "description": "Stores user profile information. Uses path-based ownership for simplicity and security. This path structure isolates user data, avoiding the need for `get()` calls in rules and enabling QAPs (rules are not filters).",
+          "description": "Stores user profile information. Path-based ownership is enforced, allowing each user to only access their own document.",
           "params": [
             {
               "name": "userId",
-              "description": "The unique identifier for the user, corresponding to their Firebase Auth UID."
+              "description": "The unique identifier of the user."
             }
           ]
         }
       }
     ],
-    "reasoning": "Based on the provided entities and application requirements, the primary data structure revolves around user management. The structure prioritizes authorization independence and supports Query Atomic Properties (QAPs) by segregating user data based on ownership. The structure is designed to provide easy scalability and robust security rules.\n\nThe core entity is `User`, stored under `/users/{userId}`. This path-based ownership model immediately establishes clear ownership for user-specific data and simplifies security rules.\n\nThis structure avoids `get()` calls in security rules, crucial for authorization independence. Each user's data is self-contained, allowing atomic operations (transactions/batches) without relying on external data.\n\nQAPs are supported naturally by this segregation. Listing operations are inherently limited to the specific user's data. No filtering is required in the rules, as each collection is homogeneous in its security posture."
+    "reasoning": "This Firestore data structure is designed for the Eritas Gateway bus booking application. It prioritizes security and scalability following the core design principles of Authorization Independence, Clarity of Intent, DBAC (Database-Based Access Control), and QAPs (Rules are not Filters). User data is stored in a dedicated collection, ensuring clear ownership and simplified security rules. This design avoids complex hierarchical authorization dependencies and promotes atomic operations (transactions/batches). Because this application only contains Users, the design is quite simple and future entities can be easily integrated into this basic architecture. Path-Based ownership is used here because that is the correct access model."
   }
 }
