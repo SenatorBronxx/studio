@@ -56,7 +56,8 @@ import { useTrip } from '@/context/trip-context';
 import { usePlaces, type SavedPlace } from '@/context/places-context';
 import { PlacesDialog, PlaceAction } from './places-dialog';
 import { useState } from 'react';
-import { useAuth, useUser } from '@/firebase';
+import { useAuth, useFirebase, useUser } from '@/firebase';
+import { doc, deleteDoc } from 'firebase/firestore';
 
 const menuItems = [
     { id: 'settings', icon: Settings, labelKey: 'profileSettings', href: '/settings' },
@@ -80,7 +81,7 @@ const discountOffer = {
 
 export function ProfileSidebar() {
     const { user } = useUser();
-    const auth = useAuth();
+    const { auth, firestore } = useFirebase();
     const router = useRouter();
     const { toast } = useToast();
     const { activeDiscount, activateDiscount, deactivateDiscount } = useDiscount();
@@ -109,23 +110,37 @@ export function ProfileSidebar() {
         });
     };
 
-    const handleDeleteAccount = () => {
+    const handleDeleteAccount = async () => {
         const currentUser = auth.currentUser;
         if (currentUser) {
-            currentUser.delete().then(() => {
+            try {
+                // 1. Delete user's document from Firestore
+                const userDocRef = doc(firestore, 'users', currentUser.uid);
+                await deleteDoc(userDocRef);
+
+                // 2. Delete the user from Firebase Authentication
+                await currentUser.delete();
+
                 toast({
                     title: t('accountDeletedToastTitle'),
                     description: t('accountDeletedToastDescription')
                 });
                 router.push('/');
                 localStorage.clear();
-            }).catch((error) => {
+
+            } catch (error: any) {
+                 let message = 'An error occurred while deleting your account.';
+                 if (error.code === 'auth/requires-recent-login') {
+                    message = 'This operation requires recent authentication. Please log out and log in again before deleting your account.';
+                 } else if (error.code === 'permission-denied') {
+                    message = "You don't have permission to delete this data. Please contact support.";
+                 }
                  toast({
                     variant: 'destructive',
                     title: 'Deletion Failed',
-                    description: 'This operation requires recent authentication. Please log in again to delete your account.',
+                    description: message,
                 });
-            });
+            }
         }
     };
     
