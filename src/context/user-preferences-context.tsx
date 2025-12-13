@@ -71,8 +71,8 @@ export const PREFERENCES_DOC_ID = 'user-prefs';
 
 const defaultPreferences: Omit<UserPreferences, 'id'> = {
     language: 'en-us',
-    walletBalance: 250.00,
-    loyaltyPoints: 500,
+    walletBalance: 0.00,
+    loyaltyPoints: 0,
     transactions: [],
     savedSongs: [],
     activeDiscount: null,

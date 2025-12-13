@@ -21,7 +21,7 @@ type WalletContextType = {
   isLowBalance: boolean;
   deductBalance: (amount: number) => void;
   addBalance: (amount: number) => void;
-  addTransaction: (transaction: Omit<Transaction, 'id' | 'amount'> & { amount: number }) => void;
+  addTransaction: (transaction: Omit<Transaction, 'id'>) => void;
   removeTransaction: (id: string) => void;
   addLoyaltyPoints: (points: number) => void;
 };
