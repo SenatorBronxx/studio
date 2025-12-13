@@ -24,7 +24,6 @@ export default function Home() {
         const isNewSignup = localStorage.getItem('eritas-is-new-signup');
         if (isNewSignup === 'true') {
             setShowSlideshow(true);
-            localStorage.removeItem('eritas-is-new-signup');
         } else {
             router.push('/home');
         }
@@ -41,6 +40,7 @@ export default function Home() {
   };
 
   const handleSlideshowFinish = () => {
+    localStorage.removeItem('eritas-is-new-signup');
     router.push('/home');
   };
 
