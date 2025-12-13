@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { ArrowLeft, Loader2, Save, User as UserIcon } from 'lucide-react';
+import { ArrowLeft, Loader2, Save, User as UserIcon, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -13,7 +13,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { useUser, useAuth } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useLanguage } from '@/context/language-context';
 import { updateProfile, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
 
@@ -50,6 +50,8 @@ export default function EditProfilePage() {
   const { toast } = useToast();
   const { t } = useLanguage();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -70,6 +72,47 @@ export default function EditProfilePage() {
         });
     }
   }, [isUserLoading, user, form]);
+
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !user) return;
+
+    setIsUploading(true);
+    
+    // In a real app, you would upload the file to a storage service (e.g., Firebase Storage)
+    // and get a URL back. Here, we'll simulate it.
+    try {
+        await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate upload delay
+        const newPhotoURL = URL.createObjectURL(file);
+
+        // Update the user's profile with the new photo URL
+        await updateProfile(user, { photoURL: newPhotoURL });
+
+        toast({
+            title: "Profile Picture Updated",
+            description: "Your new profile picture has been saved.",
+        });
+
+        // Force a re-render or context update if the user object is not automatically updated
+        // This might not be necessary depending on your useUser hook implementation.
+        router.refresh(); 
+
+    } catch (error) {
+        console.error("Error updating profile picture:", error);
+        toast({
+            variant: "destructive",
+            title: "Upload Failed",
+            description: "Could not update your profile picture.",
+        });
+    } finally {
+        setIsUploading(false);
+    }
+  };
+
 
   const onSubmit = async (data: ProfileFormValues) => {
     if (!user) return;
@@ -158,8 +201,20 @@ export default function EditProfilePage() {
                   <UserIcon className="h-10 w-10" />
                 </AvatarFallback>
               </Avatar>
-              <Button size="icon" className='absolute bottom-0 right-0 rounded-full h-8 w-8'>
-                <Save className='h-4 w-4' />
+              <input 
+                type="file" 
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                className="hidden"
+                accept="image/png, image/jpeg, image/gif"
+              />
+              <Button 
+                size="icon" 
+                className='absolute bottom-0 right-0 rounded-full h-8 w-8'
+                onClick={handleAvatarClick}
+                disabled={isUploading}
+              >
+                {isUploading ? <Loader2 className='h-4 w-4 animate-spin' /> : <Camera className='h-4 w-4' />}
               </Button>
             </div>
           </div>
