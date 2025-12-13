@@ -39,7 +39,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useDiscount } from '@/context/discount-context';
 import { useBusArrivalNotification } from '@/hooks/use-bus-arrival-notification';
-import { useNotificationSettings } from '@/context/notification-settings-context';
+import { useNotificationSettings } from '@/hooks/use-notification-settings';
 import { TripRating } from '@/components/trip-rating';
 
 const initialBusData = [
@@ -468,7 +468,7 @@ export default function SearchPage() {
             <div className="max-w-md mx-auto space-y-4">
                  <div className="flex justify-center">
                     <Image
-                        src="https://i.postimg.cc/ZqqHw7kv/Screenshot-2025-10-29-154152-removebg-preview-removebg-preview.png"
+                        src="https://i.postimg.cc/htqrt1Dn/Screenshot-2025-11-06-192038-removebg-preview-(1).png"
                         alt="Eritas Transport Company Logo"
                         width={120}
                         height={60}
@@ -833,3 +833,5 @@ export default function SearchPage() {
     </div>
   );
 }
+
+    
