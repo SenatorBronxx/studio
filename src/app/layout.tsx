@@ -8,9 +8,8 @@ import { OfflineIndicator } from "@/components/offline-indicator";
 import { FirebaseClientProvider } from "@/firebase";
 
 export const metadata: Metadata = {
-  title: "Eritas Gateway",
-  description: "Sign in or create an account for Eritas Gateway.",
-  manifest: "/manifest.json",
+  title: "Eritas Gateway - Admin",
+  description: "Admin portal for Eritas Gateway.",
 };
 
 export default function RootLayout({
