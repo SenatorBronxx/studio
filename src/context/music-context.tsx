@@ -5,7 +5,7 @@ import { createContext, useContext, useState, ReactNode, useEffect, useCallback 
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from './language-context';
 import { useTrip } from './trip-context';
-import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { useFirestore, useDoc, useMemoFirebase, useUser } from '@/firebase';
 import { doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 
 export type Track = {
