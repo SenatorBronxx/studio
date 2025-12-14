@@ -289,7 +289,7 @@ export default function MusicPage() {
                                                         <span>{track.duration}</span>
                                                     </div>
                                                 </div>
-                                                {track.addedByUser && (
+                                                {track.addedBy === user?.uid && (
                                                     <Button size="icon" variant="ghost" className="opacity-0 group-hover:opacity-100" onClick={() => removeFromPlaylist(track.id)}>
                                                         <X className="h-5 w-5 text-muted-foreground" />
                                                     </Button>

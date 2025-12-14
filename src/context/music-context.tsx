@@ -5,9 +5,11 @@ import { createContext, useContext, useState, ReactNode, useEffect, useCallback 
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from './language-context';
 import { useTrip } from './trip-context';
+import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 
 export type Track = {
-    id: string; // Changed to string for Spotify IDs
+    id: string;
     title: string;
     artist: string;
     image: string;
@@ -15,11 +17,8 @@ export type Track = {
 };
 
 export type PlaylistItem = Track & { 
-    addedByUser: boolean;
+    addedBy: string; // Firebase UID of the user who added it
 };
-
-const initialPlaylist: PlaylistItem[] = []; // Playlist will now be dynamic
-
 
 type MusicContextType = {
   playlist: PlaylistItem[];
@@ -27,7 +26,6 @@ type MusicContextType = {
   songProgress: number;
   isPlaylistOpen: boolean;
   isOnBus: boolean;
-  setIsOnBus: (isOnBus: boolean) => void;
   setIsPlaylistOpen: (isOpen: boolean) => void;
   addToPlaylist: (track: Track) => void;
   removeFromPlaylist: (trackId: string) => void;
@@ -37,27 +35,33 @@ type MusicContextType = {
 const MusicContext = createContext<MusicContextType | undefined>(undefined);
 
 export function MusicProvider({ children }: { children: ReactNode }) {
-  const [playlist, setPlaylist] = useState<PlaylistItem[]>(initialPlaylist);
-  const [nowPlaying, setNowPlaying] = useState<PlaylistItem | null>(null);
-  const [songProgress, setSongProgress] = useState(0);
-  const [isPlaylistOpen, setIsPlaylistOpen] = useState(false);
-  const [isHydrated, setIsHydrated] = useState(false);
   const { toast } = useToast();
   const { t } = useLanguage();
   const { activeTrip, clearActiveTrip } = useTrip();
+  const firestore = useFirestore();
+  const { user } = useUser();
 
-  // isOnBus is now derived from activeTrip state
+  // The playlist is now fetched from the active bus document
+  const busRef = useMemoFirebase(() => {
+    if (!firestore || !activeTrip) return null;
+    return doc(firestore, 'buses', activeTrip.bus.id);
+  }, [firestore, activeTrip]);
+
+  const { data: busData } = useDoc<{ playlist: PlaylistItem[] }>(busRef);
+
+  const playlist = busData?.playlist || [];
+  
+  const [nowPlaying, setNowPlaying] = useState<PlaylistItem | null>(null);
+  const [songProgress, setSongProgress] = useState(0);
+  const [isPlaylistOpen, setIsPlaylistOpen] = useState(false);
+
   const isOnBus = !!activeTrip;
 
-  useEffect(() => {
-    setIsHydrated(true);
-  }, []);
-
-
+  // Simulate song progress and advancing to the next song
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (nowPlaying && isOnBus) {
-      setSongProgress(0); // Reset progress when song changes
+      setSongProgress(0); 
       const durationInSeconds = 180; // Mock duration of 3 minutes
       interval = setInterval(() => {
         setSongProgress(prev => {
@@ -73,92 +77,67 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(interval);
   }, [nowPlaying, isOnBus]);
   
+  // Auto-play logic
   useEffect(() => {
-    if (songProgress >= 100 && isOnBus) {
-      const finishedSongId = nowPlaying?.id;
-      
-      let newPlaylist = playlist;
-      if (finishedSongId) {
-        newPlaylist = playlist.filter(p => p.id !== finishedSongId);
-        setPlaylist(newPlaylist);
-      }
-      
-      const nextSong = newPlaylist.find(song => song.id !== finishedSongId) || null;
-      
-      if (nextSong) {
-        setNowPlaying(nextSong);
-      } else {
-        // End of playlist
-        toast({ title: t('tripEndedTitle'), description: t('tripEndedDescription') });
-        clearActiveTrip();
-      }
-      setSongProgress(0);
+    if (isOnBus && playlist.length > 0 && !nowPlaying) {
+      setNowPlaying(playlist[0]);
     }
-  }, [songProgress, isOnBus, playlist, nowPlaying, toast, t, clearActiveTrip]);
+    if (!isOnBus) {
+        setNowPlaying(null);
+    }
+  }, [isOnBus, playlist, nowPlaying]);
+
+
+  // Logic to advance the playlist
+  useEffect(() => {
+    if (songProgress >= 100 && isOnBus && nowPlaying && busRef) {
+      // The song just finished, remove it from the remote playlist
+      updateDoc(busRef, {
+        playlist: arrayRemove(nowPlaying)
+      });
+      // The useDoc hook will handle updating the local state.
+      // The next song will automatically start playing via the auto-play effect.
+    }
+  }, [songProgress, isOnBus, nowPlaying, busRef]);
 
 
   const addToPlaylist = (track: Track) => {
     if (!isOnBus) {
-        toast({
-            variant: 'destructive',
-            title: t('notOnBusToastTitle'),
-            description: t('notOnBusToastDescription'),
-        });
+        toast({ variant: 'destructive', title: t('notOnBusToastTitle'), description: t('notOnBusToastDescription') });
         return;
     }
+    if (!busRef || !user) return;
 
     if (playlist.find(t => t.id === track.id)) {
-      toast({
-        variant: 'destructive',
-        title: t('alreadyInPlaylistToastTitle'),
-        description: t('alreadyInPlaylistToastDescription', { title: track.title }),
-      });
+      toast({ variant: 'destructive', title: t('alreadyInPlaylistToastTitle'), description: t('alreadyInPlaylistToastDescription', { title: track.title }) });
       return;
     }
-    const newTrack: PlaylistItem = { ...track, addedByUser: true };
-    setPlaylist(prev => [...prev, newTrack]);
-
-
-    if (!nowPlaying) {
-      setNowPlaying(newTrack);
-    }
-
-    toast({
-      title: t('addedToPlaylistToastTitle'),
-      description: t('addedToPlaylistToastDescription', { title: track.title, artist: track.artist }),
+    
+    const newItem: PlaylistItem = { ...track, addedBy: user.uid };
+    
+    // Atomically add the new song to the 'playlist' array in Firestore.
+    updateDoc(busRef, {
+        playlist: arrayUnion(newItem)
     });
+
+    toast({ title: t('addedToPlaylistToastTitle'), description: t('addedToPlaylistToastDescription', { title: track.title, artist: track.artist }) });
   };
 
   const removeFromPlaylist = (trackId: string) => {
     const songToRemove = playlist.find(t => t.id === trackId);
-    if (!songToRemove || !songToRemove.addedByUser) {
-      toast({
-        variant: "destructive",
-        title: t('cannotRemoveSongToastTitle'),
-        description: t('cannotRemoveSongToastDescription'),
-      });
-      return;
-    }
+    if (!busRef || !songToRemove) return;
 
-    let newPlaylist = playlist.filter(t => t.id !== trackId);
-
-    if (nowPlaying?.id === trackId) {
-      // Logic for when the currently playing song is removed
-      const remainingPlaylist = newPlaylist.filter(p => p.id !== trackId);
-      const nextSong = remainingPlaylist[0] || null;
-      setNowPlaying(nextSong);
-    }
+    // For simplicity in this example, we allow any user to remove any song.
+    // In a real app, you might check: if (songToRemove.addedBy === user?.uid) { ... }
     
-    setPlaylist(newPlaylist);
-
-    toast({
-      title: t('songRemovedToastTitle'),
-      description: t('songRemovedToastDescription'),
+    // Atomically remove the song from the 'playlist' array in Firestore.
+    updateDoc(busRef, {
+        playlist: arrayRemove(songToRemove)
     });
+
+    toast({ title: t('songRemovedToastTitle'), description: t('songRemovedToastDescription') });
   };
   
-  if (!isHydrated) return null;
-
   return (
     <MusicContext.Provider value={{ 
         playlist, 
@@ -170,7 +149,6 @@ export function MusicProvider({ children }: { children: ReactNode }) {
         removeFromPlaylist, 
         setNowPlaying, 
         isOnBus, 
-        setIsOnBus: () => {}, // This is now controlled by TripContext
     }}>
       {children}
     </MusicContext.Provider>

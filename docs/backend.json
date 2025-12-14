@@ -57,12 +57,30 @@
       "type": "object",
       "description": "Represents a registered driver and their permanently assigned bus.",
       "properties": {
-        "id": { "type": "string", "description": "The driver's user ID." },
-        "name": { "type": "string", "description": "The driver's full name." },
-        "email": { "type": "string", "format": "email" },
-        "assignedBusPlate": { "type": "string", "description": "The license plate of the bus assigned to this driver." },
-        "registrationDate": { "type": "string", "format": "date-time" },
-        "driverImage": { "type": "string", "format": "uri" }
+        "id": {
+          "type": "string",
+          "description": "The driver's user ID."
+        },
+        "name": {
+          "type": "string",
+          "description": "The driver's full name."
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "assignedBusPlate": {
+          "type": "string",
+          "description": "The license plate of the bus assigned to this driver."
+        },
+        "registrationDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "driverImage": {
+          "type": "string",
+          "format": "uri"
+        }
       },
       "required": ["id", "name", "email", "assignedBusPlate"]
     },
@@ -72,65 +90,151 @@
       "type": "object",
       "description": "Stores all user-specific settings, preferences, and data.",
       "properties": {
-        "id": { "type": "string" },
-        "language": { "type": "string", "default": "en-us" },
-        "walletBalance": { "type": "number" },
-        "loyaltyPoints": { "type": "number" },
-        "transactions": { "type": "array", "items": { "$ref": "#/entities/Transaction" } },
-        "savedSongs": { "type": "array", "items": { "$ref": "#/entities/Track" } },
-        "activeDiscount": { "type": ["object", "null"], "properties": {
-            "code": { "type": "string" },
-            "percentage": { "type": "number" },
-            "description": { "type": "string" }
-        }},
-        "isDiscountBannerDismissed": { "type": "boolean" },
+        "id": {
+          "type": "string"
+        },
+        "language": {
+          "type": "string",
+          "default": "en-us"
+        },
+        "walletBalance": {
+          "type": "number"
+        },
+        "loyaltyPoints": {
+          "type": "number"
+        },
+        "transactions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/entities/Transaction"
+          }
+        },
+        "savedSongs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/entities/Track"
+          }
+        },
+        "activeDiscount": {
+          "type": ["object", "null"],
+          "properties": {
+            "code": {
+              "type": "string"
+            },
+            "percentage": {
+              "type": "number"
+            },
+            "description": {
+              "type": "string"
+            }
+          }
+        },
+        "isDiscountBannerDismissed": {
+          "type": "boolean"
+        },
         "notificationSettings": {
           "type": "object",
           "properties": {
-            "routeAlerts": { "type": "boolean" },
-            "bookingAlerts": { "type": "boolean" },
-            "systemAlerts": { "type": "boolean" }
+            "routeAlerts": {
+              "type": "boolean"
+            },
+            "bookingAlerts": {
+              "type": "boolean"
+            },
+            "systemAlerts": {
+              "type": "boolean"
+            }
           }
         },
         "securitySettings": {
           "type": "object",
           "properties": {
-            "isPinEnabled": { "type": "boolean" },
-            "isBiometricEnabled": { "type": "boolean" },
-            "is2faEnabled": { "type": "boolean" }
+            "isPinEnabled": {
+              "type": "boolean"
+            },
+            "isBiometricEnabled": {
+              "type": "boolean"
+            },
+            "is2faEnabled": {
+              "type": "boolean"
+            }
           }
         },
-        "savedPlaces": { "type": "array", "items": { "$ref": "#/entities/SavedPlace" } }
+        "savedPlaces": {
+          "type": "array",
+          "items": {
+            "$ref": "#/entities/SavedPlace"
+          }
+        }
       }
     },
     "Transaction": {
       "title": "Transaction",
       "type": "object",
       "properties": {
-        "id": { "type": "string" },
-        "type": { "type": "string", "enum": ["payment", "top-up"] },
-        "plate": { "type": "string" },
-        "amount": { "type": "number" }
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["payment", "top-up"]
+        },
+        "plate": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number"
+        }
       }
     },
     "Track": {
       "title": "Track",
       "type": "object",
       "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "artist": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "duration": {
+          "type": "string"
+        }
+      }
+    },
+    "PlaylistItem": {
+      "title": "PlaylistItem",
+      "type": "object",
+      "description": "A track within a shared bus playlist.",
+      "properties": {
         "id": { "type": "string" },
         "title": { "type": "string" },
         "artist": { "type": "string" },
         "image": { "type": "string" },
-        "duration": { "type": "string" }
+        "duration": { "type": "string" },
+        "addedBy": { "type": "string", "description": "The UID of the user who added the song." }
       }
     },
     "SavedPlace": {
       "title": "Saved Place",
       "type": "object",
       "properties": {
-        "id": { "type": "string" },
-        "type": { "type": "string", "enum": ["home", "work", "other"] },
-        "address": { "type": "string" }
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["home", "work", "other"]
+        },
+        "address": {
+          "type": "string"
+        }
       }
     },
     "Trip": {
@@ -138,99 +242,244 @@
       "type": "object",
       "description": "Represents a single bus trip booked by a user.",
       "properties": {
-        "id": { "type": "string", "description": "Unique identifier for the trip." },
-        "userId": { "type": "string", "description": "The ID of the user who booked the trip." },
-        "driverId": { "type": "string", "description": "The ID of the driver assigned to the trip." },
-        "busId": { "type": "string", "description": "The ID of the bus for the trip." },
-        "busPlate": { "type": "string", "description": "The license plate of the bus." },
-        "status": { "type": "string", "enum": ["pending", "accepted", "in-progress", "completed", "cancelled"], "description": "The current status of the trip." },
-        "origin": { "type": "object", "properties": { "name": { "type": "string" }, "location": { "$ref": "#/entities/GeoPoint" } } },
-        "destination": { "type": "object", "properties": { "name": { "type": "string" }, "location": { "$ref": "#/entities/GeoPoint" } } },
-        "pickupLocation": { "$ref": "#/entities/GeoPoint", "description": "The user's pickup coordinates." },
-        "currentBusLocation": { "$ref": "#/entities/GeoPoint", "description": "The real-time location of the bus, updated by the driver's app." },
-        "eta": { "type": "number", "description": "Estimated time of arrival in minutes." },
-        "fare": { "type": "number", "description": "The cost of the trip." },
-        "createdAt": { "type": "string", "format": "date-time" },
-        "updatedAt": { "type": "string", "format": "date-time" }
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the trip."
+        },
+        "userId": {
+          "type": "string",
+          "description": "The ID of the user who booked the trip."
+        },
+        "driverId": {
+          "type": "string",
+          "description": "The ID of the driver assigned to the trip."
+        },
+        "busId": {
+          "type": "string",
+          "description": "The ID of the bus for the trip."
+        },
+        "busPlate": {
+          "type": "string",
+          "description": "The license plate of the bus."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "accepted", "in-progress", "completed", "cancelled"],
+          "description": "The current status of the trip."
+        },
+        "origin": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "location": {
+              "$ref": "#/entities/GeoPoint"
+            }
+          }
+        },
+        "destination": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "location": {
+              "$ref": "#/entities/GeoPoint"
+            }
+          }
+        },
+        "pickupLocation": {
+          "$ref": "#/entities/GeoPoint",
+          "description": "The user's pickup coordinates."
+        },
+        "currentBusLocation": {
+          "$ref": "#/entities/GeoPoint",
+          "description": "The real-time location of the bus, updated by the driver's app."
+        },
+        "eta": {
+          "type": "number",
+          "description": "Estimated time of arrival in minutes."
+        },
+        "fare": {
+          "type": "number",
+          "description": "The cost of the trip."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
       },
       "required": ["id", "userId", "busId", "status", "destination", "fare", "createdAt"]
     },
     "GeoPoint": {
-        "title": "GeoPoint",
-        "type": "object",
-        "description": "Represents a geographical point with latitude and longitude.",
-        "properties": {
-            "latitude": { "type": "number" },
-            "longitude": { "type": "number" }
+      "title": "GeoPoint",
+      "type": "object",
+      "description": "Represents a geographical point with latitude and longitude.",
+      "properties": {
+        "latitude": {
+          "type": "number"
+        },
+        "longitude": {
+          "type": "number"
         }
+      }
     },
     "Bus": {
-        "title": "Bus",
-        "type": "object",
-        "description": "Represents a single bus, broadcasted by a driver app.",
-        "properties": {
-            "id": { "type": "string", "description": "Unique identifier for the bus document (usually the driver's ID)." },
-            "driver": { "type": "string", "description": "The name of the bus driver." },
-            "plate": { "type": "string", "description": "The license plate of the bus." },
-            "eta": { "type": "number", "description": "Estimated time of arrival to the next major stop in minutes." },
-            "capacity": { "type": "object", "properties": { "current": { "type": "number" }, "max": { "type": "number" } } },
-            "stops": { "type": "array", "items": { "type": "object", "properties": { "name": { "type": "string" }, "fare": { "type": "number" }, "eta": { "type": "number" } } } },
-            "finalDestination": { "type": "object", "properties": { "name": { "type": "string" }, "fare": { "type": "number" }, "eta": { "type": "number" } } },
-            "position": { "type": "object", "description": "CSS position for map display.", "properties": { "top": { "type": "string" }, "left": { "type": "string" } } },
-            "driverImage": { "type": "string", "format": "uri" },
-            "seating": { "type": "array", "items": { "type": ["object", "null"], "properties": { "id": { "type": "string" }, "isOccupied": { "type": "boolean" } } } }
+      "title": "Bus",
+      "type": "object",
+      "description": "Represents a single bus, broadcasted by a driver app.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the bus document (usually the driver's ID)."
         },
-        "required": ["id", "driver", "plate", "eta", "capacity", "finalDestination"]
+        "driver": {
+          "type": "string",
+          "description": "The name of the bus driver."
+        },
+        "plate": {
+          "type": "string",
+          "description": "The license plate of the bus."
+        },
+        "eta": {
+          "type": "number",
+          "description": "Estimated time of arrival to the next major stop in minutes."
+        },
+        "capacity": {
+          "type": "object",
+          "properties": {
+            "current": {
+              "type": "number"
+            },
+            "max": {
+              "type": "number"
+            }
+          }
+        },
+        "stops": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "fare": {
+                "type": "number"
+              },
+              "eta": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "finalDestination": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "fare": {
+              "type": "number"
+            },
+            "eta": {
+              "type": "number"
+            }
+          }
+        },
+        "position": {
+          "type": "object",
+          "description": "CSS position for map display.",
+          "properties": {
+            "top": {
+              "type": "string"
+            },
+            "left": {
+              "type": "string"
+            }
+          }
+        },
+        "driverImage": {
+          "type": "string",
+          "format": "uri"
+        },
+        "seating": {
+          "type": "array",
+          "items": {
+            "type": ["object", "null"],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "isOccupied": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "playlist": {
+          "type": "array",
+          "description": "A shared, real-time playlist for the bus.",
+          "items": { "$ref": "#/entities/PlaylistItem" }
+        }
+      },
+      "required": ["id", "driver", "plate", "eta", "capacity", "finalDestination"]
     }
   },
   "auth": {
-    "providers": [
-      "password",
-      "google.com"
-    ],
+    "providers": ["password", "google.com"],
     "claims": {
-        "driver": {
-            "type": "boolean"
-        }
+      "driver": {
+        "type": "boolean"
+      }
     }
   },
   "firestore": {
-    "structure": [
-      {
-        "path": "/users/{userId}",
-        "definition": {
-          "schema": { "$ref": "#/entities/User" },
-          "description": "Stores user profile information. Path-based ownership is enforced, allowing each user to only access their own document."
-        }
-      },
-      {
-        "path": "/users/{userId}/preferences/{prefsId}",
-        "definition": {
-          "schema": { "$ref": "#/entities/UserPreferences" },
-          "description": "Stores a single document containing all preferences for a user."
-        }
-      },
-      {
-        "path": "/drivers/{driverId}",
-        "definition": {
-          "schema": { "$ref": "#/entities/Driver" },
-          "description": "Stores permanent driver and assigned bus information. The document ID is the driver's Firebase Auth UID."
-        }
-      },
-      {
-        "path": "/trips/{tripId}",
-        "definition": {
-          "schema": { "$ref": "#/entities/Trip" },
-          "description": "Stores individual trip documents, accessible by both users and drivers."
-        }
-      },
-      {
-        "path": "/buses/{busId}",
-        "definition": {
-          "schema": { "$ref": "#/entities/Bus" },
-          "description": "Stores live data for active buses, broadcasted by drivers. All authenticated users can read this collection."
-        }
+    "structure": [{
+      "path": "/users/{userId}",
+      "definition": {
+        "schema": {
+          "$ref": "#/entities/User"
+        },
+        "description": "Stores user profile information. Path-based ownership is enforced, allowing each user to only access their own document."
       }
-    ]
+    }, {
+      "path": "/users/{userId}/preferences/{prefsId}",
+      "definition": {
+        "schema": {
+          "$ref": "#/entities/UserPreferences"
+        },
+        "description": "Stores a single document containing all preferences for a user."
+      }
+    }, {
+      "path": "/drivers/{driverId}",
+      "definition": {
+        "schema": {
+          "$ref": "#/entities/Driver"
+        },
+        "description": "Stores permanent driver and assigned bus information. The document ID is the driver's Firebase Auth UID."
+      }
+    }, {
+      "path": "/trips/{tripId}",
+      "definition": {
+        "schema": {
+          "$ref": "#/entities/Trip"
+        },
+        "description": "Stores individual trip documents, accessible by both users and drivers."
+      }
+    }, {
+      "path": "/buses/{busId}",
+      "definition": {
+        "schema": {
+          "$ref": "#/entities/Bus"
+        },
+        "description": "Stores live data for active buses, broadcasted by drivers. All authenticated users can read this collection."
+      }
+    }]
   }
 }
