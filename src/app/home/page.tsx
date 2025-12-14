@@ -108,7 +108,11 @@ export default function HomePage() {
   // *** POINT 1: LISTENING FOR DRIVER APPS ***
   // This fetches all bus data from the `/buses` collection in Firestore.
   // Driver apps would be responsible for writing and updating their documents here.
-  const busesQuery = useMemoFirebase(() => firestore ? collection(firestore, 'buses') : null, [firestore]);
+  const busesQuery = useMemoFirebase(() => {
+    // Only create the query if firestore is available and the user check is complete
+    if (!firestore || isUserLoading) return null;
+    return collection(firestore, 'buses');
+  }, [firestore, isUserLoading]);
   const { data: buses, isLoading: isLoadingBuses } = useCollection<BusData>(busesQuery);
 
   const [selectedBus, setSelectedBus] = useState<BusData | null>(null);
