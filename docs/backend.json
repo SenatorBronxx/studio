@@ -52,6 +52,20 @@
         "signUpDate"
       ]
     },
+    "Driver": {
+      "title": "Driver",
+      "type": "object",
+      "description": "Represents a registered driver and their permanently assigned bus.",
+      "properties": {
+        "id": { "type": "string", "description": "The driver's user ID." },
+        "name": { "type": "string", "description": "The driver's full name." },
+        "email": { "type": "string", "format": "email" },
+        "assignedBusPlate": { "type": "string", "description": "The license plate of the bus assigned to this driver." },
+        "registrationDate": { "type": "string", "format": "date-time" },
+        "driverImage": { "type": "string", "format": "uri" }
+      },
+      "required": ["id", "name", "email", "assignedBusPlate"]
+    },
     "UserPreferences": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "User Preferences",
@@ -185,72 +199,38 @@
       {
         "path": "/users/{userId}",
         "definition": {
-          "entityName": "user",
-          "schema": {
-            "$ref": "#/backend/entities/User"
-          },
-          "description": "Stores user profile information. Path-based ownership is enforced, allowing each user to only access their own document.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user."
-            }
-          ]
+          "schema": { "$ref": "#/entities/User" },
+          "description": "Stores user profile information. Path-based ownership is enforced, allowing each user to only access their own document."
         }
       },
       {
         "path": "/users/{userId}/preferences/{prefsId}",
         "definition": {
-          "entityName": "userPreferences",
-          "schema": {
-            "$ref": "#/backend/entities/UserPreferences"
-          },
-          "description": "Stores a single document containing all preferences for a user.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user."
-            },
-            {
-              "name": "prefsId",
-              "description": "The unique identifier of the preferences document."
-            }
-          ]
+          "schema": { "$ref": "#/entities/UserPreferences" },
+          "description": "Stores a single document containing all preferences for a user."
+        }
+      },
+      {
+        "path": "/drivers/{driverId}",
+        "definition": {
+          "schema": { "$ref": "#/entities/Driver" },
+          "description": "Stores permanent driver and assigned bus information. The document ID is the driver's Firebase Auth UID."
         }
       },
       {
         "path": "/trips/{tripId}",
         "definition": {
-          "entityName": "trip",
-          "schema": {
-            "$ref": "#/backend/entities/Trip"
-          },
-          "description": "Stores individual trip documents, accessible by both users and drivers.",
-          "params": [
-            {
-              "name": "tripId",
-              "description": "The unique identifier of the trip."
-            }
-          ]
+          "schema": { "$ref": "#/entities/Trip" },
+          "description": "Stores individual trip documents, accessible by both users and drivers."
         }
       },
       {
         "path": "/buses/{busId}",
         "definition": {
-          "entityName": "bus",
-          "schema": {
-            "$ref": "#/backend/entities/Bus"
-          },
-          "description": "Stores live data for active buses, broadcasted by drivers. All authenticated users can read this collection.",
-          "params": [
-            {
-              "name": "busId",
-              "description": "The unique identifier of the bus."
-            }
-          ]
+          "schema": { "$ref": "#/entities/Bus" },
+          "description": "Stores live data for active buses, broadcasted by drivers. All authenticated users can read this collection."
         }
       }
-    ],
-    "reasoning": "This Firestore data structure is designed for the Eritas Gateway bus booking application. It prioritizes security and scalability following the core design principles of Authorization Independence, Clarity of Intent, DBAC (Database-Based Access Control), and QAPs (Rules are not Filters). User data is stored in a dedicated collection, ensuring clear ownership and simplified security rules. A subcollection for user preferences is used to group all user-specific settings, making data management and access control straightforward. A top-level 'trips' collection is introduced to serve as the single source of truth for communication between the user and driver apps. A top-level 'buses' collection is added to allow driver apps to broadcast their live status, which can be read by all users."
+    ]
   }
 }

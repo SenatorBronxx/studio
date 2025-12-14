@@ -9,20 +9,22 @@
  * Data Structure:
  * - /users/{userId}: Stores public-facing user profile information.
  * - /users/{userId}/preferences/{prefsId}: Stores private user settings.
+ * - /drivers/{driverId}: Stores permanent driver and assigned bus information.
  * - /trips/{tripId}: Stores trip documents, shared between user and driver.
  * - /buses/{busId}: Stores live data for active buses, broadcast by drivers.
  *
  * Key Security Decisions:
  * - User Isolation: A user can only read/write their own documents in their
  *   own data tree (`/users/{their_own_userId}`).
+ * - Driver Data: A driver can read their own permanent record. No one can
+ *   write to it from the client-side to prevent tampering.
  * - Trip Ownership: A user can create a trip for themselves and read a trip
  *   if their userId matches the trip's userId. They cannot see other users' trips.
  * - Driver Permissions: A user with a `driver: true` custom claim can read
  *   any trip and update specific fields like `status` and `currentBusLocation`.
  *   They cannot create or delete trips via the app.
  * - Public Bus Data: All signed-in users can read the list of active buses to
- *   use the app's core functionality. Only drivers can update bus data (this
- *   rule is simplified for now).
+ *   use the app's core functionality. Only drivers can update bus data.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -82,6 +84,20 @@ service cloud.firestore {
     }
     
     /**
+     * @description Stores permanent driver and assigned bus information.
+     * @path /drivers/{driverId}
+     */
+    match /drivers/{driverId} {
+      // A driver can read their own record.
+      allow get: if isOwner(driverId);
+      // No one can list all drivers.
+      allow list: if false;
+      // Client-side apps cannot create, update, or delete these records.
+      // This must be done by a trusted server/admin process.
+      allow write: if false;
+    }
+
+    /**
      * @description Manages trip documents, shared between users and drivers.
      * @path /trips/{tripId}
      */
@@ -111,8 +127,7 @@ service cloud.firestore {
       // Any signed-in user can see the list of active buses.
       allow read: if isSignedIn();
       
-      // In a real app, only authenticated drivers should be able to create or update their bus document.
-      // For now, we will keep this simple.
+      // Only authenticated drivers should be able to create or update their bus document.
       allow write: if isDriver();
     }
   }
