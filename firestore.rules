@@ -9,6 +9,8 @@
  * - /users/{userId}/preferences/{prefsId}: Stores private user settings.
  * - /trips/{tripId}: Stores trip documents, shared between user and driver.
  * - /buses/{busId}: Stores live data for active buses, broadcast by drivers.
+ * - /drivers/{driverId}: Stores public driver profiles.
+ * - /registrationCodes/{code}: Stores one-time registration codes for drivers.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -30,6 +32,13 @@ service cloud.firestore {
      */
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * Returns true if the user has the 'driver' custom claim.
+     */
+    function isDriver() {
+      return isSignedIn() && request.auth.token.driver == true;
     }
 
     // ----------------------------------------------------------------------
@@ -73,8 +82,38 @@ service cloud.firestore {
     match /buses/{busId} {
       // Any signed in user can see active buses. Only drivers can update.
       allow read: if isSignedIn();
-      // For now, allow any signed-in user to write for testing.
-      allow write: if isSignedIn();
+      // Only a driver can update their own bus document.
+      allow write: if isDriver() && request.resource.data.id == request.auth.uid;
+    }
+
+    /**
+     * @description Manages driver profile documents.
+     * @path /drivers/{driverId}
+     */
+    match /drivers/{driverId} {
+      // Only the driver themselves can read their own profile.
+      allow get: if isOwner(driverId);
+      allow list: if false;
+      // A user can create their own driver profile if they are redeeming a code.
+      allow create: if isOwner(driverId);
+      // Drivers can update their own profile.
+      allow update: if isOwner(driverId);
+      allow delete: if false;
+    }
+
+    /**
+     * @description Manages one-time registration codes for drivers.
+     * @path /registrationCodes/{code}
+     */
+    match /registrationCodes/{code} {
+      // Any authenticated user can read a code to check its validity.
+      allow get: if isSignedIn();
+      allow list: if false;
+      // Only an admin can create codes (for now, allow any signed-in user for testing).
+      allow create: if isSignedIn();
+      // Once a code exists, only a signed-in user can update it (to redeem it).
+      allow update: if isSignedIn();
+      allow delete: if false;
     }
   }
 }

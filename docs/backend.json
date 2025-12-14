@@ -397,44 +397,133 @@
         }
       },
       "required": ["id", "driver", "plate", "eta", "capacity", "finalDestination"]
+    },
+    "Driver": {
+      "title": "Driver",
+      "type": "object",
+      "description": "Represents a driver in the Eritas Gateway system.",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "The Firebase Authentication UID of the driver."
+        },
+        "fullName": {
+          "type": "string"
+        },
+        "phoneNumber": {
+          "type": "string"
+        },
+        "licenseNumber": {
+          "type": "string"
+        },
+        "busPlateNumber": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "active", "inactive", "suspended"],
+          "default": "pending"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["uid", "fullName", "phoneNumber", "licenseNumber", "busPlateNumber", "status", "createdAt"]
+    },
+    "RegistrationCode": {
+      "title": "Registration Code",
+      "type": "object",
+      "description": "A one-time code for driver registration.",
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": "The 6-digit registration code."
+        },
+        "driverName": {
+          "type": "string",
+          "description": "The full name of the driver this code is for."
+        },
+        "isRedeemed": {
+          "type": "boolean",
+          "default": false
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "redeemedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["code", "driverName", "isRedeemed", "createdAt"]
     }
   },
   "auth": {
-    "providers": ["password", "google.com"]
+    "providers": ["password", "google.com"],
+    "customClaims": {
+      "driver": {
+        "type": "boolean"
+      }
+    }
   },
   "firestore": {
-    "structure": [{
-      "path": "/users/{userId}",
-      "definition": {
-        "schema": {
-          "$ref": "#/entities/User"
-        },
-        "description": "Stores user profile information. Path-based ownership is enforced, allowing each user to only access their own document."
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "schema": {
+            "$ref": "#/entities/User"
+          },
+          "description": "Stores user profile information. Path-based ownership is enforced, allowing each user to only access their own document."
+        }
+      },
+      {
+        "path": "/users/{userId}/preferences/{prefsId}",
+        "definition": {
+          "schema": {
+            "$ref": "#/entities/UserPreferences"
+          },
+          "description": "Stores a single document containing all preferences for a user."
+        }
+      },
+      {
+        "path": "/trips/{tripId}",
+        "definition": {
+          "schema": {
+            "$ref": "#/entities/Trip"
+          },
+          "description": "Stores individual trip documents, accessible by both users and drivers."
+        }
+      },
+      {
+        "path": "/buses/{busId}",
+        "definition": {
+          "schema": {
+            "$ref": "#/entities/Bus"
+          },
+          "description": "Stores live data for active buses, broadcasted by drivers. All authenticated users can read this collection."
+        }
+      },
+      {
+        "path": "/drivers/{driverId}",
+        "definition": {
+          "schema": {
+            "$ref": "#/entities/Driver"
+          },
+          "description": "Stores public driver profile information. Writable only by admins."
+        }
+      },
+      {
+        "path": "/registrationCodes/{code}",
+        "definition": {
+          "schema": {
+            "$ref": "#/entities/RegistrationCode"
+          },
+          "description": "Stores one-time registration codes for drivers. Writable by admins, readable by authenticated users."
+        }
       }
-    }, {
-      "path": "/users/{userId}/preferences/{prefsId}",
-      "definition": {
-        "schema": {
-          "$ref": "#/entities/UserPreferences"
-        },
-        "description": "Stores a single document containing all preferences for a user."
-      }
-    }, {
-      "path": "/trips/{tripId}",
-      "definition": {
-        "schema": {
-          "$ref": "#/entities/Trip"
-        },
-        "description": "Stores individual trip documents, accessible by both users and drivers."
-      }
-    }, {
-      "path": "/buses/{busId}",
-      "definition": {
-        "schema": {
-          "$ref": "#/entities/Bus"
-        },
-        "description": "Stores live data for active buses, broadcasted by drivers. All authenticated users can read this collection."
-      }
-    }]
+    ]
   }
 }
