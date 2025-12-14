@@ -52,77 +52,6 @@
         "signUpDate"
       ]
     },
-    "Driver": {
-      "title": "Driver",
-      "type": "object",
-      "description": "Stores credentials and information for a registered driver.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "The driver's user ID, which is their Firebase Auth UID. This is initially empty and gets filled upon code redemption."
-        },
-        "fullName": {
-          "type": "string",
-          "description": "The driver's full legal name."
-        },
-        "phoneNumber": {
-          "type": "string",
-          "description": "The driver's contact phone number."
-        },
-        "driversLicenseNumber": {
-          "type": "string",
-          "description": "The driver's official license number."
-        },
-        "ghanaCardNumber": {
-          "type": "string",
-          "description": "The driver's Ghana Card identification number."
-        },
-        "registrationDate": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The date the initial admin profile was created."
-        }
-      },
-      "required": [
-        "fullName",
-        "phoneNumber",
-        "driversLicenseNumber",
-        "ghanaCardNumber",
-        "registrationDate"
-      ]
-    },
-    "RegistrationCode": {
-        "title": "Registration Code",
-        "type": "object",
-        "description": "A one-time code used to link a new user to a pre-created driver profile.",
-        "properties": {
-            "code": {
-                "type": "string",
-                "description": "The 6-character unique code."
-            },
-            "driverId": {
-                "type": "string",
-                "description": "The document ID of the corresponding profile in the /drivers collection."
-            },
-            "isUsed": {
-                "type": "boolean",
-                "description": "Flag to indicate if the code has been redeemed."
-            },
-            "createdAt": {
-                "type": "string",
-                "format": "date-time"
-            },
-            "redeemedBy": {
-                "type": "string",
-                "description": "The UID of the user who redeemed the code."
-            },
-            "redeemedAt": {
-                "type": "string",
-                "format": "date-time"
-            }
-        },
-        "required": ["code", "driverId", "isUsed", "createdAt"]
-    },
     "UserPreferences": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "User Preferences",
@@ -471,15 +400,7 @@
     }
   },
   "auth": {
-    "providers": ["password", "google.com"],
-    "claims": {
-      "driver": {
-        "type": "boolean"
-      },
-      "admin": {
-        "type": "boolean"
-      }
-    }
+    "providers": ["password", "google.com"]
   },
   "firestore": {
     "structure": [{
@@ -497,22 +418,6 @@
           "$ref": "#/entities/UserPreferences"
         },
         "description": "Stores a single document containing all preferences for a user."
-      }
-    }, {
-      "path": "/drivers/{driverId}",
-      "definition": {
-        "schema": {
-          "$ref": "#/entities/Driver"
-        },
-        "description": "Stores permanent driver credentials and information. The document ID is initially temporary and then updated to the driver's Firebase Auth UID upon code redemption."
-      }
-    }, {
-      "path": "/registrationCodes/{codeId}",
-      "definition": {
-          "schema": {
-              "$ref": "#/entities/RegistrationCode"
-          },
-          "description": "Stores one-time use codes for driver registration. Readable by any signed-in user but writeable only by admins."
       }
     }, {
       "path": "/trips/{tripId}",

@@ -2,14 +2,11 @@
 /**
  * Core Philosophy:
  * This ruleset enforces a strict user-ownership model for the Eritas Gateway
- * application. All user-related data is private. It includes roles for 'driver'
- * and 'admin' granted via custom claims.
+ * application. All user-related data is private.
  *
  * Data Structure:
  * - /users/{userId}: Stores public-facing user profile information.
  * - /users/{userId}/preferences/{prefsId}: Stores private user settings.
- * - /drivers/{driverId}: Stores permanent driver information.
- * - /registrationCodes/{codeId}: Stores one-time codes for driver registration.
  * - /trips/{tripId}: Stores trip documents, shared between user and driver.
  * - /buses/{busId}: Stores live data for active buses, broadcast by drivers.
  */
@@ -34,20 +31,6 @@ service cloud.firestore {
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
-    
-    /**
-     * Returns true if the user is a designated driver.
-     */
-    function isDriver() {
-        return isSignedIn() && request.auth.token.driver == true;
-    }
-
-    /**
-     * Returns true if the user is a designated admin.
-     */
-    function isAdmin() {
-        return isSignedIn() && request.auth.token.admin == true;
-    }
 
     // ----------------------------------------------------------------------
     // Collection Rules
@@ -58,58 +41,29 @@ service cloud.firestore {
      * @path /users/{userId}
      */
     match /users/{userId} {
-      allow get: if isOwner(userId) || isAdmin();
-      allow list: if isAdmin();
+      allow get: if isOwner(userId);
+      allow list: if false;
       allow create: if isOwner(userId) && request.resource.data.id == userId;
       allow update: if isOwner(userId) && request.resource.data.id == resource.data.id;
-      allow delete: if isOwner(userId) || isAdmin();
+      allow delete: if isOwner(userId);
 
       /**
        * @description Manages a single document of user preferences.
        * @path /users/{userId}/preferences/{prefsId}
        */
       match /preferences/{prefsId} {
-        allow read, write: if isOwner(userId) || isAdmin();
+        allow read, write: if isOwner(userId);
       }
     }
     
-    /**
-     * @description Stores permanent driver credentials and information.
-     * @path /drivers/{driverId}
-     */
-    match /drivers/{driverId} {
-      allow get: if isDriver() || isAdmin();
-      allow list: if isAdmin();
-      // Only admins can create profiles. The redeem code flow handles updates.
-      allow create, delete: if isAdmin();
-      allow update: if isAdmin() || (isSignedIn() && request.resource.data.id == request.auth.uid);
-    }
-
-    /**
-     * @description Stores one-time use codes for driver registration.
-     * @path /registrationCodes/{codeId}
-     */
-    match /registrationCodes/{codeId} {
-        // Any authenticated user can read a code to validate it.
-        allow read: if isSignedIn();
-        // Only admins can create new codes.
-        allow create: if isAdmin();
-        // A code can be updated (e.g., to mark as used) by any signed-in user.
-        allow update: if isSignedIn();
-        // Codes should not be deleted by clients.
-        allow delete: if false;
-    }
-
     /**
      * @description Manages trip documents, shared between users and drivers.
      * @path /trips/{tripId}
      */
     match /trips/{tripId} {
-      allow get: if isSignedIn() && (isOwner(resource.data.userId) || isDriver() || isAdmin());
-      allow list: if isAdmin();
-      allow create: if isOwner(request.resource.data.userId);
-      allow update: if isDriver() || isOwner(resource.data.userId) || isAdmin();
-      allow delete: if false; 
+      // For now, let any signed-in user read/write trips.
+      // In a real app, this would be restricted to the user who booked it or the driver.
+      allow read, write: if isSignedIn();
     }
 
     /**
@@ -117,8 +71,10 @@ service cloud.firestore {
      * @path /buses/{busId}
      */
     match /buses/{busId} {
+      // Any signed in user can see active buses. Only drivers can update.
       allow read: if isSignedIn();
-      allow write: if isDriver() || isAdmin();
+      // For now, allow any signed-in user to write for testing.
+      allow write: if isSignedIn();
     }
   }
 }
