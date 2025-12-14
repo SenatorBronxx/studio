@@ -15,20 +15,22 @@ export default function LoginPage() {
   const router = useRouter();
   const { user, isUserLoading } = useUser();
   const [showSlideshow, setShowSlideshow] = useState(false);
-  const { preferences, isHydrated } = useUserPreferences();
+  const { isHydrated } = useUserPreferences();
 
   useEffect(() => {
+    // Redirect existing users who land on this page
     if (!isUserLoading && user && isHydrated) {
-        if (preferences && Object.keys(preferences).length <= 2) {
-            setShowSlideshow(true);
-        } else {
-            router.push('/home');
-        }
+        router.push('/home');
     }
-  }, [user, isUserLoading, router, preferences, isHydrated]);
+  }, [user, isUserLoading, router, isHydrated]);
   
-  const handleAuthSuccess = () => {
-    // The useEffect hook will handle logic after the user state is updated.
+  const handleSignInSuccess = () => {
+    // The useEffect hook will handle the redirect for existing users.
+  }
+  
+  const handleSignUpSuccess = () => {
+    // A new user has signed up, show the slideshow immediately.
+    setShowSlideshow(true);
   }
 
   const handleFinishSlideshow = () => {
@@ -39,7 +41,7 @@ export default function LoginPage() {
       return <SignupSlideshow onFinish={handleFinishSlideshow} />;
   }
   
-  if (isUserLoading || (user && !isHydrated)) {
+  if (isUserLoading || (user && !isHydrated && !showSlideshow)) {
     return (
         <div className="flex h-screen w-full items-center justify-center bg-background">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -47,7 +49,8 @@ export default function LoginPage() {
     );
   }
   
-  if (user && isHydrated) {
+  // If user is loaded but we are supposed to show the slideshow, don't show the loader
+  if (user && isHydrated && !showSlideshow) {
       return (
         <div className="flex h-screen w-full items-center justify-center bg-background">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -74,7 +77,7 @@ export default function LoginPage() {
           </p>
         </div>
         <div className="rounded-lg border bg-background/80 backdrop-blur-sm p-6 shadow-sm">
-            <AuthForm onSignInSuccess={handleAuthSuccess} onSignUpSuccess={handleAuthSuccess} />
+            <AuthForm onSignInSuccess={handleSignInSuccess} onSignUpSuccess={handleSignUpSuccess} />
         </div>
       </div>
     </div>
