@@ -9,8 +9,6 @@
  * - /users/{userId}/preferences/{prefsId}: Stores private user settings.
  * - /trips/{tripId}: Stores trip documents, shared between user and driver.
  * - /buses/{busId}: Stores live data for active buses, broadcast by drivers.
- * - /drivers/{driverId}: Stores public driver profiles.
- * - /registrationCodes/{code}: Stores one-time registration codes for drivers.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -32,13 +30,6 @@ service cloud.firestore {
      */
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
-    }
-
-    /**
-     * Returns true if the user has the 'driver' custom claim.
-     */
-    function isDriver() {
-      return isSignedIn() && request.auth.token.driver == true;
     }
 
     // ----------------------------------------------------------------------
@@ -83,30 +74,6 @@ service cloud.firestore {
       // Any signed in user can see active buses.
       // For development, allow any signed-in user to write.
       allow read, write: if isSignedIn();
-    }
-
-    /**
-     * @description Manages driver profile documents.
-     * @path /drivers/{driverId}
-     */
-    match /drivers/{driverId} {
-      // For development, allow any signed-in user to read/write driver profiles.
-      allow read, write: if isSignedIn();
-    }
-
-    /**
-     * @description Manages one-time registration codes for drivers.
-     * @path /registrationCodes/{code}
-     */
-    match /registrationCodes/{code} {
-      // Any authenticated user can read a code to check its validity.
-      allow get: if isSignedIn();
-      allow list: if false;
-      // Only an admin can create codes (for now, allow any signed-in user for testing).
-      allow create: if isSignedIn();
-      // Once a code exists, only a signed-in user can update it (to redeem it).
-      allow update: if isSignedIn();
-      allow delete: if false;
     }
   }
 }
