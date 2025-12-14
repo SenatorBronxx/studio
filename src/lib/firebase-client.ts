@@ -1,10 +1,10 @@
 'use client';
 /**
- * @fileOverview Firebase client for external web apps.
+ * @fileOverview Firebase client for connecting related web apps.
  *
- * This file provides a simple way to initialize the Firebase client
- * for administrative or other specialized tasks, connecting to the same backend as the
- * main passenger and driver applications.
+ * This file provides a simple way to initialize the Firebase client for other
+ * applications (like a driver app or an admin dashboard) that need to connect
+ * to the same backend as the main passenger app.
  */
 
 import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
