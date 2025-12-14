@@ -149,6 +149,24 @@
             "latitude": { "type": "number" },
             "longitude": { "type": "number" }
         }
+    },
+    "Bus": {
+        "title": "Bus",
+        "type": "object",
+        "description": "Represents a single bus, broadcasted by a driver app.",
+        "properties": {
+            "id": { "type": "string", "description": "Unique identifier for the bus document (usually the driver's ID)." },
+            "driver": { "type": "string", "description": "The name of the bus driver." },
+            "plate": { "type": "string", "description": "The license plate of the bus." },
+            "eta": { "type": "number", "description": "Estimated time of arrival to the next major stop in minutes." },
+            "capacity": { "type": "object", "properties": { "current": { "type": "number" }, "max": { "type": "number" } } },
+            "stops": { "type": "array", "items": { "type": "object", "properties": { "name": { "type": "string" }, "fare": { "type": "number" }, "eta": { "type": "number" } } } },
+            "finalDestination": { "type": "object", "properties": { "name": { "type": "string" }, "fare": { "type": "number" }, "eta": { "type": "number" } } },
+            "position": { "type": "object", "description": "CSS position for map display.", "properties": { "top": { "type": "string" }, "left": { "type": "string" } } },
+            "driverImage": { "type": "string", "format": "uri" },
+            "seating": { "type": "array", "items": { "type": ["object", "null"], "properties": { "id": { "type": "string" }, "isOccupied": { "type": "boolean" } } } }
+        },
+        "required": ["id", "driver", "plate", "eta", "capacity", "finalDestination"]
     }
   },
   "auth": {
@@ -215,8 +233,24 @@
             }
           ]
         }
+      },
+      {
+        "path": "/buses/{busId}",
+        "definition": {
+          "entityName": "bus",
+          "schema": {
+            "$ref": "#/backend/entities/Bus"
+          },
+          "description": "Stores live data for active buses, broadcasted by drivers. All authenticated users can read this collection.",
+          "params": [
+            {
+              "name": "busId",
+              "description": "The unique identifier of the bus."
+            }
+          ]
+        }
       }
     ],
-    "reasoning": "This Firestore data structure is designed for the Eritas Gateway bus booking application. It prioritizes security and scalability following the core design principles of Authorization Independence, Clarity of Intent, DBAC (Database-Based Access Control), and QAPs (Rules are not Filters). User data is stored in a dedicated collection, ensuring clear ownership and simplified security rules. A subcollection for user preferences is used to group all user-specific settings, making data management and access control straightforward. A top-level 'trips' collection is introduced to serve as the single source of truth for communication between the user and driver apps."
+    "reasoning": "This Firestore data structure is designed for the Eritas Gateway bus booking application. It prioritizes security and scalability following the core design principles of Authorization Independence, Clarity of Intent, DBAC (Database-Based Access Control), and QAPs (Rules are not Filters). User data is stored in a dedicated collection, ensuring clear ownership and simplified security rules. A subcollection for user preferences is used to group all user-specific settings, making data management and access control straightforward. A top-level 'trips' collection is introduced to serve as the single source of truth for communication between the user and driver apps. A top-level 'buses' collection is added to allow driver apps to broadcast their live status, which can be read by all users."
   }
 }
