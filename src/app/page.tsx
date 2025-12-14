@@ -20,23 +20,32 @@ export default function AdminLoginPage() {
   const { t } = useLanguage();
 
   useEffect(() => {
-    if (!isUserLoading && user) {
-        // First, check if the email is on the allowed list.
-        if (!user.email || !ALLOWED_ADMIN_EMAILS.includes(user.email)) {
-            router.push('/access-denied');
-            return;
-        }
-
-        // If email is allowed, then check for the admin custom claim.
-        user.getIdTokenResult().then((idTokenResult) => {
-            if (idTokenResult.claims.admin) {
-            router.push('/dashboard');
-            } else {
-            // Email is on the list, but user is not an admin yet.
-            router.push('/access-denied');
-            }
-        });
+    if (isUserLoading) {
+      return; // Wait until user state is resolved
     }
+
+    if (user) {
+      // First, check if the email is on the allowed list.
+      if (!user.email || !ALLOWED_ADMIN_EMAILS.includes(user.email)) {
+          router.push('/access-denied');
+          return;
+      }
+
+      // If email is allowed, then check for the admin custom claim.
+      // The `true` parameter forces a token refresh to get the latest claims.
+      user.getIdTokenResult(true).then((idTokenResult) => {
+          if (idTokenResult.claims.admin) {
+              router.push('/home'); // Correct redirect to the main app page
+          } else {
+              // Email is on the list, but user is not an admin yet.
+              router.push('/access-denied');
+          }
+      }).catch(() => {
+          // If there's an error getting the token, deny access.
+          router.push('/access-denied');
+      });
+    }
+    // If no user, do nothing and stay on the login page.
   }, [user, isUserLoading, router]);
 
   const handleAuthSuccess = () => {
@@ -63,13 +72,12 @@ export default function AdminLoginPage() {
                 priority
                 className="mx-auto object-contain"
             />
-          <h1 className="text-2xl font-bold mt-4">Admin Portal</h1>
+          <h1 className="text-2xl font-bold mt-4">Welcome</h1>
           <p className="text-muted-foreground">
-            Sign in to manage the Eritas Gateway platform.
+            {t('welcomeMessage')}
           </p>
         </div>
         <div className="rounded-lg border bg-background p-6 shadow-sm">
-            {/* We can reuse the same AuthForm, but we will ignore the onSignUpSuccess callback */}
             <AuthForm onSignInSuccess={handleAuthSuccess} onSignUpSuccess={handleAuthSuccess} />
         </div>
       </div>
