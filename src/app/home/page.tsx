@@ -109,10 +109,10 @@ export default function HomePage() {
   // This fetches all bus data from the `/buses` collection in Firestore.
   // Driver apps would be responsible for writing and updating their documents here.
   const busesQuery = useMemoFirebase(() => {
-    // Only create the query if firestore is available and the user check is complete
-    if (!firestore || isUserLoading) return null;
+    // **FIX**: Only create the query if firestore is available AND we have a confirmed user.
+    if (!firestore || !user) return null;
     return collection(firestore, 'buses');
-  }, [firestore, isUserLoading]);
+  }, [firestore, user]);
   const { data: buses, isLoading: isLoadingBuses } = useCollection<BusData>(busesQuery);
 
   const [selectedBus, setSelectedBus] = useState<BusData | null>(null);
@@ -428,7 +428,7 @@ export default function HomePage() {
       : null;
 
 
-  if (isUserLoading || isLoadingBuses) {
+  if (isUserLoading || isLoadingBuses && !buses) {
       return (
         <div className="flex flex-col min-h-screen bg-background items-center justify-center">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />
