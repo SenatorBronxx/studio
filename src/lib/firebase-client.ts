@@ -1,9 +1,9 @@
 'use client';
 /**
- * @fileOverview Firebase client for an external admin web app.
+ * @fileOverview Firebase client for external web apps.
  *
  * This file provides a simple way to initialize the Firebase client
- * for administrative tasks, connecting to the same backend as the
+ * for administrative or other specialized tasks, connecting to the same backend as the
  * main passenger and driver applications.
  */
 
@@ -12,14 +12,14 @@ import { getFirestore, type Firestore } from 'firebase/firestore';
 import { firebaseConfig } from '@/firebase/config';
 
 /**
- * Initializes the Firebase application for the admin client.
+ * Initializes the Firebase application for a client app.
  *
  * This function handles the singleton pattern for Firebase initialization,
  * ensuring it only runs once, and returns the Firestore service instance.
  *
  * @returns {{firebaseApp: FirebaseApp, firestore: Firestore}} An object containing the initialized Firebase app and Firestore instances.
  */
-export function initializeAdminApp(): { firebaseApp: FirebaseApp; firestore: Firestore; } {
+export function initializeFirebaseClient(): { firebaseApp: FirebaseApp; firestore: Firestore; } {
   let firebaseApp: FirebaseApp;
 
   // Check if any apps are already initialized
