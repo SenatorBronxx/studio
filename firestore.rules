@@ -12,6 +12,7 @@
  * - /drivers/{driverId}: Stores permanent driver and assigned bus information.
  * - /trips/{tripId}: Stores trip documents, shared between user and driver.
  * - /buses/{busId}: Stores live data for active buses, broadcast by drivers.
+ * - /registrationCodes/{codeId}: Stores one-time use codes for driver registration.
  *
  * Key Security Decisions:
  * - User Isolation: A user can only read/write their own documents in their
@@ -25,6 +26,8 @@
  *   They cannot create or delete trips via the app.
  * - Public Bus Data: All signed-in users can read the list of active buses to
  *   use the app's core functionality. Only drivers can update bus data.
+ * - Registration Codes: Codes can only be written by a trusted backend process (not client apps).
+ *   They can be read by any signed-in user to allow for validation during signup.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -129,6 +132,17 @@ service cloud.firestore {
       
       // Only authenticated drivers should be able to create or update their bus document.
       allow write: if isDriver();
+    }
+    
+    /**
+     * @description Stores one-time codes for driver registration.
+     * @path /registrationCodes/{codeId}
+     */
+    match /registrationCodes/{codeId} {
+        // Any signed-in user can read a code to validate it during signup.
+        allow read: if isSignedIn();
+        // Only a trusted backend process can create or update codes.
+        allow write: if false;
     }
   }
 }
