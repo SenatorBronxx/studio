@@ -12,6 +12,12 @@ import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { Badge } from '@/components/ui/badge';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { redeemDriverCode } from '@/ai/flows/redeem-driver-code';
 
 // Mock data for the driver's bus. In a real app, this might come from a driver's profile.
 const MOCK_BUS_DATA = {
@@ -32,9 +38,15 @@ const MOCK_BUS_DATA = {
     { id: '3A', isOccupied: false }, { id: '3B', isOccupied: false }, null, { id: '3C', isOccupied: false }, { id: '3D', isOccupied: false },
     { id: '4A', isOccupied: false }, { id: '4B', isOccupied: false }, null, { id: '4C', isOccupied: false }, { id: '4D', isOccupied: false },
     { id: '5A', isOccupied: false }, { id: '5B', isOccupied: false }, null, { id: '5C', isOccupied: false }, { id: '5D', isOccupied: false },
-  ]
+  ],
+  playlist: []
 };
 
+const codeSchema = z.object({
+  code: z.string().length(6, 'Code must be 6 characters.'),
+});
+
+type CodeFormValues = z.infer<typeof codeSchema>;
 
 export default function DriverPage() {
   const { user, isUserLoading } = useUser();
@@ -46,6 +58,7 @@ export default function DriverPage() {
   const [isDriver, setIsDriver] = useState<boolean | null>(null);
   const [isBroadcasting, setIsBroadcasting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isRedeeming, setIsRedeeming] = useState(false);
 
   // The bus document reference is memoized to prevent re-renders
   const busRef = useMemoFirebase(() => {
@@ -54,13 +67,19 @@ export default function DriverPage() {
   }, [user, firestore]);
   
   // This hook listens to the bus document in real-time
-  const { data: busData, isLoading: isBusDocLoading } = useDoc(busRef);
+  const { data: busData } = useDoc(busRef);
+  
+  const codeForm = useForm<CodeFormValues>({
+    resolver: zodResolver(codeSchema),
+    defaultValues: { code: '' },
+  });
+
 
   useEffect(() => {
     if (!isUserLoading) {
       if (user) {
         // Check for the custom driver claim
-        user.getIdTokenResult().then((idTokenResult) => {
+        user.getIdTokenResult(true).then((idTokenResult) => { // Force refresh
           if (idTokenResult.claims.driver) {
             setIsDriver(true);
           } else {
@@ -79,13 +98,46 @@ export default function DriverPage() {
     setIsBroadcasting(!!busData);
   }, [busData]);
 
+  const handleRedeemCode = async (data: CodeFormValues) => {
+    if (!user) return;
+    setIsRedeeming(true);
+
+    try {
+        const result = await redeemDriverCode({ code: data.code, uid: user.uid });
+        if (result.success) {
+            toast({
+                title: "Registration Complete!",
+                description: result.message,
+            });
+            // Force a refresh of the user's token to get the new 'driver' claim
+            await user.getIdToken(true);
+            // Manually update state to re-render the component as a driver
+            setIsDriver(true);
+        } else {
+            toast({
+                variant: 'destructive',
+                title: "Registration Failed",
+                description: result.message,
+            });
+        }
+    } catch (error: any) {
+        toast({
+            variant: 'destructive',
+            title: "Error",
+            description: error.message || "An unknown error occurred."
+        });
+    } finally {
+        setIsRedeeming(false);
+    }
+  };
+
 
   const goOnline = async () => {
-    if (!busRef) return;
+    if (!busRef || !user) return;
     setIsLoading(true);
 
     const busDocData = {
-        id: busRef.id,
+        id: user.uid,
         ...MOCK_BUS_DATA,
         updatedAt: serverTimestamp(),
     };
@@ -154,16 +206,38 @@ export default function DriverPage() {
   if (!isDriver) {
       return (
         <div className="flex flex-col min-h-screen bg-background items-center justify-center text-center p-4">
-            <div className="bg-destructive/10 border border-destructive/50 p-6 rounded-lg max-w-md">
-                <div className='flex items-center justify-center gap-3'>
-                    <AlertTriangle className="h-8 w-8 text-destructive" />
-                    <h1 className="text-xl font-bold text-destructive">Access Denied</h1>
-                </div>
-                <p className='text-muted-foreground mt-2'>You do not have the necessary permissions to view this page. This portal is for registered drivers only.</p>
-                <Button onClick={() => router.push('/home')} className="mt-4" variant="secondary">
-                  Go to Passenger App
-                </Button>
-            </div>
+            <Card className='max-w-md w-full'>
+                <CardHeader>
+                    <CardTitle>Become a Driver</CardTitle>
+                    <CardDescription>Enter the 6-digit registration code provided by your administrator to activate your driver profile.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Form {...codeForm}>
+                        <form onSubmit={codeForm.handleSubmit(handleRedeemCode)} className="space-y-4">
+                            <FormField
+                            control={codeForm.control}
+                            name="code"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>Registration Code</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="XXXXXX" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                            />
+                            <Button type="submit" className="w-full" disabled={isRedeeming}>
+                                {isRedeeming ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UserCheck className="mr-2 h-4 w-4" />}
+                                Redeem Code
+                            </Button>
+                        </form>
+                    </Form>
+                     <Button variant="link" size="sm" className="mt-4" onClick={() => auth.signOut().then(() => router.push('/'))}>
+                        Not a driver? Sign out.
+                    </Button>
+                </CardContent>
+            </Card>
         </div>
     );
   }
