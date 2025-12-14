@@ -7,7 +7,7 @@ import { useUser, useFirestore, useDoc, useMemoFirebase, useAuth } from '@/fireb
 import { doc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, LogIn, LogOut, Wifi, WifiOff, SteeringWheel, Bus, UserCheck, AlertTriangle, Cloud } from 'lucide-react';
+import { Loader2, LogIn, LogOut, Wifi, WifiOff, SteeringWheel, Bus, UserCheck, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
@@ -15,7 +15,6 @@ import { Badge } from '@/components/ui/badge';
 
 // Mock data for the driver's bus. In a real app, this might come from a driver's profile.
 const MOCK_BUS_DATA = {
-  appOrigin: 'Passenger App', // Test field
   driver: 'Yaw Baah',
   plate: 'GE-2024-24',
   eta: 12,
@@ -55,7 +54,7 @@ export default function DriverPage() {
   }, [user, firestore]);
   
   // This hook listens to the bus document in real-time
-  const { data: busData, isLoading: isBusDocLoading } = useDoc<{appOrigin: string}>(busRef);
+  const { data: busData, isLoading: isBusDocLoading } = useDoc(busRef);
 
   useEffect(() => {
     if (!isUserLoading) {
@@ -77,10 +76,8 @@ export default function DriverPage() {
 
   // Sync broadcasting state with Firestore data
   useEffect(() => {
-    if (!isBusDocLoading) {
-        setIsBroadcasting(!!busData);
-    }
-  }, [busData, isBusDocLoading]);
+    setIsBroadcasting(!!busData);
+  }, [busData]);
 
 
   const goOnline = async () => {
@@ -235,8 +232,8 @@ export default function DriverPage() {
                 </Card>
             </div>
 
-            {/* Right Column: Trip Requests & Connection Test */}
-            <div className="md:col-span-2 grid gap-6">
+            {/* Right Column: Trip Requests */}
+            <div className="md:col-span-2">
                  <Card className="h-full">
                     <CardHeader>
                         <CardTitle>Incoming Trip Requests</CardTitle>
@@ -248,26 +245,6 @@ export default function DriverPage() {
                             <p className="font-semibold">Waiting for trip requests...</p>
                             <p className="text-sm">Ensure you are online to receive requests.</p>
                         </div>
-                    </CardContent>
-                </Card>
-
-                {/* Connection Test Card */}
-                <Card className="bg-primary/5 border-primary/20">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-primary"><Cloud className="h-5 w-5" />Connection Test</CardTitle>
-                        <CardDescription>This panel shows the origin of the last app to connect. Use this to verify your separate Driver App is connected to the same backend.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="text-center">
-                        {isBusDocLoading ? (
-                             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                        ) : busData ? (
-                            <div>
-                                <p className="text-sm text-muted-foreground">Data received from:</p>
-                                <p className="text-2xl font-bold text-primary">{busData.appOrigin || 'Unknown'}</p>
-                            </div>
-                        ) : (
-                             <p className="text-muted-foreground">Go online to see connection status.</p>
-                        )}
                     </CardContent>
                 </Card>
             </div>
