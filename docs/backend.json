@@ -55,34 +55,47 @@
     "Driver": {
       "title": "Driver",
       "type": "object",
-      "description": "Represents a registered driver and their permanently assigned bus.",
+      "description": "Stores credentials and information for a registered driver.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "The driver's user ID."
+          "description": "The driver's user ID, linking to their auth account."
         },
-        "name": {
+        "fullName": {
           "type": "string",
-          "description": "The driver's full name."
+          "description": "The driver's full legal name."
         },
-        "email": {
+        "phoneNumber": {
           "type": "string",
-          "format": "email"
+          "description": "The driver's contact phone number."
         },
-        "assignedBusPlate": {
+        "driversLicenseNumber": {
           "type": "string",
-          "description": "The license plate of the bus assigned to this driver."
+          "description": "The driver's official license number."
+        },
+        "ghanaCardNumber": {
+          "type": "string",
+          "description": "The driver's Ghana Card identification number."
+        },
+        "registrationCode": {
+          "type": "string",
+          "description": "The one-time code used to register this driver."
         },
         "registrationDate": {
           "type": "string",
-          "format": "date-time"
-        },
-        "driverImage": {
-          "type": "string",
-          "format": "uri"
+          "format": "date-time",
+          "description": "The date the driver was officially registered."
         }
       },
-      "required": ["id", "name", "email", "assignedBusPlate"]
+      "required": [
+        "id",
+        "fullName",
+        "phoneNumber",
+        "driversLicenseNumber",
+        "ghanaCardNumber",
+        "registrationCode",
+        "registrationDate"
+      ]
     },
     "UserPreferences": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -491,7 +504,7 @@
         "schema": {
           "$ref": "#/entities/Driver"
         },
-        "description": "Stores permanent driver and assigned bus information. The document ID is the driver's Firebase Auth UID."
+        "description": "Stores permanent driver credentials and information. The document ID is the driver's Firebase Auth UID."
       }
     }, {
       "path": "/trips/{tripId}",

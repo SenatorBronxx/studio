@@ -98,7 +98,7 @@ service cloud.firestore {
     }
     
     /**
-     * @description Stores permanent driver and assigned bus information.
+     * @description Stores permanent driver credentials and information.
      * @path /drivers/{driverId}
      */
     match /drivers/{driverId} {
@@ -106,8 +106,8 @@ service cloud.firestore {
       allow get: if isOwner(driverId) || isAdmin();
       // Admins can list all drivers.
       allow list: if isAdmin();
-      // Client-side apps cannot update or delete these records to prevent tampering.
-      // Only an admin (via a trusted process/app) can create driver records.
+      // Client-side apps cannot delete these records to prevent tampering.
+      // Only an admin (via a trusted process/app) can create or update driver records.
       allow create, update: if isAdmin();
       allow delete: if false; // Deletions should be handled by a backend process
     }
