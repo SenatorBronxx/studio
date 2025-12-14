@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { SignupSlideshow } from '@/components/signup-slideshow';
 import { useUserPreferences } from '@/context/user-preferences-context';
+import { IconMosaicBackground } from '@/components/icon-mosaic-background';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -18,9 +19,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!isUserLoading && user && isHydrated) {
-        // If it's a first time user (no preferences set yet), show slideshow
-        // This is a simple check; a more robust one might be a specific 'hasCompletedOnboarding' flag
-        if (preferences && Object.keys(preferences).length <= 2) { // id and language
+        if (preferences && Object.keys(preferences).length <= 2) {
             setShowSlideshow(true);
         } else {
             router.push('/home');
@@ -29,7 +28,7 @@ export default function LoginPage() {
   }, [user, isUserLoading, router, preferences, isHydrated]);
   
   const handleAuthSuccess = () => {
-    // The useEffect will handle logic after user state is updated
+    // The useEffect hook will handle logic after the user state is updated.
   }
 
   const handleFinishSlideshow = () => {
@@ -49,8 +48,6 @@ export default function LoginPage() {
   }
   
   if (user && isHydrated) {
-     // This is a temporary state while the useEffect hook decides where to redirect.
-     // A loading spinner is appropriate here as well.
       return (
         <div className="flex h-screen w-full items-center justify-center bg-background">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -59,8 +56,9 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted p-4">
-      <div className="w-full max-w-md space-y-6">
+    <div className="relative flex min-h-screen items-center justify-center bg-background p-4 overflow-hidden">
+      <IconMosaicBackground />
+      <div className="w-full max-w-md space-y-6 z-10">
         <div className="text-center">
             <Image
                 src="https://i.postimg.cc/htqrt1Dn/Screenshot-2025-11-06-192038-removebg-preview-(1).png"
@@ -75,7 +73,7 @@ export default function LoginPage() {
             Sign in or create an account to continue
           </p>
         </div>
-        <div className="rounded-lg border bg-background p-6 shadow-sm">
+        <div className="rounded-lg border bg-background/80 backdrop-blur-sm p-6 shadow-sm">
             <AuthForm onSignInSuccess={handleAuthSuccess} onSignUpSuccess={handleAuthSuccess} />
         </div>
       </div>
