@@ -1,32 +1,28 @@
 
 'use server';
 /**
- * @fileOverview A flow for an admin to create a new driver, including their auth credentials and profile.
+ * @fileOverview A flow for an admin to create a new driver profile and generate a one-time registration code.
  *
- * - generateDriverCode - Creates a Firebase auth user, sets their driver claim, and creates their Firestore profile.
+ * - generateDriverCode - Creates a Firestore profile and a registration code.
  * - GenerateDriverCodeInput - The input type for the flow, containing all driver credentials.
- * - GenerateDriverCodeOutput - The return type for the flow.
+ * - GenerateDriverCodeOutput - The return type for the flow, containing the generated code.
  */
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { initializeFirebase } from '@/firebase/server-init';
-import { doc, setDoc } from 'firebase/firestore';
-import { getAuth } from 'firebase-admin/auth';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 const GenerateDriverCodeInputSchema = z.object({
   fullName: z.string().min(2, "Full name is required."),
   phoneNumber: z.string().min(1, "Phone number is required."),
   driversLicenseNumber: z.string().min(1, "Driver's license is required."),
   ghanaCardNumber: z.string().min(1, "Ghana Card number is required."),
-  email: z.string().email("A valid email is required for the driver's login."),
-  password: z.string().min(8, "A temporary password of at least 8 characters is required."),
 });
 export type GenerateDriverCodeInput = z.infer<typeof GenerateDriverCodeInputSchema>;
 
 const GenerateDriverCodeOutputSchema = z.object({
-  uid: z.string().describe("The new driver's Firebase Auth User ID."),
-  email: z.string().describe("The driver's email, for confirmation."),
+  code: z.string().describe("The 6-digit one-time registration code for the driver."),
 });
 export type GenerateDriverCodeOutput = z.infer<typeof GenerateDriverCodeOutputSchema>;
 
@@ -43,44 +39,33 @@ const generateDriverCodeFlow = ai.defineFlow(
     outputSchema: GenerateDriverCodeOutputSchema,
   },
   async (input) => {
-    const { firebaseAdminApp, firestore } = initializeFirebase();
-    const auth = getAuth(firebaseAdminApp);
+    const { firestore } = initializeFirebase();
 
     try {
-        // 1. Create the new user in Firebase Authentication
-        const userRecord = await auth.createUser({
-            email: input.email,
-            password: input.password,
-            displayName: input.fullName,
+        // 1. Create the permanent driver profile document in Firestore first.
+        // The `id` field will be updated later when the driver redeems the code.
+        const driverDocRef = await addDoc(collection(firestore, 'drivers'), {
+            ...input,
+            registrationDate: serverTimestamp(),
         });
         
-        const uid = userRecord.uid;
+        // 2. Generate a unique 6-digit alphanumeric code.
+        const code = Math.random().toString(36).substring(2, 8).toUpperCase();
 
-        // 2. Set the custom claim to identify this user as a driver
-        await auth.setCustomUserClaims(uid, { driver: true });
-
-        // 3. Create the permanent driver profile document in Firestore
-        const driverRef = doc(firestore, 'drivers', uid);
-        await setDoc(driverRef, {
-            id: uid,
-            fullName: input.fullName,
-            phoneNumber: input.phoneNumber,
-            driversLicenseNumber: input.driversLicenseNumber,
-            ghanaCardNumber: input.ghanaCardNumber,
-            // Do not store the password or code here. Auth handles that.
-            registrationDate: new Date().toISOString(),
+        // 3. Create the registration code document, linking it to the new driver profile.
+        await addDoc(collection(firestore, 'registrationCodes'), {
+            code: code,
+            driverId: driverDocRef.id,
+            isUsed: false,
+            createdAt: serverTimestamp(),
         });
 
-        console.log(`Successfully created driver auth account and profile for ${uid}`);
-        return { uid, email: input.email };
+        console.log(`Successfully created driver profile and registration code for driver ${driverDocRef.id}`);
+        return { code };
 
     } catch (error: any) {
-        console.error("Error creating driver:", error);
-        // Provide a more specific error message if it's a known auth error code
-        if (error.code === 'auth/email-already-exists') {
-            throw new Error("This email address is already in use by another account.");
-        }
-        throw new Error("Failed to create the new driver.");
+        console.error("Error creating driver code:", error);
+        throw new Error("Failed to generate the new driver registration code.");
     }
   }
 );

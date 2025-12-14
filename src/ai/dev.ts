@@ -8,5 +8,6 @@ import '@/ai/flows/get-song-insights.ts';
 import '@/ai/flows/search-artists.ts';
 import '@/ai/flows/get-artist-albums.ts';
 import '@/ai/flows/generate-driver-code.ts';
+import '@/ai/flows/redeem-driver-code.ts';
 
     

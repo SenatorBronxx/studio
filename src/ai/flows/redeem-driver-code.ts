@@ -11,12 +11,12 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { initializeFirebase } from '@/firebase/server-init';
-import { getFirestore, doc, getDoc, updateDoc, writeBatch, getDocs, collection, query, where, limit } from 'firebase/firestore';
+import { doc, getDocs, collection, query, where, limit, writeBatch } from 'firebase/firestore';
 import { getAuth } from 'firebase-admin/auth';
 
 const RedeemDriverCodeInputSchema = z.object({
-  code: z.string().length(6, "Code must be 6 characters."),
-  uid: z.string().describe("The UID of the user redeeming the code."),
+  code: z.string().length(6, "Code must be 6 characters.").describe("The 6-digit code provided by the admin."),
+  uid: z.string().describe("The Firebase UID of the user who is redeeming the code."),
 });
 export type RedeemDriverCodeInput = z.infer<typeof RedeemDriverCodeInputSchema>;
 
@@ -43,7 +43,7 @@ const redeemDriverCodeFlow = ai.defineFlow(
     const auth = getAuth(firebaseAdminApp);
 
     // Find the registration code document
-    const codesQuery = query(collection(firestore, 'registrationCodes'), where("code", "==", code), limit(1));
+    const codesQuery = query(collection(firestore, 'registrationCodes'), where("code", "==", code.toUpperCase()), limit(1));
     
     try {
       const codeQuerySnapshot = await getDocs(codesQuery);
@@ -54,7 +54,6 @@ const redeemDriverCodeFlow = ai.defineFlow(
 
       const codeDoc = codeQuerySnapshot.docs[0];
       const codeData = codeDoc.data();
-      const codeRef = codeDoc.ref;
 
       if (codeData.isUsed) {
         return { success: false, message: "This registration code has already been used." };
@@ -62,35 +61,40 @@ const redeemDriverCodeFlow = ai.defineFlow(
 
       const driverId = codeData.driverId;
       if (!driverId) {
-          return { success: false, message: "Code is not linked to a driver profile." };
+          return { success: false, message: "This code is not linked to a valid driver profile." };
       }
 
-      // Start a batch write to ensure atomicity
+      // Use a batch write to perform multiple operations atomically
       const batch = writeBatch(firestore);
 
-      // 1. Set the custom claim on the user
+      // 1. Set the custom claim on the user to identify them as a driver
       await auth.setCustomUserClaims(uid, { driver: true });
 
-      // 2. Mark the code as used
+      // 2. Mark the registration code as used and record who used it
+      const codeRef = codeDoc.ref;
       batch.update(codeRef, {
         isUsed: true,
-        usedBy: uid,
+        redeemedBy: uid,
+        redeemedAt: serverTimestamp(),
       });
       
-      // 3. Update the driver profile with the actual user UID
+      // 3. Update the permanent driver profile with the user's actual UID
       const driverRef = doc(firestore, 'drivers', driverId);
       batch.update(driverRef, {
-          id: uid, // Replace the temporary ID with the user's actual UID
+          id: uid, 
       });
 
-      // Commit the atomic batch write
+      // Commit all the changes at once
       await batch.commit();
-
-      return { success: true, message: "Successfully registered as a driver." };
+      
+      // It can take a moment for custom claims to propagate. The client app
+      // should force a token refresh after this flow succeeds.
+      console.log(`Successfully promoted user ${uid} to driver for profile ${driverId}`);
+      return { success: true, message: "Registration successful! You are now registered as a driver." };
 
     } catch (error: any) {
       console.error("Error redeeming driver code:", error);
-      return { success: false, message: error.message || "An unexpected error occurred." };
+      return { success: false, message: error.message || "An unexpected error occurred during registration." };
     }
   }
 );
