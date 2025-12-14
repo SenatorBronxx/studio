@@ -59,7 +59,7 @@
       "properties": {
         "id": {
           "type": "string",
-          "description": "The driver's user ID, linking to their auth account."
+          "description": "The driver's user ID, linking to their auth account. Initially a UUID, then updated to the Firebase Auth UID upon registration."
         },
         "fullName": {
           "type": "string",
@@ -84,7 +84,7 @@
         "registrationDate": {
           "type": "string",
           "format": "date-time",
-          "description": "The date the driver was officially registered."
+          "description": "The date the driver profile was created."
         }
       },
       "required": [
@@ -463,11 +463,15 @@
           "default": false
         },
         "usedBy": {
-          "type": "string",
+          "type": ["string", "null"],
           "description": "The UID of the user who consumed the code."
+        },
+        "driverId": {
+          "type": "string",
+          "description": "The ID of the driver profile this code is for."
         }
       },
-      "required": ["code", "createdAt", "isUsed"]
+      "required": ["code", "createdAt", "isUsed", "driverId"]
     }
   },
   "auth": {

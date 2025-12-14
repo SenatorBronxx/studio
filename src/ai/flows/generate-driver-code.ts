@@ -1,25 +1,37 @@
 
 'use server';
 /**
- * @fileOverview A flow for generating a one-time driver registration code.
+ * @fileOverview A flow for generating a one-time driver registration code and creating a driver profile.
  *
- * - generateDriverCode - Creates and stores a unique code in Firestore.
+ * - generateDriverCode - Creates a driver profile and then a unique code for them.
+ * - GenerateDriverCodeInput - The input type for the flow, containing driver credentials.
  * - GenerateDriverCodeOutput - The return type for the flow.
  */
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import { initializeFirebase } from '@/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { initializeFirebase } from '@/firebase/server-init';
+import { collection, addDoc, serverTimestamp, doc, setDoc } from 'firebase/firestore';
+import { getAuth } from 'firebase-admin/auth';
+import { v4 as uuidv4 } from 'uuid';
+
+const GenerateDriverCodeInputSchema = z.object({
+  fullName: z.string().min(2, "Full name is required."),
+  phoneNumber: z.string().min(1, "Phone number is required."),
+  driversLicenseNumber: z.string().min(1, "Driver's license is required."),
+  ghanaCardNumber: z.string().min(1, "Ghana Card number is required."),
+});
+export type GenerateDriverCodeInput = z.infer<typeof GenerateDriverCodeInputSchema>;
 
 const GenerateDriverCodeOutputSchema = z.object({
   code: z.string().describe('The generated 6-character alphanumeric code.'),
+  driverId: z.string().describe('The ID of the created driver profile document.'),
 });
 export type GenerateDriverCodeOutput = z.infer<typeof GenerateDriverCodeOutputSchema>;
 
 
-export async function generateDriverCode(): Promise<GenerateDriverCodeOutput> {
-  return await generateDriverCodeFlow();
+export async function generateDriverCode(input: GenerateDriverCodeInput): Promise<GenerateDriverCodeOutput> {
+  return await generateDriverCodeFlow(input);
 }
 
 /**
@@ -39,29 +51,42 @@ function createCode(): string {
 const generateDriverCodeFlow = ai.defineFlow(
   {
     name: 'generateDriverCodeFlow',
-    inputSchema: z.void(),
+    inputSchema: GenerateDriverCodeInputSchema,
     outputSchema: GenerateDriverCodeOutputSchema,
   },
-  async () => {
+  async (input) => {
     // We need to initialize a server-side Firebase instance to write to the database.
     const { firestore } = initializeFirebase();
-
+    const driverId = uuidv4(); // Generate a unique ID for the new driver document
     const code = createCode();
-    
-    const codeData = {
-        code: code,
-        createdAt: serverTimestamp(),
-        isUsed: false,
-        usedBy: null
-    };
 
     try {
-        const docRef = await addDoc(collection(firestore, 'registrationCodes'), codeData);
-        console.log("Successfully created registration code document with ID: ", docRef.id);
-        return { code };
+        // 1. Create the permanent driver profile document first
+        const driverRef = doc(firestore, 'drivers', driverId);
+        await setDoc(driverRef, {
+            id: driverId, // This ID is temporary until a user claims it
+            ...input,
+            registrationDate: new Date().toISOString(),
+            // The registrationCode is stored here for reference, but the source of truth is the registrationCodes collection
+            registrationCode: code,
+        });
+
+        // 2. Create the registration code document, linking it to the driver profile
+        const codeRef = doc(firestore, 'registrationCodes', code);
+        await setDoc(codeRef, {
+            code: code,
+            createdAt: serverTimestamp(),
+            isUsed: false,
+            usedBy: null,
+            driverId: driverId, // Link code to the created driver profile
+        });
+
+        console.log(`Successfully created driver profile ${driverId} and registration code ${code}`);
+        return { code, driverId };
+
     } catch (error) {
-        console.error("Error creating registration code:", error);
-        throw new Error("Failed to create and store a registration code.");
+        console.error("Error creating driver profile and code:", error);
+        throw new Error("Failed to create driver profile and registration code.");
     }
   }
 );

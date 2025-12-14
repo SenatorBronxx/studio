@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A flow for redeeming a one-time driver registration code.
@@ -10,16 +11,12 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { initializeFirebase } from '@/firebase/server-init';
-import { getFirestore, doc, getDoc, updateDoc, setDoc } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, updateDoc, writeBatch, getDocs, collection, query, where, limit } from 'firebase/firestore';
 import { getAuth } from 'firebase-admin/auth';
 
 const RedeemDriverCodeInputSchema = z.object({
   code: z.string().length(6, "Code must be 6 characters."),
   uid: z.string().describe("The UID of the user redeeming the code."),
-  fullName: z.string().min(2, "Full name is required."),
-  phoneNumber: z.string().min(1, "Phone number is required."),
-  driversLicenseNumber: z.string().min(1, "Driver's license is required."),
-  ghanaCardNumber: z.string().min(1, "Ghana Card number is required."),
 });
 export type RedeemDriverCodeInput = z.infer<typeof RedeemDriverCodeInputSchema>;
 
@@ -41,39 +38,53 @@ const redeemDriverCodeFlow = ai.defineFlow(
     inputSchema: RedeemDriverCodeInputSchema,
     outputSchema: RedeemDriverCodeOutputSchema,
   },
-  async (input) => {
+  async ({ code, uid }) => {
     const { firestore, firebaseAdminApp } = initializeFirebase();
     const auth = getAuth(firebaseAdminApp);
 
-    const codesRef = doc(firestore, 'registrationCodes', input.code);
-
+    // Find the registration code document
+    const codesQuery = query(collection(firestore, 'registrationCodes'), where("code", "==", code), limit(1));
+    
     try {
-      const codeDoc = await getDoc(codesRef);
+      const codeQuerySnapshot = await getDocs(codesQuery);
 
-      if (!codeDoc.exists() || codeDoc.data()?.isUsed) {
-        return { success: false, message: "Invalid or already used registration code." };
+      if (codeQuerySnapshot.empty) {
+        return { success: false, message: "Invalid registration code." };
       }
 
+      const codeDoc = codeQuerySnapshot.docs[0];
+      const codeData = codeDoc.data();
+      const codeRef = codeDoc.ref;
+
+      if (codeData.isUsed) {
+        return { success: false, message: "This registration code has already been used." };
+      }
+
+      const driverId = codeData.driverId;
+      if (!driverId) {
+          return { success: false, message: "Code is not linked to a driver profile." };
+      }
+
+      // Start a batch write to ensure atomicity
+      const batch = writeBatch(firestore);
+
       // 1. Set the custom claim on the user
-      await auth.setCustomUserClaims(input.uid, { driver: true });
+      await auth.setCustomUserClaims(uid, { driver: true });
 
       // 2. Mark the code as used
-      await updateDoc(codesRef, {
+      batch.update(codeRef, {
         isUsed: true,
-        usedBy: input.uid,
+        usedBy: uid,
       });
       
-      // 3. Create the permanent driver profile document
-      const driverRef = doc(firestore, 'drivers', input.uid);
-      await setDoc(driverRef, {
-        id: input.uid,
-        fullName: input.fullName,
-        phoneNumber: input.phoneNumber,
-        driversLicenseNumber: input.driversLicenseNumber,
-        ghanaCardNumber: input.ghanaCardNumber,
-        registrationCode: input.code,
-        registrationDate: new Date().toISOString(),
+      // 3. Update the driver profile with the actual user UID
+      const driverRef = doc(firestore, 'drivers', driverId);
+      batch.update(driverRef, {
+          id: uid, // Replace the temporary ID with the user's actual UID
       });
+
+      // Commit the atomic batch write
+      await batch.commit();
 
       return { success: true, message: "Successfully registered as a driver." };
 
