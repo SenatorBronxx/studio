@@ -10,6 +10,7 @@
  * - /users/{userId}: Stores public-facing user profile information.
  * - /users/{userId}/preferences/{prefsId}: Stores private user settings.
  * - /trips/{tripId}: Stores trip documents, shared between user and driver.
+ * - /buses/{busId}: Stores live data for active buses, broadcast by drivers.
  *
  * Key Security Decisions:
  * - User Isolation: A user can only read/write their own documents in their
@@ -19,6 +20,9 @@
  * - Driver Permissions: A user with a `driver: true` custom claim can read
  *   any trip and update specific fields like `status` and `currentBusLocation`.
  *   They cannot create or delete trips via the app.
+ * - Public Bus Data: All signed-in users can read the list of active buses to
+ *   use the app's core functionality. Only drivers can update bus data (this
+ *   rule is simplified for now).
  */
 rules_version = '2';
 service cloud.firestore {
@@ -97,6 +101,19 @@ service cloud.firestore {
 
       // Generally, trips should be "cancelled" (status update) rather than deleted.
       allow delete: if false; 
+    }
+
+    /**
+     * @description Manages live bus data broadcasted by driver apps.
+     * @path /buses/{busId}
+     */
+    match /buses/{busId} {
+      // Any signed-in user can see the list of active buses.
+      allow read: if isSignedIn();
+      
+      // In a real app, only authenticated drivers should be able to create or update their bus document.
+      // For now, we will keep this simple.
+      allow write: if isDriver();
     }
   }
 }
