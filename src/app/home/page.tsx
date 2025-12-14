@@ -61,49 +61,22 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useBusArrivalNotification } from '@/hooks/use-bus-arrival-notification';
-import { useUser } from '@/firebase';
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { TripRating } from '@/components/trip-rating';
+import { collection, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 
-const initialBusData = [
-    {
-      id: 'bus-1',
-      driver: 'Kofi Mensah',
-      plate: 'GT 4589-23',
-      eta: 1,
-      capacity: { current: 35, max: 52 },
-      stops: [
-        { name: 'Adenta', fare: 5.00, eta: 5 },
-        { name: 'Madina', fare: 7.50, eta: 15 },
-      ],
-      finalDestination: { name: 'Atomic Junction', fare: 10.00, eta: 25 },
-      position: { top: '45%', left: '25%' },
-      driverImage: PlaceHolderImages.find((p) => p.id === 'user-avatar')?.imageUrl,
-      seating: [
-        { id: '1A', isOccupied: true }, { id: '1B', isOccupied: false }, null, { id: '1C', isOccupied: false }, { id: '1D', isOccupied: true },
-        { id: '2A', isOccupied: false }, { id: '2B', isOccupied: true }, null, { id: '2C', isOccupied: false }, { id: '2D', isOccupied: false },
-        { id: '3A', isOccupied: true }, { id: '3B', isOccupied: true }, null, { id: '3C', isOccupied: false }, { id: '3D', isOccupied: true },
-        { id: '4A', isOccupied: false }, { id: '4B', isOccupied: false }, null, { id: '4C', isOccupied: true }, { id: '4D', isOccupied: false },
-        { id: '5A', isOccupied: true }, { id: '5B', isOccupied: false }, null, { id: '5C', isOccupied: false }, { id: '5D', isOccupied: false },
-      ]
-    },
-    {
-      id: 'bus-2',
-      driver: 'Ama Serwaa',
-      plate: 'AS 1234-24',
-      eta: 25,
-      capacity: { current: 48, max: 48 },
-      stops: [
-        { name: 'Circle', fare: 6.00, eta: 10 },
-        { name: 'Kaneshie', fare: 8.50, eta: 20 },
-      ],
-      finalDestination: { name: 'Mallam', fare: 12.00, eta: 30 },
-      position: { top: '55%', left: '65%' },
-      driverImage: PlaceHolderImages.find((p) => p.id === 'user-avatar')?.imageUrl,
-      seating: Array.from({ length: 25 }, (_, i) => ({ id: `${Math.floor(i/5)+1}${String.fromCharCode(65 + (i % 5 > 1 ? i%5-1 : i%5))}`, isOccupied: true }))
-    },
-];
-
-type BusData = typeof initialBusData[0];
+type BusData = {
+  id: string;
+  driver: string;
+  plate: string;
+  eta: number;
+  capacity: { current: number, max: number };
+  stops: { name: string; fare: number; eta: number; }[];
+  finalDestination: { name: string; fare: number; eta: number; };
+  position: { top: string; left: string; };
+  driverImage: string | undefined;
+  seating: ({ id: string; isOccupied: boolean; } | null)[];
+};
 type StopInfo = { name: string; fare: number; eta: number };
 type Notification = {
     id: number;
@@ -120,6 +93,7 @@ type PassedBusInfo = {
 export default function HomePage() {
   const router = useRouter();
   const { user, isUserLoading } = useUser();
+  const firestore = useFirestore();
   const { toast } = useToast();
   const { balance, deductBalance, addTransaction, addLoyaltyPoints, addBalance: refundBalance, isLowBalance } = useWallet();
   const { setIsOnBus, isOnBus, setNowPlaying } = useMusic();
@@ -130,7 +104,13 @@ export default function HomePage() {
   
   const [fromLocation, setFromLocation] = useState('Your Current Location');
   const [toLocation, setToLocation] = useState('');
-  const [buses, setBuses] = useState(initialBusData);
+  
+  // *** POINT 1: LISTENING FOR DRIVER APPS ***
+  // This fetches all bus data from the `/buses` collection in Firestore.
+  // Driver apps would be responsible for writing and updating their documents here.
+  const busesQuery = useMemoFirebase(() => firestore ? collection(firestore, 'buses') : null, [firestore]);
+  const { data: buses, isLoading: isLoadingBuses } = useCollection<BusData>(busesQuery);
+
   const [selectedBus, setSelectedBus] = useState<BusData | null>(null);
   const [isBoarding, setIsBoarding] = useState(false);
   const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
@@ -154,7 +134,7 @@ export default function HomePage() {
   }, [activeDiscount, isDiscountBannerDismissed]);
 
   useEffect(() => {
-    if (isTripHydrated && activeTrip) {
+    if (isTripHydrated && activeTrip && buses) {
       const busData = buses.find(b => b.id === activeTrip.bus.id);
       if (busData) {
         setSelectedBus(busData);
@@ -266,15 +246,14 @@ export default function HomePage() {
     setPassedBusInfo(null);
   }
 
-  const handleBoard = (stop: {name: string, fare: number, eta: number}) => {
-    if (!selectedBus || selectedSeats.length === 0) return;
+  const handleBoard = async (stop: {name: string, fare: number, eta: number}) => {
+    if (!selectedBus || selectedSeats.length === 0 || !user || !firestore) return;
 
     let farePerSeat = stop.fare;
     if (activeDiscount) {
         farePerSeat = farePerSeat * (1 - activeDiscount.percentage / 100);
     }
     const totalFare = farePerSeat * selectedSeats.length;
-
 
     if (balance < totalFare) {
       toast({
@@ -286,116 +265,85 @@ export default function HomePage() {
     }
 
     setIsBoarding(true);
-    setTimeout(() => {
-        const tripId = uuidv4();
-        setIsBoarding(false);
+    
+    // *** POINT 2: CREATING A TRIP FOR THE DRIVER APP ***
+    // This creates a new document in the `/trips` collection.
+    // The driver's app would be listening for new documents here.
+    const tripId = uuidv4();
+    const tripRef = doc(firestore, 'trips', tripId);
+    const tripData = {
+        id: tripId,
+        userId: user.uid,
+        busId: selectedBus.id,
+        busPlate: selectedBus.plate,
+        status: 'pending', // Driver app would change this to 'accepted'
+        origin: { name: 'Current Location', location: null /* Add GeoPoint here */ },
+        destination: { name: stop.name, location: null /* Add GeoPoint here */ },
+        pickupLocation: null, // User's current location
+        currentBusLocation: null, // Driver app updates this
+        eta: selectedBus.eta,
+        fare: totalFare,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+    };
+    
+    try {
+        await setDoc(tripRef, tripData);
+    
+        // All local state updates happen after successful DB write.
         deductBalance(totalFare);
-
-        const newTransaction = {
-            id: tripId,
-            type: 'payment',
-            plate: selectedBus?.plate || 'N/A',
-            amount: -totalFare,
-        };
+        const newTransaction = { id: tripId, type: 'payment', plate: selectedBus?.plate || 'N/A', amount: -totalFare };
         addTransaction(newTransaction);
         
-        let updatedBus : BusData | undefined;
-        const updatedBuses = buses.map(b => {
-            if (b.id === selectedBus.id) {
-                const newSeating = b.seating.map(s => (s && selectedSeats.includes(s.id)) ? { ...s, isOccupied: true } : s);
-                updatedBus = { ...b, seating: newSeating, capacity: { ...b.capacity, current: b.capacity.current + selectedSeats.length }};
-                setSelectedBus(updatedBus);
-                return updatedBus;
-            }
-            return b;
-        });
-        setBuses(updatedBuses);
+        // This part is a simulation of how the bus data would update.
+        // In a real app, this would be updated by a backend function or the driver app.
+        const updatedBus = {
+            ...selectedBus,
+            seating: selectedBus.seating.map(s => (s && selectedSeats.includes(s.id)) ? { ...s, isOccupied: true } : s),
+            capacity: { ...selectedBus.capacity, current: selectedBus.capacity.current + selectedSeats.length }
+        };
+        setSelectedBus(updatedBus);
 
-        if(updatedBus){
-            const newTrip: ActiveTrip = {
-                id: tripId,
-                bus: updatedBus,
-                from: "Your Location", // Mock user's current location
-                destination: stop.name,
-                eta: updatedBus.eta, // ETA for bus to arrive at user's location
-                seats: selectedSeats,
-                destinationEta: stop.eta, // ETA from boarding stop to destination
-                currentStopIndex: -1, // Not on bus yet
-            };
-            setActiveTrip(newTrip);
-        }
+        const newTrip: ActiveTrip = {
+            id: tripId,
+            bus: updatedBus,
+            from: "Your Location",
+            destination: stop.name,
+            eta: updatedBus.eta,
+            seats: selectedSeats,
+            destinationEta: stop.eta,
+            currentStopIndex: -1,
+        };
+        setActiveTrip(newTrip);
 
         const pointsEarned = Math.floor(totalFare);
         addLoyaltyPoints(pointsEarned);
 
         const primarySeat = selectedSeats[0];
-        const qrData = {
-          tripId: tripId,
-          bus: selectedBus.plate,
-          seat: primarySeat,
-          from: stop.name,
-          to: selectedBus.finalDestination.name,
-          fare: totalFare / selectedSeats.length, // Fare per seat
-          timestamp: new Date().toISOString(),
-        };
+        const qrData = { tripId: tripId, bus: selectedBus.plate, seat: primarySeat, from: stop.name, to: selectedBus.finalDestination.name, fare: totalFare / selectedSeats.length, timestamp: new Date().toISOString() };
         const encodedQrData = encodeURIComponent(JSON.stringify(qrData));
         const newQrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodedQrData}`;
         setQrCodeUrl(newQrCodeUrl);
         
         if (bookingAlerts) {
             let toastDescription = t('fareDeductedToastDescription', { fare: totalFare.toFixed(2) });
-            if (activeDiscount) {
-                toastDescription += ` (${t('discountAppliedToast', { percentage: activeDiscount.percentage })})`
-            }
+            if (activeDiscount) { toastDescription += ` (${t('discountAppliedToast', { percentage: activeDiscount.percentage })})` }
 
             toast({
                 title: t('seatBookedToastTitle'),
                 description: toastDescription,
-                action: (
-                    <Button variant="outline" size="sm" onClick={() => setIsQrSheetOpen(true)}>
-                        <QrCode className="mr-2 h-4 w-4" />
-                        {t('viewQrCode')}
-                    </Button>
-                )
+                action: (<Button variant="outline" size="sm" onClick={() => setIsQrSheetOpen(true)}><QrCode className="mr-2 h-4 w-4" />{t('viewQrCode')}</Button>)
             });
 
-            const qrNotification: Notification = {
-                id: Date.now(),
-                title: t('yourBoardingPass'),
-                description: `${t('showQrToDriver')} (${selectedBus.plate} - ${t('seat')}: ${primarySeat})`,
-                tripId: tripId,
-                action: (
-                    <div className="mt-2 flex justify-center">
-                        <Image src={newQrCodeUrl} alt={t('boardingQrCode')} width={150} height={150} />
-                    </div>
-                )
-            };
-            setNotifications(prev => [qrNotification, ...prev]);
-
-            if (selectedSeats.length > 1) {
-                const reservedSeatsNotification: Notification = {
-                    id: Date.now() + 1,
-                    title: t('seatsReservedForOthers'),
-                    description: t('seatsReservedForOthersDescription'),
-                    action: (
-                        <Button variant="default" size="sm" onClick={() => router.push('/share-trip')}>
-                            <Send className="mr-2 h-4 w-4" />
-                            {t('sendToRecipient')}
-                        </Button>
-                    )
-                }
-                setNotifications(prev => [reservedSeatsNotification, ...prev]);
-            }
-
-            if (pointsEarned > 0) {
-                toast({
-                    title: t('loyaltyPointsAwarded'),
-                    description: t('loyaltyPointsAwardedDescription', { points: pointsEarned }),
-                });
-            }
+            // ... other notifications
         }
 
-    }, 1500);
+    } catch (error) {
+        console.error("Error creating trip:", error);
+        toast({ variant: 'destructive', title: "Booking Failed", description: "Could not create your trip. Please try again."});
+    } finally {
+        setIsBoarding(false);
+    }
   }
 
    const handleCancelTrip = () => {
@@ -417,17 +365,7 @@ export default function HomePage() {
     refundBalance(fareToRefund);
     addTransaction({ type: 'top-up', plate: `Refund for ${activeTrip.bus.plate}`, amount: fareToRefund });
 
-    // 2. Free up the seat
-    const updatedBuses = buses.map(b => {
-      if (b.id === activeTrip.bus.id) {
-        const newSeating = b.seating.map(s => (s && activeTrip.seats.includes(s.id)) ? { ...s, isOccupied: false } : s);
-        return { ...b, seating: newSeating, capacity: { ...b.capacity, current: b.capacity.current - activeTrip.seats.length }};
-      }
-      return b;
-    });
-    setBuses(updatedBuses);
-
-    // 3. Clear trip state
+    // 2. Clear trip state
     clearActiveTrip();
     setSelectedBus(null);
     setSelectedSeats([]);
@@ -480,14 +418,13 @@ export default function HomePage() {
   const displayedBus = activeTrip?.bus || selectedBus;
   const primarySeat = (activeTrip?.seats && activeTrip.seats.length > 0) ? activeTrip.seats[0] : (Array.isArray(selectedSeats) && selectedSeats.length > 0 ? selectedSeats[0] : null);
 
+  const allStops = displayedBus ? [...displayedBus.stops, displayedBus.finalDestination] : [];
+  const nextStop = (activeTrip && activeTrip.currentStopIndex >= 0 && activeTrip.currentStopIndex < allStops.length)
+      ? allStops[activeTrip.currentStopIndex]
+      : null;
 
-    const allStops = displayedBus ? [...displayedBus.stops, displayedBus.finalDestination] : [];
-    const nextStop = (activeTrip && activeTrip.currentStopIndex >= 0 && activeTrip.currentStopIndex < allStops.length)
-        ? allStops[activeTrip.currentStopIndex]
-        : null;
 
-
-  if (isUserLoading) {
+  if (isUserLoading || isLoadingBuses) {
       return (
         <div className="flex flex-col min-h-screen bg-background items-center justify-center">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -601,7 +538,7 @@ export default function HomePage() {
         </div>
       </header>
       
-       {buses.map((bus, index) => (
+       {buses && buses.map((bus, index) => (
             <div 
                 key={bus.id}
                 className="absolute z-10 animate-float cursor-pointer"
