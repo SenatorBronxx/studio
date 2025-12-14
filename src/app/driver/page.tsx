@@ -1,22 +1,23 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, useDoc, useMemoFirebase, useAuth } from '@/firebase';
 import { doc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, LogIn, Wifi, WifiOff, SteeringWheel, Bus, UserCheck, AlertTriangle } from 'lucide-react';
+import { Loader2, LogIn, LogOut, Wifi, WifiOff, SteeringWheel, Bus, UserCheck, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 
 // Mock data for the driver's bus. In a real app, this might come from a driver's profile.
 const MOCK_BUS_DATA = {
   driver: 'Yaw Baah',
   plate: 'GE-2024-24',
+  eta: 12,
   capacity: { current: 0, max: 52 },
   stops: [
     { name: 'Adenta', fare: 5.00, eta: 5 },
@@ -38,6 +39,7 @@ const MOCK_BUS_DATA = {
 export default function DriverPage() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
+  const auth = useAuth();
   const router = useRouter();
   const { toast } = useToast();
 
