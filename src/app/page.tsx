@@ -9,6 +9,11 @@ import { useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 import { useLanguage } from '@/context/language-context';
 
+const ALLOWED_ADMIN_EMAILS = [
+    'eritas2service@outlook.com',
+    'eritastransportservice@outlook.com'
+];
+
 export default function AdminLoginPage() {
   const router = useRouter();
   const { user, isUserLoading } = useUser();
@@ -16,17 +21,21 @@ export default function AdminLoginPage() {
 
   useEffect(() => {
     if (!isUserLoading && user) {
-      // User is logged in, check for admin claim and redirect
-      user.getIdTokenResult().then((idTokenResult) => {
-        if (idTokenResult.claims.admin) {
-          router.push('/dashboard');
-        } else {
-          // If not an admin, keep them on a page that says "access denied"
-          // For now, we can just push them to a generic error page or show a message.
-          // A dedicated dashboard layout will handle the definitive check.
-          router.push('/access-denied');
+        // First, check if the email is on the allowed list.
+        if (!user.email || !ALLOWED_ADMIN_EMAILS.includes(user.email)) {
+            router.push('/access-denied');
+            return;
         }
-      });
+
+        // If email is allowed, then check for the admin custom claim.
+        user.getIdTokenResult().then((idTokenResult) => {
+            if (idTokenResult.claims.admin) {
+            router.push('/dashboard');
+            } else {
+            // Email is on the list, but user is not an admin yet.
+            router.push('/access-denied');
+            }
+        });
     }
   }, [user, isUserLoading, router]);
 
