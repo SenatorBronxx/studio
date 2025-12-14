@@ -80,10 +80,9 @@ service cloud.firestore {
      * @path /buses/{busId}
      */
     match /buses/{busId} {
-      // Any signed in user can see active buses. Only drivers can update.
-      allow read: if isSignedIn();
-      // Only a driver can update their own bus document.
-      allow write: if isDriver() && request.resource.data.id == request.auth.uid;
+      // Any signed in user can see active buses.
+      // For development, allow any signed-in user to write.
+      allow read, write: if isSignedIn();
     }
 
     /**
@@ -91,14 +90,8 @@ service cloud.firestore {
      * @path /drivers/{driverId}
      */
     match /drivers/{driverId} {
-      // Only the driver themselves can read their own profile.
-      allow get: if isOwner(driverId);
-      allow list: if false;
-      // A user can create their own driver profile if they are redeeming a code.
-      allow create: if isOwner(driverId);
-      // Drivers can update their own profile.
-      allow update: if isOwner(driverId);
-      allow delete: if false;
+      // For development, allow any signed-in user to read/write driver profiles.
+      allow read, write: if isSignedIn();
     }
 
     /**
