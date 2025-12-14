@@ -55,6 +55,11 @@ type AuthFormProps = {
   onSignInSuccess: () => void;
 };
 
+const ALLOWED_ADMIN_EMAILS = [
+    'eritas2service@outlook.com',
+    'eritastransportservice@outlook.com'
+];
+
 export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -148,6 +153,17 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
 
   const handleSignUp = async (values: z.infer<typeof signUpSchema>) => {
     setIsSubmitting(true);
+
+    if (!ALLOWED_ADMIN_EMAILS.includes(values.email.toLowerCase())) {
+        toast({
+            variant: 'destructive',
+            title: 'Sign-up Restricted',
+            description: 'This email is not authorized to create an admin account.'
+        });
+        setIsSubmitting(false);
+        return;
+    }
+
     createUserWithEmailAndPassword(auth, values.email, values.password)
         .then(async (userCredential) => {
             const user = userCredential.user;
@@ -180,6 +196,18 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
     signInWithPopup(auth, provider)
       .then((result) => {
         const user = result.user;
+        
+        if (!ALLOWED_ADMIN_EMAILS.includes(user.email?.toLowerCase() || '')) {
+            auth.signOut();
+            toast({
+                variant: 'destructive',
+                title: 'Access Denied',
+                description: 'This account is not authorized for admin access.'
+            });
+            setIsSubmitting(false);
+            return;
+        }
+
         const isNewUser = result.additionalUserInfo?.isNewUser;
 
         if (isNewUser) {
@@ -335,10 +363,12 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
       </div>
       <div className="mt-6">
         <Button variant="outline" className="w-full" onClick={() => handleSocialLogin('Google')}>
-          <Image src="https://www.svgrepo.com/show/303108/google-icon-logo.svg" alt="Google" width={16} height={16} className="mr-2 h-4 w-4" />
+          <Image src="https://www.svgrepo.com/show/303108/google-icon-logo.svg" alt="Google" width={16} height={16} className="mr-2 h-4 w-4 animate-spin" />
           Google
         </Button>
       </div>
     </Tabs>
   );
 }
+
+    
