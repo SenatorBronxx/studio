@@ -13,13 +13,13 @@
  * - /drivers/{driverId}: Stores permanent driver and assigned bus information.
  * - /trips/{tripId}: Stores trip documents, shared between user and driver.
  * - /buses/{busId}: Stores live data for active buses, broadcast by drivers.
- * - /registrationCodes/{codeId}: Stores one-time use codes for driver registration.
  *
  * Key Security Decisions:
  * - User Isolation: A user can only read/write their own documents in their
  *   own data tree (`/users/{their_own_userId}`).
- * - Driver Data: A driver can read their own permanent record. No one can
- *   write to it from the client-side to prevent tampering.
+ * - Driver Data: A driver can read their own permanent record. Only an admin
+ *   (via a trusted server-side process) can create or update driver records
+ *   to prevent tampering.
  * - Trip Ownership: A user can create a trip for themselves and read a trip
  *   if their userId matches the trip's userId. They cannot see other users' trips.
  * - Driver Permissions: A user with a `driver: true` custom claim can read
@@ -27,8 +27,6 @@
  *   They cannot create or delete trips via the app.
  * - Public Bus Data: All signed-in users can read the list of active buses to
  *   use the app's core functionality. Only drivers can update bus data.
- * - Registration Codes: Codes can only be written by a trusted backend process (not client apps).
- *   They can be read by any signed-in user to allow for validation during signup.
  * - Admin Permissions: Users with an `admin: true` custom claim have read access to
  *   most data for oversight and write access to collections like /drivers for management.
  */
@@ -106,10 +104,10 @@ service cloud.firestore {
       allow get: if isOwner(driverId) || isAdmin();
       // Admins can list all drivers.
       allow list: if isAdmin();
-      // Client-side apps cannot delete these records to prevent tampering.
-      // Only an admin (via a trusted process/app) can create or update driver records.
-      allow create, update: if isAdmin();
-      allow delete: if false; // Deletions should be handled by a backend process
+      // Client-side apps cannot create or update these records to prevent tampering.
+      // This must be done by a trusted server process (i.e., an admin flow).
+      allow write: if isAdmin();
+      allow delete: if isAdmin(); // Allow admins to delete driver profiles.
     }
 
     /**
@@ -143,17 +141,6 @@ service cloud.firestore {
       
       // Only authenticated drivers should be able to create or update their bus document. Admins can also write.
       allow write: if isDriver() || isAdmin();
-    }
-    
-    /**
-     * @description Stores one-time codes for driver registration.
-     * @path /registrationCodes/{codeId}
-     */
-    match /registrationCodes/{codeId} {
-        // Any signed-in user can read a code to validate it during signup.
-        allow read: if isSignedIn();
-        // Only a trusted backend process can create or update codes.
-        allow write: if false;
     }
   }
 }

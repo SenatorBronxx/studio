@@ -1,50 +1,38 @@
 
 'use server';
 /**
- * @fileOverview A flow for generating a one-time driver registration code and creating a driver profile.
+ * @fileOverview A flow for an admin to create a new driver, including their auth credentials and profile.
  *
- * - generateDriverCode - Creates a driver profile and then a unique code for them.
- * - GenerateDriverCodeInput - The input type for the flow, containing driver credentials.
+ * - generateDriverCode - Creates a Firebase auth user, sets their driver claim, and creates their Firestore profile.
+ * - GenerateDriverCodeInput - The input type for the flow, containing all driver credentials.
  * - GenerateDriverCodeOutput - The return type for the flow.
  */
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { initializeFirebase } from '@/firebase/server-init';
-import { collection, addDoc, serverTimestamp, doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import { getAuth } from 'firebase-admin/auth';
-import { v4 as uuidv4 } from 'uuid';
 
 const GenerateDriverCodeInputSchema = z.object({
   fullName: z.string().min(2, "Full name is required."),
   phoneNumber: z.string().min(1, "Phone number is required."),
   driversLicenseNumber: z.string().min(1, "Driver's license is required."),
   ghanaCardNumber: z.string().min(1, "Ghana Card number is required."),
+  email: z.string().email("A valid email is required for the driver's login."),
+  password: z.string().min(8, "A temporary password of at least 8 characters is required."),
 });
 export type GenerateDriverCodeInput = z.infer<typeof GenerateDriverCodeInputSchema>;
 
 const GenerateDriverCodeOutputSchema = z.object({
-  code: z.string().describe('The generated 6-character alphanumeric code.'),
-  driverId: z.string().describe('The ID of the created driver profile document.'),
+  uid: z.string().describe("The new driver's Firebase Auth User ID."),
+  email: z.string().describe("The driver's email, for confirmation."),
 });
 export type GenerateDriverCodeOutput = z.infer<typeof GenerateDriverCodeOutputSchema>;
 
 
 export async function generateDriverCode(input: GenerateDriverCodeInput): Promise<GenerateDriverCodeOutput> {
   return await generateDriverCodeFlow(input);
-}
-
-/**
- * Generates a random 6-character alphanumeric string.
- * @returns {string} The generated code.
- */
-function createCode(): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let result = '';
-  for (let i = 0; i < 6; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return result;
 }
 
 
@@ -55,38 +43,44 @@ const generateDriverCodeFlow = ai.defineFlow(
     outputSchema: GenerateDriverCodeOutputSchema,
   },
   async (input) => {
-    // We need to initialize a server-side Firebase instance to write to the database.
-    const { firestore } = initializeFirebase();
-    const driverId = uuidv4(); // Generate a unique ID for the new driver document
-    const code = createCode();
+    const { firebaseAdminApp, firestore } = initializeFirebase();
+    const auth = getAuth(firebaseAdminApp);
 
     try {
-        // 1. Create the permanent driver profile document first
-        const driverRef = doc(firestore, 'drivers', driverId);
+        // 1. Create the new user in Firebase Authentication
+        const userRecord = await auth.createUser({
+            email: input.email,
+            password: input.password,
+            displayName: input.fullName,
+        });
+        
+        const uid = userRecord.uid;
+
+        // 2. Set the custom claim to identify this user as a driver
+        await auth.setCustomUserClaims(uid, { driver: true });
+
+        // 3. Create the permanent driver profile document in Firestore
+        const driverRef = doc(firestore, 'drivers', uid);
         await setDoc(driverRef, {
-            id: driverId, // This ID is temporary until a user claims it
-            ...input,
+            id: uid,
+            fullName: input.fullName,
+            phoneNumber: input.phoneNumber,
+            driversLicenseNumber: input.driversLicenseNumber,
+            ghanaCardNumber: input.ghanaCardNumber,
+            // Do not store the password or code here. Auth handles that.
             registrationDate: new Date().toISOString(),
-            // The registrationCode is stored here for reference, but the source of truth is the registrationCodes collection
-            registrationCode: code,
         });
 
-        // 2. Create the registration code document, linking it to the driver profile
-        const codeRef = doc(firestore, 'registrationCodes', code);
-        await setDoc(codeRef, {
-            code: code,
-            createdAt: serverTimestamp(),
-            isUsed: false,
-            usedBy: null,
-            driverId: driverId, // Link code to the created driver profile
-        });
+        console.log(`Successfully created driver auth account and profile for ${uid}`);
+        return { uid, email: input.email };
 
-        console.log(`Successfully created driver profile ${driverId} and registration code ${code}`);
-        return { code, driverId };
-
-    } catch (error) {
-        console.error("Error creating driver profile and code:", error);
-        throw new Error("Failed to create driver profile and registration code.");
+    } catch (error: any) {
+        console.error("Error creating driver:", error);
+        // Provide a more specific error message if it's a known auth error code
+        if (error.code === 'auth/email-already-exists') {
+            throw new Error("This email address is already in use by another account.");
+        }
+        throw new Error("Failed to create the new driver.");
     }
   }
 );
