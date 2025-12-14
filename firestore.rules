@@ -5,6 +5,7 @@
  * application. All user-related data is private, and a user can only access
  * their own information. A separate 'trips' collection facilitates communication
  * between the user and driver apps with specific field-level access control.
+ * Admins have broader permissions for management purposes.
  *
  * Data Structure:
  * - /users/{userId}: Stores public-facing user profile information.
@@ -28,6 +29,8 @@
  *   use the app's core functionality. Only drivers can update bus data.
  * - Registration Codes: Codes can only be written by a trusted backend process (not client apps).
  *   They can be read by any signed-in user to allow for validation during signup.
+ * - Admin Permissions: Users with an `admin: true` custom claim have read access to
+ *   most data for oversight and write access to collections like /drivers for management.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -60,6 +63,14 @@ service cloud.firestore {
         return isSignedIn() && request.auth.token.driver == true;
     }
 
+    /**
+     * Returns true if the user is a designated admin.
+     * This relies on a custom claim set by a backend admin process.
+     */
+    function isAdmin() {
+        return isSignedIn() && request.auth.token.admin == true;
+    }
+
     // ----------------------------------------------------------------------
     // Collection Rules
     // ----------------------------------------------------------------------
@@ -69,12 +80,12 @@ service cloud.firestore {
      * @path /users/{userId}
      */
     match /users/{userId} {
-      allow get: if isOwner(userId);
-      allow list: if false; // Prevent listing all users
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin(); // Only admins can list all users
 
       allow create: if isOwner(userId) && request.resource.data.id == userId;
       allow update: if isOwner(userId) && request.resource.data.id == resource.data.id;
-      allow delete: if isOwner(userId);
+      allow delete: if isOwner(userId) || isAdmin();
 
       /**
        * @description Manages a single document of user preferences.
@@ -82,7 +93,7 @@ service cloud.firestore {
        */
       match /preferences/{prefsId} {
         // Only the owner of the parent user document can access preferences.
-        allow read, write: if isOwner(userId);
+        allow read, write: if isOwner(userId) || isAdmin();
       }
     }
     
@@ -91,13 +102,14 @@ service cloud.firestore {
      * @path /drivers/{driverId}
      */
     match /drivers/{driverId} {
-      // A driver can read their own record.
-      allow get: if isOwner(driverId);
-      // No one can list all drivers.
-      allow list: if false;
-      // Client-side apps cannot create, update, or delete these records.
-      // This must be done by a trusted server/admin process.
-      allow write: if false;
+      // A driver can read their own record. An admin can read any driver record.
+      allow get: if isOwner(driverId) || isAdmin();
+      // Admins can list all drivers.
+      allow list: if isAdmin();
+      // Client-side apps cannot update or delete these records to prevent tampering.
+      // Only an admin (via a trusted process/app) can create driver records.
+      allow create, update: if isAdmin();
+      allow delete: if false; // Deletions should be handled by a backend process
     }
 
     /**
@@ -105,20 +117,19 @@ service cloud.firestore {
      * @path /trips/{tripId}
      */
     match /trips/{tripId} {
-      // A user can read a trip if they are the one who booked it. A driver can read any trip.
-      allow get: if isSignedIn() && (isOwner(resource.data.userId) || isDriver());
+      // A user can read a trip if they booked it. A driver or admin can read any trip.
+      allow get: if isSignedIn() && (isOwner(resource.data.userId) || isDriver() || isAdmin());
       
-      // No one can list all trips from the client-side for security.
-      allow list: if false;
+      // Admins can list all trips.
+      allow list: if isAdmin();
 
       // A user can create a trip, but only for themselves.
       allow create: if isOwner(request.resource.data.userId);
 
-      // A driver can update specific fields. A user can update fields if they are the owner.
-      // This is a simplified rule; a real app might restrict user updates after booking.
-      allow update: if isDriver() || isOwner(resource.data.userId);
+      // A driver or admin can update specific fields. A user can update fields if they are the owner.
+      allow update: if isDriver() || isOwner(resource.data.userId) || isAdmin();
 
-      // Generally, trips should be "cancelled" (status update) rather than deleted.
+      // Trips are "cancelled" (status update), not deleted by clients.
       allow delete: if false; 
     }
 
@@ -130,8 +141,8 @@ service cloud.firestore {
       // Any signed-in user can see the list of active buses.
       allow read: if isSignedIn();
       
-      // Only authenticated drivers should be able to create or update their bus document.
-      allow write: if isDriver();
+      // Only authenticated drivers should be able to create or update their bus document. Admins can also write.
+      allow write: if isDriver() || isAdmin();
     }
     
     /**

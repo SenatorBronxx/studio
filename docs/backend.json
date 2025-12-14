@@ -462,6 +462,9 @@
     "claims": {
       "driver": {
         "type": "boolean"
+      },
+      "admin": {
+        "type": "boolean"
       }
     }
   },
