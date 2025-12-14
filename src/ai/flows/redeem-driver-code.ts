@@ -11,7 +11,7 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { initializeFirebase } from '@/firebase/server-init';
-import { doc, getDocs, collection, query, where, limit, writeBatch } from 'firebase/firestore';
+import { doc, getDocs, collection, query, where, limit, writeBatch, serverTimestamp } from 'firebase/firestore';
 import { getAuth } from 'firebase-admin/auth';
 
 const RedeemDriverCodeInputSchema = z.object({
