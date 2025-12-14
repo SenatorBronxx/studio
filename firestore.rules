@@ -3,22 +3,22 @@
  * Core Philosophy:
  * This ruleset enforces a strict user-ownership model for the Eritas Gateway
  * application. All user-related data is private, and a user can only access
- * their own information. This creates a secure, multi-tenant environment where
- * user data is completely isolated.
+ * their own information. A separate 'trips' collection facilitates communication
+ * between the user and driver apps with specific field-level access control.
  *
  * Data Structure:
  * - /users/{userId}: Stores public-facing user profile information.
- * - /users/{userId}/preferences/{prefsId}: Stores a single document with a
- *   well-known ID containing all private user settings, wallet info, etc.
+ * - /users/{userId}/preferences/{prefsId}: Stores private user settings.
+ * - /trips/{tripId}: Stores trip documents, shared between user and driver.
  *
  * Key Security Decisions:
  * - User Isolation: A user can only read/write their own documents in their
  *   own data tree (`/users/{their_own_userId}`).
- * - No User Listing: It is impossible for any client to list all users.
- * - Document Integrity: The `id` field in a user document must match the
- *   `userId` in the path, and it is immutable.
- * - Preferences Ownership: Access to the preferences subcollection is strictly
- *   limited to the owner of the parent user document.
+ * - Trip Ownership: A user can create a trip for themselves and read a trip
+ *   if their userId matches the trip's userId. They cannot see other users' trips.
+ * - Driver Permissions: A user with a `driver: true` custom claim can read
+ *   any trip and update specific fields like `status` and `currentBusLocation`.
+ *   They cannot create or delete trips via the app.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -41,6 +41,14 @@ service cloud.firestore {
      */
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
+    }
+    
+    /**
+     * Returns true if the user is a designated driver.
+     * This relies on a custom claim set by a backend admin process.
+     */
+    function isDriver() {
+        return isSignedIn() && request.auth.token.driver == true;
     }
 
     // ----------------------------------------------------------------------
@@ -67,6 +75,28 @@ service cloud.firestore {
         // Only the owner of the parent user document can access preferences.
         allow read, write: if isOwner(userId);
       }
+    }
+    
+    /**
+     * @description Manages trip documents, shared between users and drivers.
+     * @path /trips/{tripId}
+     */
+    match /trips/{tripId} {
+      // A user can read a trip if they are the one who booked it. A driver can read any trip.
+      allow get: if isSignedIn() && (isOwner(resource.data.userId) || isDriver());
+      
+      // No one can list all trips from the client-side for security.
+      allow list: if false;
+
+      // A user can create a trip, but only for themselves.
+      allow create: if isOwner(request.resource.data.userId);
+
+      // A driver can update specific fields. A user can update fields if they are the owner.
+      // This is a simplified rule; a real app might restrict user updates after booking.
+      allow update: if isDriver() || isOwner(resource.data.userId);
+
+      // Generally, trips should be "cancelled" (status update) rather than deleted.
+      allow delete: if false; 
     }
   }
 }

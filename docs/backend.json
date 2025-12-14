@@ -118,13 +118,49 @@
         "type": { "type": "string", "enum": ["home", "work", "other"] },
         "address": { "type": "string" }
       }
+    },
+    "Trip": {
+      "title": "Trip",
+      "type": "object",
+      "description": "Represents a single bus trip booked by a user.",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier for the trip." },
+        "userId": { "type": "string", "description": "The ID of the user who booked the trip." },
+        "driverId": { "type": "string", "description": "The ID of the driver assigned to the trip." },
+        "busId": { "type": "string", "description": "The ID of the bus for the trip." },
+        "busPlate": { "type": "string", "description": "The license plate of the bus." },
+        "status": { "type": "string", "enum": ["pending", "accepted", "in-progress", "completed", "cancelled"], "description": "The current status of the trip." },
+        "origin": { "type": "object", "properties": { "name": { "type": "string" }, "location": { "$ref": "#/entities/GeoPoint" } } },
+        "destination": { "type": "object", "properties": { "name": { "type": "string" }, "location": { "$ref": "#/entities/GeoPoint" } } },
+        "pickupLocation": { "$ref": "#/entities/GeoPoint", "description": "The user's pickup coordinates." },
+        "currentBusLocation": { "$ref": "#/entities/GeoPoint", "description": "The real-time location of the bus, updated by the driver's app." },
+        "eta": { "type": "number", "description": "Estimated time of arrival in minutes." },
+        "fare": { "type": "number", "description": "The cost of the trip." },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "busId", "status", "destination", "fare", "createdAt"]
+    },
+    "GeoPoint": {
+        "title": "GeoPoint",
+        "type": "object",
+        "description": "Represents a geographical point with latitude and longitude.",
+        "properties": {
+            "latitude": { "type": "number" },
+            "longitude": { "type": "number" }
+        }
     }
   },
   "auth": {
     "providers": [
       "password",
       "google.com"
-    ]
+    ],
+    "claims": {
+        "driver": {
+            "type": "boolean"
+        }
+    }
   },
   "firestore": {
     "structure": [
@@ -163,8 +199,24 @@
             }
           ]
         }
+      },
+      {
+        "path": "/trips/{tripId}",
+        "definition": {
+          "entityName": "trip",
+          "schema": {
+            "$ref": "#/backend/entities/Trip"
+          },
+          "description": "Stores individual trip documents, accessible by both users and drivers.",
+          "params": [
+            {
+              "name": "tripId",
+              "description": "The unique identifier of the trip."
+            }
+          ]
+        }
       }
     ],
-    "reasoning": "This Firestore data structure is designed for the Eritas Gateway bus booking application. It prioritizes security and scalability following the core design principles of Authorization Independence, Clarity of Intent, DBAC (Database-Based Access Control), and QAPs (Rules are not Filters). User data is stored in a dedicated collection, ensuring clear ownership and simplified security rules. A subcollection for user preferences is used to group all user-specific settings, making data management and access control straightforward."
+    "reasoning": "This Firestore data structure is designed for the Eritas Gateway bus booking application. It prioritizes security and scalability following the core design principles of Authorization Independence, Clarity of Intent, DBAC (Database-Based Access Control), and QAPs (Rules are not Filters). User data is stored in a dedicated collection, ensuring clear ownership and simplified security rules. A subcollection for user preferences is used to group all user-specific settings, making data management and access control straightforward. A top-level 'trips' collection is introduced to serve as the single source of truth for communication between the user and driver apps."
   }
 }
