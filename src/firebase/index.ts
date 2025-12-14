@@ -2,11 +2,10 @@
 
 import { firebaseConfig } from '@/firebase/config';
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getAuth, connectAuthEmulator } from 'firebase/auth';
-import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore'
+import { getAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore'
 
 export function initializeFirebase() {
-  const isDev = process.env.NODE_ENV === 'development';
   let firebaseApp: FirebaseApp;
 
   if (!getApps().length) {
@@ -17,12 +16,6 @@ export function initializeFirebase() {
 
   const auth = getAuth(firebaseApp);
   const firestore = getFirestore(firebaseApp);
-
-  if (isDev) {
-    // This is the section causing issues.
-    // Firebase Studio environment does not use the local emulators.
-    // We will remove this block.
-  }
 
   return { firebaseApp, auth, firestore };
 }
