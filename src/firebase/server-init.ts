@@ -41,5 +41,3 @@ export function initializeFirebase(): { firebaseAdminApp: App; firestore: Firest
 
   return { firebaseAdminApp, firestore };
 }
-
-    
