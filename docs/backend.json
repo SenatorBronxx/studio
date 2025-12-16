@@ -52,6 +52,81 @@
         "signUpDate"
       ]
     },
+    "Driver": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Driver",
+      "type": "object",
+      "description": "Represents a driver for the Eritas Gateway service.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The user ID (UID) of the driver, linking to their auth account."
+        },
+        "fullName": {
+          "type": "string",
+          "description": "The driver's full name."
+        },
+        "licenseNumber": {
+          "type": "string",
+          "description": "The driver's license number."
+        },
+        "ghanaCardNumber": {
+          "type": "string",
+          "description": "The driver's Ghana Card number."
+        },
+        "assignedBus": {
+          "type": "string",
+          "description": "Identifier for the bus assigned to the driver."
+        },
+        "busPlateNumber": {
+          "type": "string",
+          "description": "The license plate of the assigned bus."
+        },
+        "registrationCode": {
+          "type": "string",
+          "description": "The 6-digit code used by the driver to register their app."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "fullName",
+        "licenseNumber",
+        "ghanaCardNumber",
+        "busPlateNumber",
+        "registrationCode",
+        "createdAt"
+      ]
+    },
+    "RegistrationCode": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Registration Code",
+      "type": "object",
+      "description": "A 6-digit code that maps to a driver's ID for one-time app registration.",
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": "The 6-digit code."
+        },
+        "driverId": {
+          "type": "string",
+          "description": "The UID of the driver this code belongs to."
+        },
+        "isClaimed": {
+          "type": "boolean",
+          "description": "Whether this code has already been used.",
+          "default": false
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["code", "driverId", "isClaimed", "createdAt"]
+    },
     "UserPreferences": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "User Preferences",
@@ -401,7 +476,16 @@
   },
   "auth": {
     "providers": ["password", "google.com"],
-    "customClaims": {}
+    "customClaims": {
+      "admin": {
+        "type": "boolean",
+        "description": "Grants full administrative privileges across the application."
+      },
+      "driver": {
+        "type": "boolean",
+        "description": "Identifies the user as a driver with access to driver-specific app features."
+      }
+    }
   },
   "firestore": {
     "structure": [
@@ -439,6 +523,24 @@
             "$ref": "#/entities/Bus"
           },
           "description": "Stores live data for active buses, broadcasted by drivers. All authenticated users can read this collection."
+        }
+      },
+      {
+        "path": "/drivers/{driverId}",
+        "definition": {
+          "schema": {
+            "$ref": "#/entities/Driver"
+          },
+          "description": "Stores private driver profile information. Only admins can create or modify this data."
+        }
+      },
+      {
+        "path": "/registrationCodes/{codeId}",
+        "definition": {
+          "schema": {
+            "$ref": "#/entities/RegistrationCode"
+          },
+          "description": "Stores single-use codes for driver app registration. Only admins can create these."
         }
       }
     ]

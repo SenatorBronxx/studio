@@ -9,6 +9,8 @@
  * - /users/{userId}/preferences/{prefsId}: Stores private user settings.
  * - /trips/{tripId}: Stores trip documents, shared between user and driver.
  * - /buses/{busId}: Stores live data for active buses, broadcast by drivers.
+ * - /drivers/{driverId}: Stores private driver information.
+ * - /registrationCodes/{codeId}: Stores one-time codes for driver registration.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -32,6 +34,22 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
+    /**
+     * Returns true if the user is an admin.
+     * Admins have elevated privileges.
+     */
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.admin == true;
+    }
+
+    /**
+     * Returns true if the user is a driver.
+     */
+    function isDriver() {
+        return isSignedIn() && request.auth.token.driver == true;
+    }
+
+
     // ----------------------------------------------------------------------
     // Collection Rules
     // ----------------------------------------------------------------------
@@ -41,18 +59,18 @@ service cloud.firestore {
      * @path /users/{userId}
      */
     match /users/{userId} {
-      allow get: if isOwner(userId);
-      allow list: if false;
-      allow create: if isOwner(userId) && request.resource.data.id == userId;
-      allow update: if isOwner(userId) && request.resource.data.id == resource.data.id;
-      allow delete: if isOwner(userId);
+      // Admins can read/write any user document. Users can only manage their own.
+      allow read, update, delete: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId); // Users create their own doc on signup.
+      allow list: if isAdmin(); // Only admins can list all users.
 
       /**
        * @description Manages a single document of user preferences.
        * @path /users/{userId}/preferences/{prefsId}
        */
       match /preferences/{prefsId} {
-        allow read, write: if isOwner(userId);
+        // Admins can manage preferences, users can only manage their own.
+        allow read, write: if isOwner(userId) || isAdmin();
       }
     }
     
@@ -61,8 +79,7 @@ service cloud.firestore {
      * @path /trips/{tripId}
      */
     match /trips/{tripId} {
-      // For now, let any signed-in user read/write trips.
-      // In a real app, this would be restricted to the user who booked it or the driver.
+      // Let any signed-in user read/write trips for now.
       allow read, write: if isSignedIn();
     }
 
@@ -71,9 +88,32 @@ service cloud.firestore {
      * @path /buses/{busId}
      */
     match /buses/{busId} {
-      // Any signed in user can see active buses.
-      // For development, allow any signed-in user to write.
-      allow read, write: if isSignedIn();
+      // Any signed-in user can see active buses.
+      // Only drivers or admins can update bus information.
+      allow read: if isSignedIn();
+      allow write: if isDriver() || isAdmin();
+    }
+
+    /**
+     * @description Manages private driver data.
+     * @path /drivers/{driverId}
+     */
+    match /drivers/{driverId} {
+        // Only admins can create, read, or modify driver profiles.
+        // A driver can read their own profile.
+        allow read: if isAdmin() || isOwner(driverId);
+        allow list, create, update, delete: if isAdmin();
+    }
+
+    /**
+     * @description Manages one-time registration codes for drivers.
+     * @path /registrationCodes/{codeId}
+     */
+    match /registrationCodes/{codeId} {
+        // Only admins can create or read codes.
+        // Any signed-in user can attempt to 'claim' (update) a code.
+        allow get, list, create, delete: if isAdmin();
+        allow update: if isSignedIn();
     }
   }
 }
