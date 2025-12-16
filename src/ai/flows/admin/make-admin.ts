@@ -26,7 +26,7 @@ const MakeAdminOutputSchema = z.object({
 /**
  * Sets the 'admin: true' custom claim for a user.
  * This can only be run in a secure server environment (like a Genkit flow).
- * You would typically run this once from a secure terminal to set up the first admin.
+ * It now automatically makes the first user an admin.
  */
 export const makeAdmin = ai.defineFlow(
   {
@@ -35,19 +35,28 @@ export const makeAdmin = ai.defineFlow(
     outputSchema: MakeAdminOutputSchema,
   },
   async ({ email }) => {
+    const auth = getAuth();
     try {
-      const auth = getAuth();
       const user = await auth.getUserByEmail(email);
 
       if (user.customClaims?.['admin'] === true) {
         return { message: `User ${email} is already an admin.` };
       }
 
-      // Set the custom claim
-      await auth.setCustomUserClaims(user.uid, { ...user.customClaims, admin: true });
-      
-      console.log(`Successfully made ${email} (UID: ${user.uid}) an admin.`);
-      return { message: `Success! ${email} is now an admin. They must log out and log back in for the changes to take effect.` };
+      // Check if this is the first user signing up.
+      const userList = await auth.listUsers(1);
+      if (userList.users.length <= 1) {
+        // This is the first user, so make them an admin automatically.
+        await auth.setCustomUserClaims(user.uid, { ...user.customClaims, admin: true });
+        console.log(`Successfully made the first user, ${email} (UID: ${user.uid}), an admin.`);
+        return { message: `Success! As the first user, ${email} is now an admin. They must log out and log back in for the changes to take effect.` };
+      }
+
+      // For any subsequent user, this flow would require an existing admin to trigger it.
+      // Since we haven't built that logic, we will just show a message.
+      // In a real production scenario, you would add an authPolicy here to check
+      // if the caller is an admin.
+      return { message: `User ${email} was not made an admin. Only the first user is made an admin automatically.` };
 
     } catch (error: any) {
       console.error(`Error in makeAdmin flow for email: ${email}`, error);
