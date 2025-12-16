@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -73,7 +74,7 @@ export default function MakeAdminPage() {
             </CardTitle>
             <CardDescription>
                 Enter the email address of a registered user to grant them admin
-                privileges. This action is irreversible through the UI.
+                privileges. This action is irreversible through the UI. The first user is automatically an admin.
             </CardDescription>
             </CardHeader>
             <CardContent>
@@ -103,3 +104,5 @@ export default function MakeAdminPage() {
     </div>
   );
 }
+
+    

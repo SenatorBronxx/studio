@@ -8,8 +8,8 @@ import { OfflineIndicator } from "@/components/offline-indicator";
 import { FirebaseClientProvider } from "@/firebase";
 
 export const metadata: Metadata = {
-  title: "Eritas Gateway - Admin",
-  description: "Admin portal for Eritas Gateway.",
+  title: "Eritas Gateway",
+  description: "Your gateway to smart and seamless transportation.",
 };
 
 export default function RootLayout({
@@ -39,3 +39,5 @@ export default function RootLayout({
     </html>
   );
 }
+
+    
