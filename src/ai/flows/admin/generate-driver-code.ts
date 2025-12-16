@@ -43,9 +43,9 @@ export const generateDriverCode = ai.defineFlow(
             throw new Error("Authorization failed: No user authenticated.");
         }
         // A real implementation would check for an admin claim like this:
-        // if (auth.customClaims?.admin !== true) {
-        //   throw new Error("Authorization failed: User is not an admin.");
-        // }
+        if (auth.customClaims?.admin !== true) {
+          throw new Error("Authorization failed: User is not an admin.");
+        }
     }
   },
   async (driverInfo) => {
