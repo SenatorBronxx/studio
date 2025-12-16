@@ -19,7 +19,6 @@ initializeFirebase();
 const GenerateDriverInputSchema = z.object({
   fullName: z.string().min(3, 'Full name is required.'),
   email: z.string().email('A valid email is required for the driver\'s account.'),
-  password: z.string().min(8, 'A secure password of at least 8 characters is required.'),
   licenseNumber: z.string().min(1, 'License number is required.'),
   ghanaCardNumber: z.string().min(1, 'Ghana card number is required.'),
   assignedBus: z.string().optional(),
@@ -53,10 +52,14 @@ export const generateDriverCode = ai.defineFlow(
     const auth = getAuth();
     const firestore = getFirestore();
 
+    // Auto-generate a secure, random password.
+    // The driver will use the 6-digit code for initial access and can set their own password later.
+    const generatedPassword = Math.random().toString(36).slice(-10) + Math.random().toString(36).slice(-10);
+
     // 1. Create a new user account in Firebase Auth for the driver
     const userRecord = await auth.createUser({
       email: driverInfo.email,
-      password: driverInfo.password,
+      password: generatedPassword,
       displayName: driverInfo.fullName,
     });
     
