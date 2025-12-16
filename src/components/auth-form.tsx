@@ -336,7 +336,7 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
       </div>
       <div className="mt-6">
         <Button variant="outline" className="w-full" onClick={() => handleSocialLogin('Google')}>
-          <Image src="https://www.svgrepo.com/show/303108/google-icon-logo.svg" alt="Google" width={16} height={16} className="mr-2 h-4 w-4 animate-spin" />
+          <Image src="https://www.svgrepo.com/show/303108/google-icon-logo.svg" alt="Google" width={16} height={16} className="mr-2 h-4 w-4" />
           Google
         </Button>
       </div>
