@@ -25,12 +25,12 @@ import {
   signInWithEmailAndPassword,
   signInWithPopup,
   GoogleAuthProvider,
+  createUserWithEmailAndPassword,
 } from "firebase/auth";
 import { doc, setDoc, serverTimestamp, getDoc } from "firebase/firestore";
 import { useFirebase } from "@/firebase";
 import { errorEmitter } from "@/firebase/error-emitter";
 import { FirestorePermissionError } from "@/firebase/errors";
-import { createNewUser } from "@/ai/flows/admin/create-new-user";
 
 // Schemas
 const signInSchema = z.object({
@@ -147,34 +147,18 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
 
   const handleSignUp = async (values: z.infer<typeof signUpSchema>) => {
     setIsSubmitting(true);
-
-    try {
-        // Call the backend flow to create the user
-        await createNewUser(values);
-
-        // After the flow succeeds, sign the user in on the client
-        await signInWithEmailAndPassword(auth, values.email, values.password);
-
+    createUserWithEmailAndPassword(auth, values.email, values.password)
+      .then((userCredential) => {
+        const user = userCredential.user;
+        createUserProfileDocument(user, values.firstName, values.lastName);
         toast({
           title: t('signUpSuccessfulToastTitle'),
           description: t('signUpSuccessfulToastDescription'),
         });
         onSignUpSuccess(values.firstName);
-    } catch (error: any) {
-        // Handle specific errors from the flow or sign-in
-        console.error("Sign-up flow error:", error);
-        let message = error.message || "An unexpected error occurred during sign up.";
-        if (message.includes("auth/email-already-exists")) {
-          message = "This email address is already in use.";
-        }
-        toast({
-            variant: 'destructive',
-            title: 'Sign-Up Failed',
-            description: message,
-        });
-    } finally {
-        setIsSubmitting(false);
-    }
+      })
+      .catch(handleError)
+      .finally(() => setIsSubmitting(false));
   };
   
   const handleSocialLogin = async (providerName: 'Google') => {
@@ -201,13 +185,7 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
           const firstName = nameParts[0];
           const lastName = nameParts.slice(1).join(' ') || ' ';
           
-          // Call the backend flow to create the user and assign admin if first
-          // We can't pass a password, so the backend flow needs adjustment, or we create the doc here
-          // For now, let's create the doc here and manually handle the "first user is admin" case on the server later if needed.
           createUserProfileDocument(user, firstName, lastName);
-          
-          // NOTE: The `createNewUser` flow is for email/password. A separate flow would be needed
-          // to set custom claims for social auth users post-signup. For this fix, we focus on email/pass.
           onSignUpSuccess(firstName);
         } else {
           // Existing user signing in
