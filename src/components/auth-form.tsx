@@ -22,16 +22,15 @@ import { useLanguage } from "@/context/language-context";
 import Image from "next/image";
 import {
   getAuth,
-  createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signInWithPopup,
   GoogleAuthProvider,
-  updateProfile,
 } from "firebase/auth";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, serverTimestamp, getDoc } from "firebase/firestore";
 import { useFirebase } from "@/firebase";
 import { errorEmitter } from "@/firebase/error-emitter";
 import { FirestorePermissionError } from "@/firebase/errors";
+import { createNewUser } from "@/ai/flows/admin/create-new-user";
 
 // Schemas
 const signInSchema = z.object({
@@ -149,22 +148,33 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
   const handleSignUp = async (values: z.infer<typeof signUpSchema>) => {
     setIsSubmitting(true);
 
-    createUserWithEmailAndPassword(auth, values.email, values.password)
-        .then(async (userCredential) => {
-            const user = userCredential.user;
-            const fullName = `${values.firstName} ${values.lastName}`;
-            await updateProfile(user, { displayName: fullName });
-            
-            createUserProfileDocument(user, values.firstName, values.lastName);
+    try {
+        // Call the backend flow to create the user
+        await createNewUser(values);
 
-            toast({
-              title: t('signUpSuccessfulToastTitle'),
-              description: t('signUpSuccessfulToastDescription'),
-            });
-            onSignUpSuccess(values.firstName);
-        })
-        .catch(handleError)
-        .finally(() => setIsSubmitting(false));
+        // After the flow succeeds, sign the user in on the client
+        await signInWithEmailAndPassword(auth, values.email, values.password);
+
+        toast({
+          title: t('signUpSuccessfulToastTitle'),
+          description: t('signUpSuccessfulToastDescription'),
+        });
+        onSignUpSuccess(values.firstName);
+    } catch (error: any) {
+        // Handle specific errors from the flow or sign-in
+        console.error("Sign-up flow error:", error);
+        let message = error.message || "An unexpected error occurred during sign up.";
+        if (message.includes("auth/email-already-exists")) {
+          message = "This email address is already in use.";
+        }
+        toast({
+            variant: 'destructive',
+            title: 'Sign-Up Failed',
+            description: message,
+        });
+    } finally {
+        setIsSubmitting(false);
+    }
   };
   
   const handleSocialLogin = async (providerName: 'Google') => {
@@ -179,18 +189,28 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
     }
 
     signInWithPopup(auth, provider)
-      .then((result) => {
+      .then(async (result) => {
         const user = result.user;
-        const isNewUser = result.additionalUserInfo?.isNewUser;
+        const userRef = doc(firestore, "users", user.uid);
+        const userDoc = await getDoc(userRef);
 
-        if (isNewUser) {
+        // Check if the user document already exists in Firestore
+        if (!userDoc.exists()) {
+          // This is a new user signing up with social auth
           const nameParts = user.displayName?.split(' ') || ['New', 'User'];
           const firstName = nameParts[0];
           const lastName = nameParts.slice(1).join(' ') || ' ';
+          
+          // Call the backend flow to create the user and assign admin if first
+          // We can't pass a password, so the backend flow needs adjustment, or we create the doc here
+          // For now, let's create the doc here and manually handle the "first user is admin" case on the server later if needed.
           createUserProfileDocument(user, firstName, lastName);
+          
+          // NOTE: The `createNewUser` flow is for email/password. A separate flow would be needed
+          // to set custom claims for social auth users post-signup. For this fix, we focus on email/pass.
           onSignUpSuccess(firstName);
         } else {
-          const userRef = doc(firestore, "users", user.uid);
+          // Existing user signing in
           setDoc(userRef, { lastLogin: serverTimestamp() }, { merge: true }).catch(err => {
             console.warn("Could not update last login time for user:", err);
           });
