@@ -25,8 +25,7 @@ const MakeAdminOutputSchema = z.object({
 
 /**
  * Sets the 'admin: true' custom claim for a user.
- * This can only be run in a secure server environment (like a Genkit flow).
- * It now automatically makes the first user an admin.
+ * This flow is now configured to make ANY new user an admin to match the UI logic.
  */
 export const makeAdmin = ai.defineFlow(
   {
@@ -43,20 +42,10 @@ export const makeAdmin = ai.defineFlow(
         return { message: `User ${email} is already an admin.` };
       }
 
-      // Check if this is the first user signing up.
-      const userList = await auth.listUsers(1);
-      if (userList.users.length <= 1) {
-        // This is the first user, so make them an admin automatically.
-        await auth.setCustomUserClaims(user.uid, { ...user.customClaims, admin: true });
-        console.log(`Successfully made the first user, ${email} (UID: ${user.uid}), an admin.`);
-        return { message: `Success! As the first user, ${email} is now an admin. They must log out and log back in for the changes to take effect.` };
-      }
-
-      // For any subsequent user, this flow would require an existing admin to trigger it.
-      // Since we haven't built that logic, we will just show a message.
-      // In a real production scenario, you would add an authPolicy here to check
-      // if the caller is an admin.
-      return { message: `User ${email} was not made an admin. Only the first user is made an admin automatically.` };
+      // Automatically make any user an admin upon signup or first check.
+      await auth.setCustomUserClaims(user.uid, { ...user.customClaims, admin: true });
+      console.log(`Successfully made user ${email} (UID: ${user.uid}) an admin.`);
+      return { message: `Success! User ${email} is now an admin. They must log out and log back in for the changes to take effect.` };
 
     } catch (error: any) {
       console.error(`Error in makeAdmin flow for email: ${email}`, error);
