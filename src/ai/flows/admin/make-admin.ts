@@ -25,13 +25,22 @@ const MakeAdminOutputSchema = z.object({
 
 /**
  * Sets the 'admin: true' custom claim for a user.
- * This flow is now configured to make ANY new user an admin to match the UI logic.
+ * This flow requires the caller to be an authenticated admin.
  */
 export const makeAdmin = ai.defineFlow(
   {
     name: 'makeAdmin',
     inputSchema: MakeAdminInputSchema,
     outputSchema: MakeAdminOutputSchema,
+    authPolicy: (auth, input) => {
+      if (!auth) {
+        throw new Error("Authorization failed: No user authenticated.");
+      }
+      // This check ensures only admins can perform this action.
+      if (auth.customClaims?.admin !== true) {
+        throw new Error("Authorization failed: User is not an admin.");
+      }
+    }
   },
   async ({ email }) => {
     const auth = getAuth();
@@ -42,7 +51,6 @@ export const makeAdmin = ai.defineFlow(
         return { message: `User ${email} is already an admin.` };
       }
 
-      // Automatically make any user an admin upon signup or first check.
       await auth.setCustomUserClaims(user.uid, { ...user.customClaims, admin: true });
       console.log(`Successfully made user ${email} (UID: ${user.uid}) an admin.`);
       return { message: `Success! User ${email} is now an admin. They must log out and log back in for the changes to take effect.` };
