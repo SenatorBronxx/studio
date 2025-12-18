@@ -57,11 +57,18 @@ const initialBusData = [
       position: { top: '45%', left: '25%' },
       driverImage: PlaceHolderImages.find((p) => p.id === 'user-avatar')?.imageUrl,
       seating: [
-        { id: '1A', isOccupied: true }, { id: '1B', isOccupied: false }, null, { id: '1C', isOccupied: false }, { id: '1D', isOccupied: true },
-        { id: '2A', isOccupied: false }, { id: '2B', isOccupied: true }, null, { id: '2C', isOccupied: false }, { id: '2D', isOccupied: false },
-        { id: '3A', isOccupied: true }, { id: '3B', isOccupied: true }, null, { id: '3C', isOccupied: false }, { id: '3D', isOccupied: true },
-        { id: '4A', isOccupied: false }, { id: '4B', isOccupied: false }, null, { id: '4C', isOccupied: true }, { id: '4D', isOccupied: false },
-        { id: '5A', isOccupied: true }, { id: '5B', isOccupied: false }, null, { id: '5C', isOccupied: false }, { id: '5D', isOccupied: false },
+        { id: '1A', isOccupied: false }, // Front seat
+        { id: '2A', isOccupied: true },  // Left column
+        { id: '3A', isOccupied: false },
+        { id: '4A', isOccupied: false },
+        { id: '1B', isOccupied: false }, // Right column 1
+        { id: '1C', isOccupied: true },  // Right column 2
+        { id: '2B', isOccupied: false },
+        { id: '2C', isOccupied: true },
+        { id: '3B', isOccupied: true },
+        { id: '3C', isOccupied: false },
+        { id: '4B', isOccupied: false },
+        { id: '4C', isOccupied: false },
       ]
     },
     {
@@ -833,5 +840,3 @@ export default function SearchPage() {
     </div>
   );
 }
-
-    

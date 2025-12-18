@@ -56,10 +56,10 @@ export function BusSeatingChart({ seating, selectedSeats, onSeatSelect, busPlate
         );
     };
     
-    // Assuming seating array is structured for the new layout
+    // New layout: front left seat (1), left column (3), right columns (8)
     const frontSeat = seating[0];
-    const leftSeats = seating.slice(1, 4);
-    const rightSeats = seating.slice(4);
+    const leftSeats = seating.slice(1, 4);  // 3 seats
+    const rightSeats = seating.slice(4); // 8 seats
 
     return (
         <div className="p-4 space-y-6">
@@ -72,9 +72,9 @@ export function BusSeatingChart({ seating, selectedSeats, onSeatSelect, busPlate
                     </div>
                     <div className="col-span-3"></div>
                     
-                    {/* Front Passenger Seat */}
+                    {/* Front Passenger Seat (on the left) */}
                     <div className="col-span-1">
-                         {frontSeat && renderSeat(frontSeat)}
+                         {renderSeat(frontSeat)}
                     </div>
                     <div className="col-span-3"></div>
 
@@ -82,7 +82,7 @@ export function BusSeatingChart({ seating, selectedSeats, onSeatSelect, busPlate
                     {/* Main Seating Area */}
                     {Array.from({ length: 4 }).map((_, rowIndex) => (
                         <React.Fragment key={rowIndex}>
-                            {/* Left Column */}
+                            {/* Left Column (3 seats total) */}
                             <div className="col-span-1">
                                 {rowIndex < leftSeats.length && renderSeat(leftSeats[rowIndex])}
                             </div>
@@ -90,7 +90,7 @@ export function BusSeatingChart({ seating, selectedSeats, onSeatSelect, busPlate
                             {/* Aisle */}
                             <div className="col-span-1"></div>
 
-                            {/* Right Columns */}
+                            {/* Right Columns (8 seats total) */}
                             <div className="col-span-1">
                                 {rowIndex * 2 < rightSeats.length && renderSeat(rightSeats[rowIndex * 2])}
                             </div>
