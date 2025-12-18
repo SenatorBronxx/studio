@@ -56,10 +56,9 @@ export function BusSeatingChart({ seating, selectedSeats, onSeatSelect, busPlate
         );
     };
     
-    // New layout: front left seat (1), left column (3), right columns (8)
     const frontSeat = seating[0];
-    const leftSeats = seating.slice(1, 4);  // 3 seats
-    const rightSeats = seating.slice(4); // 8 seats
+    const rightSeats = seating.slice(1, 4); // 3 seats for the single column
+    const leftSeats = seating.slice(4); // 8 seats for the double column
 
     return (
         <div className="p-4 space-y-6">
@@ -70,25 +69,21 @@ export function BusSeatingChart({ seating, selectedSeats, onSeatSelect, busPlate
                     <div className="col-span-1 flex items-center justify-center">
                         <BusFront className="w-8 h-8 text-foreground" />
                     </div>
-                    <div className="col-span-3"></div>
-                    
                     <div className="col-span-2"></div>
-                    {/* Front Passenger Seat (on the right) */}
-                    <div className="col-span-1">
+                     {/* Front Passenger Seat (on the right) */}
+                     <div className="col-span-1">
                          {renderSeat(frontSeat)}
                     </div>
-                    <div className="col-span-1"></div>
-
 
                     {/* Main Seating Area */}
                     {Array.from({ length: 4 }).map((_, rowIndex) => (
                         <React.Fragment key={rowIndex}>
                             {/* Left Columns (8 seats total) */}
                             <div className="col-span-1">
-                                {rowIndex * 2 < rightSeats.length && renderSeat(rightSeats[rowIndex * 2])}
+                                {rowIndex * 2 < leftSeats.length && renderSeat(leftSeats[rowIndex * 2])}
                             </div>
                             <div className="col-span-1">
-                                {(rowIndex * 2) + 1 < rightSeats.length && renderSeat(rightSeats[(rowIndex * 2) + 1])}
+                                {(rowIndex * 2) + 1 < leftSeats.length && renderSeat(leftSeats[(rowIndex * 2) + 1])}
                             </div>
 
                             {/* Aisle */}
@@ -96,7 +91,7 @@ export function BusSeatingChart({ seating, selectedSeats, onSeatSelect, busPlate
                             
                             {/* Right Column (3 seats total) */}
                             <div className="col-span-1">
-                                {rowIndex < leftSeats.length && renderSeat(leftSeats[rowIndex])}
+                                {rowIndex < rightSeats.length && renderSeat(rightSeats[rowIndex])}
                             </div>
                         </React.Fragment>
                     ))}
