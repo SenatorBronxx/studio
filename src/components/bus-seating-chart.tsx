@@ -23,49 +23,81 @@ type BusSeatingChartProps = {
 export function BusSeatingChart({ seating, selectedSeats, onSeatSelect, busPlate, onConfirm }: BusSeatingChartProps) {
     const { t } = useLanguage();
     const primarySeat = selectedSeats[0];
+
+    const renderSeat = (seat: Seat) => {
+        if (!seat) {
+            return <div className="col-span-1"></div>;
+        }
+
+        const isSelected = selectedSeats.includes(seat.id);
+        const isPrimary = primarySeat === seat.id;
+        
+        return (
+            <button
+                key={seat.id}
+                onClick={() => onSeatSelect(seat.id)}
+                disabled={seat.isOccupied}
+                className={cn(
+                    "flex items-center justify-center rounded-md p-1 transition-colors relative",
+                    "aspect-square",
+                    seat.isOccupied
+                        ? "bg-muted text-muted-foreground cursor-not-allowed"
+                        : "bg-primary/20 text-primary hover:bg-primary/30",
+                    isSelected && "bg-primary/60 text-primary-foreground",
+                    isPrimary && "bg-primary text-primary-foreground ring-2 ring-offset-2 ring-primary ring-offset-background"
+                )}
+            >
+                {isPrimary ? <User className="w-5 h-5" /> : <Armchair className="w-6 h-6" />}
+                <span className="absolute text-[8px] font-bold text-white top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                    {seat.id}
+                </span>
+            </button>
+        );
+    };
     
+    // Assuming seating array is structured for the new layout
+    const frontSeat = seating[0];
+    const leftSeats = seating.slice(1, 4);
+    const rightSeats = seating.slice(4);
+
     return (
         <div className="p-4 space-y-6">
             <div className="bg-muted p-4 rounded-lg flex flex-col items-center justify-center gap-4">
                 <Badge variant="secondary" className="font-mono">{busPlate}</Badge>
-                <div className="grid grid-cols-5 gap-2 w-full max-w-xs">
+                <div className="grid grid-cols-4 gap-2 w-full max-w-xs">
                     {/* Driver's Seat */}
                     <div className="col-span-1 flex items-center justify-center">
                         <BusFront className="w-8 h-8 text-foreground" />
                     </div>
-                    <div className="col-span-4"></div>
+                    <div className="col-span-3"></div>
+                    
+                    {/* Front Passenger Seat */}
+                    <div className="col-span-1">
+                         {frontSeat && renderSeat(frontSeat)}
+                    </div>
+                    <div className="col-span-3"></div>
 
-                    {/* Seats */}
-                    {seating.map((seat, index) => {
-                        if (!seat) {
-                            return <div key={`aisle-${index}`} className="col-span-1"></div>;
-                        }
 
-                        const isSelected = selectedSeats.includes(seat.id);
-                        const isPrimary = primarySeat === seat.id;
-                        
-                        return (
-                            <button
-                                key={seat.id}
-                                onClick={() => onSeatSelect(seat.id)}
-                                disabled={seat.isOccupied}
-                                className={cn(
-                                    "flex items-center justify-center rounded-md p-1 transition-colors relative",
-                                    "aspect-square",
-                                    seat.isOccupied
-                                        ? "bg-muted text-muted-foreground cursor-not-allowed"
-                                        : "bg-primary/20 text-primary hover:bg-primary/30",
-                                    isSelected && "bg-primary/60 text-primary-foreground",
-                                    isPrimary && "bg-primary text-primary-foreground ring-2 ring-offset-2 ring-primary ring-offset-background"
-                                )}
-                            >
-                                {isPrimary ? <User className="w-5 h-5" /> : <Armchair className="w-6 h-6" />}
-                                <span className="absolute text-[8px] font-bold text-white top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                                    {seat.id}
-                                </span>
-                            </button>
-                        );
-                    })}
+                    {/* Main Seating Area */}
+                    {Array.from({ length: 4 }).map((_, rowIndex) => (
+                        <React.Fragment key={rowIndex}>
+                            {/* Left Column */}
+                            <div className="col-span-1">
+                                {rowIndex < leftSeats.length && renderSeat(leftSeats[rowIndex])}
+                            </div>
+                            
+                            {/* Aisle */}
+                            <div className="col-span-1"></div>
+
+                            {/* Right Columns */}
+                            <div className="col-span-1">
+                                {rowIndex * 2 < rightSeats.length && renderSeat(rightSeats[rowIndex * 2])}
+                            </div>
+                            <div className="col-span-1">
+                                {(rowIndex * 2) + 1 < rightSeats.length && renderSeat(rightSeats[(rowIndex * 2) + 1])}
+                            </div>
+                        </React.Fragment>
+                    ))}
                 </div>
             </div>
             <div className="flex justify-around text-sm">
