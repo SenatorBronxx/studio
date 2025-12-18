@@ -1,6 +1,7 @@
 
 'use client';
 
+import * as React from 'react';
 import { Armchair, BusFront, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
