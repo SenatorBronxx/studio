@@ -63,7 +63,10 @@ import {
 import { useBusArrivalNotification } from '@/hooks/use-bus-arrival-notification';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { TripRating } from '@/components/trip-rating';
-import { collection, doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, setDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
+
 
 type BusData = {
   id: string;
@@ -270,50 +273,55 @@ export default function HomePage() {
 
     setIsBoarding(true);
     
-    // *** POINT 2: CREATING A TRIP FOR THE DRIVER APP ***
-    // This creates a new document in the `/trips` collection.
-    // The driver's app would be listening for new documents here.
     const tripId = uuidv4();
     const tripRef = doc(firestore, 'trips', tripId);
+    const busRef = doc(firestore, 'buses', selectedBus.id);
+
     const tripData = {
         id: tripId,
         userId: user.uid,
         busId: selectedBus.id,
         busPlate: selectedBus.plate,
-        status: 'pending', // Driver app would change this to 'accepted'
-        origin: { name: 'Current Location', location: null /* Add GeoPoint here */ },
-        destination: { name: stop.name, location: null /* Add GeoPoint here */ },
-        pickupLocation: null, // User's current location
-        currentBusLocation: null, // Driver app updates this
+        status: 'pending',
+        origin: { name: 'Current Location', location: null },
+        destination: { name: stop.name, location: null },
+        pickupLocation: null,
+        currentBusLocation: null,
         eta: selectedBus.eta,
         fare: totalFare,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
     };
+
+    const updatedSeating = selectedBus.seating.map(s => (s && selectedSeats.includes(s.id)) ? { ...s, isOccupied: true } : s);
+    const updatedCapacity = selectedBus.capacity.current + selectedSeats.length;
+    const busUpdateData = {
+      'seating': updatedSeating,
+      'capacity.current': updatedCapacity,
+    };
     
     try {
+        // Perform Firestore writes
         await setDoc(tripRef, tripData);
+        await updateDoc(busRef, busUpdateData);
     
         // All local state updates happen after successful DB write.
         deductBalance(totalFare);
         const newTransaction = { id: tripId, type: 'payment', plate: selectedBus?.plate || 'N/A', amount: -totalFare };
         addTransaction(newTransaction);
         
-        // This part is a simulation of how the bus data would update.
-        // In a real app, this would be updated by a backend function or the driver app.
-        const updatedBus = {
+        const updatedBusForTrip = {
             ...selectedBus,
-            seating: selectedBus.seating.map(s => (s && selectedSeats.includes(s.id)) ? { ...s, isOccupied: true } : s),
-            capacity: { ...selectedBus.capacity, current: selectedBus.capacity.current + selectedSeats.length }
+            seating: updatedSeating,
+            capacity: { ...selectedBus.capacity, current: updatedCapacity }
         };
-        setSelectedBus(updatedBus);
 
         const newTrip: ActiveTrip = {
             id: tripId,
-            bus: updatedBus,
+            bus: updatedBusForTrip,
             from: "Your Location",
             destination: stop.name,
-            eta: updatedBus.eta,
+            eta: updatedBusForTrip.eta,
             seats: selectedSeats,
             destinationEta: stop.eta,
             currentStopIndex: -1,
@@ -345,45 +353,66 @@ export default function HomePage() {
     } catch (error) {
         console.error("Error creating trip:", error);
         toast({ variant: 'destructive', title: "Booking Failed", description: "Could not create your trip. Please try again."});
+        const permissionError = new FirestorePermissionError({
+            path: tripRef.path, // or busRef.path depending on which one failed
+            operation: 'write',
+            requestResourceData: { trip: tripData, busUpdate: busUpdateData },
+        });
+        errorEmitter.emit('permission-error', permissionError);
     } finally {
         setIsBoarding(false);
     }
   }
 
-   const handleCancelTrip = () => {
-    if (!activeTrip) return;
+   const handleCancelTrip = async () => {
+    if (!activeTrip || !firestore) return;
 
     const tripId = activeTrip.id;
 
-    // Find the original fare
     const allStops = [...activeTrip.bus.stops, activeTrip.bus.finalDestination];
     const destinationStop = allStops.find(s => s.name === activeTrip.destination);
-    if (!destinationStop) return; // Should not happen
+    if (!destinationStop) return; 
 
     let fareToRefund = destinationStop.fare * activeTrip.seats.length;
     if (activeDiscount) {
       fareToRefund *= (1 - activeDiscount.percentage / 100);
     }
     
-    // 1. Refund the user
-    refundBalance(fareToRefund);
-    addTransaction({ type: 'top-up', plate: `Refund for ${activeTrip.bus.plate}`, amount: fareToRefund });
+    const busRef = doc(firestore, 'buses', activeTrip.bus.id);
+    const busUpdateData = {
+        'seating': activeTrip.bus.seating.map(s => (s && activeTrip.seats.includes(s.id)) ? { ...s, isOccupied: false } : s),
+        'capacity.current': activeTrip.bus.capacity.current - activeTrip.seats.length,
+    };
 
-    // 2. Clear trip state
-    clearActiveTrip();
-    setSelectedBus(null);
-    setSelectedSeats([]);
-    setIsOnBus(false);
-    setQrCodeUrl(null); // Invalidate QR Code
+    try {
+        await updateDoc(busRef, busUpdateData);
 
-    // 4. Notify user
-    toast({
-      title: t('tripCancelled'),
-      description: t('tripCancelledDescription', { fare: fareToRefund.toFixed(2) }),
-    });
+        refundBalance(fareToRefund);
+        addTransaction({ type: 'top-up', plate: `Refund for ${activeTrip.bus.plate}`, amount: fareToRefund });
 
-    // 5. Remove any related notifications
-    setNotifications(prev => prev.filter(n => n.tripId !== tripId));
+        clearActiveTrip();
+        setSelectedBus(null);
+        setSelectedSeats([]);
+        setIsOnBus(false);
+        setQrCodeUrl(null);
+
+        toast({
+        title: t('tripCancelled'),
+        description: t('tripCancelledDescription', { fare: fareToRefund.toFixed(2) }),
+        });
+
+        setNotifications(prev => prev.filter(n => n.tripId !== tripId));
+
+    } catch (error) {
+        console.error("Error canceling trip:", error);
+        toast({ variant: 'destructive', title: "Cancellation Failed", description: "Could not cancel your trip. Please try again."});
+        const permissionError = new FirestorePermissionError({
+            path: busRef.path,
+            operation: 'update',
+            requestResourceData: busUpdateData,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+    }
   };
 
   
