@@ -411,10 +411,7 @@
           "type": "string",
           "format": "email"
         },
-        "firstName": {
-          "type": "string"
-        },
-        "lastName": {
+        "fullName": {
           "type": "string"
         },
         "licenseNumber": {
@@ -434,12 +431,12 @@
           "type": "string",
           "format": "date-time"
         },
-        "lastLogin": {
-          "type": "string",
-          "format": "date-time"
+        "registrationCode": {
+            "type": "string",
+            "description": "A one-time code used for driver registration."
         }
       },
-      "required": ["id", "email", "firstName", "lastName", "licenseNumber", "busPlateNumber", "signUpDate"]
+      "required": ["id", "email", "fullName", "licenseNumber", "busPlateNumber", "signUpDate"]
     },
     "DriverEarning": {
       "title": "Driver Earning",
@@ -541,9 +538,28 @@
           },
           "description": "Stores individual earning records for each completed trip for a specific driver."
         }
+      },
+      {
+        "path": "/driverRegistrationCodes/{code}",
+        "definition": {
+          "schema": {
+            "$ref": "#/entities/Driver"
+          },
+          "description": "Stores temporary driver data linked to a one-time registration code."
+        }
+      },
+      {
+        "path": "/_internal/userCount",
+        "definition": {
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "count": { "type": "number" }
+                }
+            },
+            "description": "Internal document to track the total number of users for administrative purposes."
+        }
       }
     ]
   }
 }
-
-    

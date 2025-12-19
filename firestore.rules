@@ -2,7 +2,8 @@
 /**
  * Core Philosophy:
  * This ruleset enforces a strict user-ownership model for the Eritas Gateway
- * application. All user-related data is private.
+ * application. All user-related data is private by default. Administrative
+ * access is granted via custom claims.
  *
  * Data Structure:
  * - /users/{userId}: Stores public-facing user profile information.
@@ -11,6 +12,8 @@
  * - /buses/{busId}: Stores live data for active buses, broadcast by drivers.
  * - /drivers/{driverId}: Stores driver profile information.
  * - /drivers/{driverId}/earnings/{earningId}: Stores driver earnings records.
+ * - /driverRegistrationCodes/{code}: Stores one-time codes for driver signup.
+ * - /_internal/userCount: A private document for tracking total users.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -34,6 +37,13 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
+    /**
+     * Returns true if the user has the 'admin' custom claim.
+     */
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.admin == true;
+    }
+
     // ----------------------------------------------------------------------
     // Collection Rules
     // ----------------------------------------------------------------------
@@ -43,16 +53,17 @@ service cloud.firestore {
      * @path /users/{userId}
      */
     match /users/{userId} {
-      allow read, update, delete: if isOwner(userId);
-      allow create: if isOwner(userId);
-      allow list: if false; // No one can list all users
+      allow read, update: if isOwner(userId) || isAdmin();
+      allow create: if isSignedIn(); // Allow any new user to create their own profile
+      allow delete: if isAdmin();
+      allow list: if isAdmin(); // Only admins can list all users
 
       /**
        * @description Manages a single document of user preferences.
        * @path /users/{userId}/preferences/{prefsId}
        */
       match /preferences/{prefsId} {
-        allow read, write: if isOwner(userId);
+        allow read, write: if isOwner(userId) || isAdmin();
       }
     }
     
@@ -62,6 +73,7 @@ service cloud.firestore {
      */
     match /trips/{tripId} {
       // Let any signed-in user read/write trips for now.
+      // In a real app, this would be restricted to the involved user and driver.
       allow read, write: if isSignedIn();
     }
 
@@ -71,6 +83,7 @@ service cloud.firestore {
      */
     match /buses/{busId} {
       // Any signed-in user can see active buses.
+      // Writes should be restricted to drivers in a real app.
       allow read, write: if isSignedIn();
     }
     
@@ -79,9 +92,10 @@ service cloud.firestore {
      * @path /drivers/{driverId}
      */
     match /drivers/{driverId} {
-      allow read, update, delete: if isOwner(driverId);
+      allow read, update: if isOwner(driverId) || isAdmin();
       allow create: if isOwner(driverId);
-      allow list: if false;
+      allow delete: if isAdmin();
+      allow list: if isAdmin();
 
       /**
        * @description Manages driver earnings records.
@@ -94,7 +108,25 @@ service cloud.firestore {
         allow write: if false; // Prevent driver app from writing/tampering with earnings.
       }
     }
+
+    /**
+     * @description Stores one-time registration codes for drivers.
+     * @path /driverRegistrationCodes/{code}
+     */
+    match /driverRegistrationCodes/{code} {
+        // Only admins can create codes. Authenticated users can read/delete them (during signup).
+        allow read, delete: if isSignedIn();
+        allow create, list, update: if isAdmin();
+    }
+
+    /**
+     * @description Internal document to count total users for first-user-admin logic.
+     * @path /_internal/userCount
+     */
+    match /_internal/userCount {
+        // Only backend (admin) calls can read/write this document.
+        allow read, write: if isAdmin();
+        allow create, delete, list: if false;
+    }
   }
 }
-
-    
