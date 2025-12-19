@@ -69,28 +69,48 @@ const makeAdminFlow = ai.defineFlow(
 );
 
 
-// --- 2. On User Create Trigger (First User = Admin) ---
+// --- 2. On User Create Trigger (First User & Permanent Admin) ---
 
 export const oncreateuser = onUserCreate(async (event) => {
   const user = event.data;
   const db = getFirestore();
   const auth = getAuth();
   const userCountRef = db.collection('_internal').doc('userCount');
+  
+  const permanentAdminEmail = "francisassuah44@gmail.com";
 
   try {
-    await db.runTransaction(async (transaction) => {
-      const userCountDoc = await transaction.get(userCountRef);
-      if (!userCountDoc.exists) {
-        transaction.set(userCountRef, { count: 1 });
+    let shouldBeAdmin = false;
+    let adminReason = "";
+
+    // Check if the new user is the designated permanent admin
+    if (user.email === permanentAdminEmail) {
+        shouldBeAdmin = true;
+        adminReason = `Designated permanent admin ${user.email} created.`;
+    }
+
+    // Separately, check if this is the first user ever
+    const userCountDoc = await userCountRef.get();
+    if (!userCountDoc.exists) {
+        if (!shouldBeAdmin) {
+            shouldBeAdmin = true;
+            adminReason = `First user ${user.email} created.`;
+        }
+        await userCountRef.set({ count: 1 });
+    } else {
+        await userCountRef.update({ count: FieldValue.increment(1) });
+    }
+
+    // Grant admin privileges if either condition was met
+    if (shouldBeAdmin) {
         await auth.setCustomUserClaims(user.uid, { admin: true });
-        console.log(`First user ${user.email} created, granted admin privileges.`);
-      } else {
-        transaction.update(userCountRef, { count: FieldValue.increment(1) });
+        console.log(`${adminReason} Granted admin privileges.`);
+    } else {
         console.log(`New user ${user.email} created. Total users: ${userCountDoc.data()?.count + 1}`);
-      }
-    });
+    }
+
   } catch (error) {
-    console.error('Transaction to update user count failed: ', error);
+    console.error('Error in on-create-user trigger: ', error);
   }
 });
 
