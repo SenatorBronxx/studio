@@ -9,6 +9,8 @@
  * - /users/{userId}/preferences/{prefsId}: Stores private user settings.
  * - /trips/{tripId}: Stores trip documents, shared between user and driver.
  * - /buses/{busId}: Stores live data for active buses, broadcast by drivers.
+ * - /drivers/{driverId}: Stores driver profile information.
+ * - /drivers/{driverId}/earnings/{earningId}: Stores driver earnings records.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -71,5 +73,28 @@ service cloud.firestore {
       // Any signed-in user can see active buses.
       allow read, write: if isSignedIn();
     }
+    
+    /**
+     * @description Manages driver profile documents.
+     * @path /drivers/{driverId}
+     */
+    match /drivers/{driverId} {
+      allow read, update, delete: if isOwner(driverId);
+      allow create: if isOwner(driverId);
+      allow list: if false;
+
+      /**
+       * @description Manages driver earnings records.
+       * @path /drivers/{driverId}/earnings/{earningId}
+       */
+      match /earnings/{earningId} {
+        // Only the driver can read their own earnings.
+        // Earnings records are created by a secure backend process, not directly by the driver app.
+        allow read: if isOwner(driverId);
+        allow write: if false; // Prevent driver app from writing/tampering with earnings.
+      }
+    }
   }
 }
+
+    

@@ -397,6 +397,90 @@
         }
       },
       "required": ["id", "driver", "plate", "eta", "capacity", "finalDestination"]
+    },
+    "Driver": {
+      "title": "Driver",
+      "type": "object",
+      "description": "Represents a driver using the driver-specific application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the driver (matches their Firebase Auth UID)."
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "firstName": {
+          "type": "string"
+        },
+        "lastName": {
+          "type": "string"
+        },
+        "licenseNumber": {
+          "type": "string"
+        },
+        "ghanaCardNumber": {
+          "type": "string"
+        },
+        "busPlateNumber": {
+          "type": "string"
+        },
+        "profilePicture": {
+          "type": "string",
+          "format": "uri"
+        },
+        "signUpDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "lastLogin": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["id", "email", "firstName", "lastName", "licenseNumber", "busPlateNumber", "signUpDate"]
+    },
+    "DriverEarning": {
+      "title": "Driver Earning",
+      "type": "object",
+      "description": "Represents a single earning transaction for a driver after a completed trip.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the earning record."
+        },
+        "tripId": {
+          "type": "string",
+          "description": "The ID of the completed trip."
+        },
+        "passengerId": {
+          "type": "string",
+          "description": "The ID of the passenger from the trip."
+        },
+        "passengerName": {
+          "type": "string",
+          "description": "The name of the passenger for display purposes."
+        },
+        "fare": {
+          "type": "number",
+          "description": "The fare amount earned from this trip."
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp when the trip was completed and the earning was recorded."
+        },
+        "origin": {
+          "type": "string",
+          "description": "The starting point of the passenger's journey."
+        },
+        "destination": {
+          "type": "string",
+          "description": "The final destination of the passenger's journey."
+        }
+      },
+      "required": ["id", "tripId", "passengerId", "fare", "timestamp", "destination"]
     }
   },
   "auth": {
@@ -439,7 +523,27 @@
           },
           "description": "Stores live data for active buses, broadcasted by drivers. All authenticated users can read this collection."
         }
+      },
+      {
+        "path": "/drivers/{driverId}",
+        "definition": {
+          "schema": {
+            "$ref": "#/entities/Driver"
+          },
+          "description": "Stores profile information for drivers. Only the authenticated driver can access their own document."
+        }
+      },
+      {
+        "path": "/drivers/{driverId}/earnings/{earningId}",
+        "definition": {
+          "schema": {
+            "$ref": "#/entities/DriverEarning"
+          },
+          "description": "Stores individual earning records for each completed trip for a specific driver."
+        }
       }
     ]
   }
 }
+
+    
