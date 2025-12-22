@@ -48,11 +48,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { listUsers } from '@/ai/flows/admin/list-users';
-import { listDrivers } from '@/ai/flows/admin/list-drivers';
-import { generateDriverCode } from '@/ai/flows/admin/generate-driver-code';
-import { deleteUser } from '@/ai/flows/admin/delete-user';
-import { deleteDriver } from '@/ai/flows/admin/delete-driver';
+import { listUsers, listDrivers, generateDriverCode, deleteUser, deleteDriver } from '@/ai/flows/admin';
 import { useAuth } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
