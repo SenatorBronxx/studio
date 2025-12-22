@@ -49,6 +49,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { listUsers, listDrivers, generateDriverCode, deleteUser, deleteDriver } from '@/ai/flows/admin';
+import type { ListUsersOutput, ListDriversOutput } from '@/ai/flows/admin-types';
 import { useAuth } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -64,21 +65,8 @@ const createDriverSchema = z.object({
 
 type CreateDriverFormValues = z.infer<typeof createDriverSchema>;
 
-type User = {
-  id: string;
-  email?: string;
-  firstName?: string;
-  lastName?: string;
-  walletBalance?: number;
-};
-
-type Driver = {
-  id: string;
-  fullName?: string;
-  email?: string;
-  busPlateNumber?: string;
-  registrationCode?: string;
-};
+type User = ListUsersOutput['users'][0];
+type Driver = ListDriversOutput['drivers'][0];
 
 export default function AdminPage() {
   const { toast } = useToast();
