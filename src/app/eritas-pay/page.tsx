@@ -91,7 +91,7 @@ export default function EritasPayPage() {
     } else {
         setNotifications(prev => prev.filter(n => n.id !== -1));
     }
-  }, [isLowBalance, t, router, notifications]);
+  }, [isLowBalance, t, router]);
 
   if (isUserLoading) {
       return (
@@ -336,3 +336,5 @@ export default function EritasPayPage() {
     </div>
   );
 }
+
+    
