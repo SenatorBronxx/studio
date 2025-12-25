@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Ticket, Bus, MapPin, Check, Flag } from 'lucide-react';
@@ -24,7 +25,7 @@ export const IconMosaicBackground = () => {
 
     return (
         <div className="absolute inset-0 w-full h-full overflow-hidden">
-            <div className="flex flex-wrap gap-2 items-center justify-center -rotate-12 scale-150 opacity-80">
+            <div className="flex flex-wrap gap-2 items-center justify-center -rotate-12 scale-150 opacity-20">
                  {pattern}
             </div>
         </div>

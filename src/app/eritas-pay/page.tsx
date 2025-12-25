@@ -60,8 +60,6 @@ export default function EritasPayPage() {
   const { t } = useLanguage();
   const { user, isUserLoading } = useUser();
   const router = useRouter();
-  const maxBalance = 400.00;
-  const progressPercentage = Math.min((balance / maxBalance) * 100, 100);
   
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isQrSheetOpen, setIsQrSheetOpen] = useState(false);
@@ -70,6 +68,9 @@ export default function EritasPayPage() {
   const [selectedSeat, setSelectedSeat] = useState<string | null>(null);
   const [showAllTransactions, setShowAllTransactions] = useState(false);
   const [showLowBalanceMessage, setShowLowBalanceMessage] = useState(false);
+
+  const maxBalance = 400.00;
+  const progressPercentage = Math.min((balance / maxBalance) * 100, 100);
 
   useEffect(() => {
     if (isLowBalance) {
@@ -90,7 +91,7 @@ export default function EritasPayPage() {
     } else {
         setNotifications(prev => prev.filter(n => n.id !== -1));
     }
-  }, [isLowBalance, t, router]);
+  }, [isLowBalance, t, router, notifications]);
 
   if (isUserLoading) {
       return (
@@ -216,9 +217,9 @@ export default function EritasPayPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-4xl font-bold">GH₵ {balance.toFixed(2)}</div>
-                <Badge className="bg-green-100 hover:bg-green-100 text-green-800 border-green-200 mt-2">
-                  <Shield className="mr-1 h-3 w-3" />
-                  Secured
+                <Badge variant='outline' className="mt-2 bg-green-100/10 border-green-500/30 text-green-700 dark:text-green-400">
+                    <Shield className="mr-2 h-4 w-4" />
+                    Secured
                 </Badge>
                 {showLowBalanceMessage && isLowBalance && (
                     <div className="mt-2 text-sm text-destructive-foreground bg-destructive/90 p-3 rounded-lg animate-in fade-in-50">
@@ -329,7 +330,8 @@ export default function EritasPayPage() {
                             <Badge>{t('seat')} {selectedSeat}</Badge>
                         </div>
                     </div>
-                </SheetContent>
+                </div>
+            </SheetContent>
         </Sheet>
     </div>
   );
