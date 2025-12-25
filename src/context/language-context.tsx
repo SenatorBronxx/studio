@@ -23,7 +23,7 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const { preferences, setPreference, isHydrated } = useUserPreferences();
 
-  const language = preferences?.language || 'en-us';
+  const language = preferences?.language ?? 'en-us';
   
   const setLanguage = useCallback((lang: string) => {
     setPreference('language', lang);

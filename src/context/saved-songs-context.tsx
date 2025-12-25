@@ -22,7 +22,7 @@ export function SavedSongsProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   const { t } = useLanguage();
 
-  const savedSongs = preferences?.savedSongs || [];
+  const savedSongs = preferences?.savedSongs ?? [];
 
   const isSongSaved = useCallback((trackId: string) => {
     return savedSongs.some(song => song.id === trackId);
@@ -31,27 +31,29 @@ export function SavedSongsProvider({ children }: { children: ReactNode }) {
   const saveSong = useCallback((track: Track) => {
     if (isSongSaved(track.id)) return;
     
-    const newSavedSongs = [track, ...savedSongs];
+    const currentSavedSongs = preferences?.savedSongs ?? [];
+    const newSavedSongs = [track, ...currentSavedSongs];
     setPreference('savedSongs', newSavedSongs);
 
     toast({
       title: "Song Saved",
       description: `'${track.title}' has been added to your library.`,
     });
-  }, [isSongSaved, savedSongs, setPreference, t, toast]);
+  }, [isSongSaved, preferences?.savedSongs, setPreference, toast]);
 
   const unsaveSong = useCallback((trackId: string) => {
-    const songToRemove = savedSongs.find(song => song.id === trackId);
+    const currentSavedSongs = preferences?.savedSongs ?? [];
+    const songToRemove = currentSavedSongs.find(song => song.id === trackId);
     if (!songToRemove) return;
 
-    const newSavedSongs = savedSongs.filter(song => song.id !== trackId);
+    const newSavedSongs = currentSavedSongs.filter(song => song.id !== trackId);
     setPreference('savedSongs', newSavedSongs);
     
     toast({
       title: "Song Unsaved",
       description: `'${songToRemove.title}' has been removed from your library.`,
     });
-  }, [savedSongs, setPreference, t, toast]);
+  }, [preferences?.savedSongs, setPreference, toast]);
 
   const value = { savedSongs, saveSong, unsaveSong, isSongSaved, isHydrated };
 

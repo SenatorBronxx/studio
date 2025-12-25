@@ -24,53 +24,62 @@ type WalletContextType = {
   addTransaction: (transaction: Omit<Transaction, 'id'>) => void;
   removeTransaction: (id: string) => void;
   addLoyaltyPoints: (points: number) => void;
+  isHydrated: boolean;
 };
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
 
 const LOW_BALANCE_THRESHOLD = 10.00;
 
-
 export function WalletProvider({ children }: { children: ReactNode }) {
   const { preferences, setPreference, isHydrated } = useUserPreferences();
-  const { toast } = useToast();
-  const { t } = useLanguage();
 
-  const balance = preferences?.walletBalance || 0;
-  const transactions = preferences?.transactions || [];
-  const loyaltyPoints = preferences?.loyaltyPoints || 0;
+  const balance = preferences?.walletBalance ?? 0;
+  const transactions = preferences?.transactions ?? [];
+  const loyaltyPoints = preferences?.loyaltyPoints ?? 0;
+
   const isLowBalance = balance < LOW_BALANCE_THRESHOLD;
 
   const deductBalance = useCallback((amount: number) => {
-    const newBalance = balance - amount;
+    const newBalance = (preferences?.walletBalance ?? 0) - amount;
     setPreference('walletBalance', newBalance);
-  }, [balance, setPreference]);
+  }, [preferences?.walletBalance, setPreference]);
   
   const addBalance = useCallback((amount: number) => {
-    const newBalance = balance + amount;
+    const newBalance = (preferences?.walletBalance ?? 0) + amount;
     setPreference('walletBalance', newBalance);
-  }, [balance, setPreference]);
+  }, [preferences?.walletBalance, setPreference]);
 
   const addTransaction = useCallback((transaction: Omit<Transaction, 'id'>) => {
+    const currentTransactions = preferences?.transactions ?? [];
     const newTransaction = { ...transaction, id: uuidv4() };
-    const updatedTransactions = [newTransaction, ...transactions];
+    const updatedTransactions = [newTransaction, ...currentTransactions];
     setPreference('transactions', updatedTransactions);
-  }, [transactions, setPreference]);
+  }, [preferences?.transactions, setPreference]);
   
   const removeTransaction = useCallback((id: string) => {
-    const newTransactions = transactions.filter(tx => tx.id !== id);
+    const currentTransactions = preferences?.transactions ?? [];
+    const newTransactions = currentTransactions.filter(tx => tx.id !== id);
     setPreference('transactions', newTransactions);
-  }, [transactions, setPreference]);
+  }, [preferences?.transactions, setPreference]);
   
   const addLoyaltyPoints = useCallback((points: number) => {
-    setPreference('loyaltyPoints', loyaltyPoints + points);
-  }, [loyaltyPoints, setPreference]);
+    const currentPoints = preferences?.loyaltyPoints ?? 0;
+    setPreference('loyaltyPoints', currentPoints + points);
+  }, [preferences?.loyaltyPoints, setPreference]);
   
-  const value = { balance, transactions, loyaltyPoints, deductBalance, addBalance, addTransaction, removeTransaction, addLoyaltyPoints, isLowBalance };
-
-  if (!isHydrated) {
-    return null; 
-  }
+  const value = { 
+    balance, 
+    transactions, 
+    loyaltyPoints, 
+    deductBalance, 
+    addBalance, 
+    addTransaction, 
+    removeTransaction, 
+    addLoyaltyPoints, 
+    isLowBalance,
+    isHydrated
+  };
 
   return (
     <WalletContext.Provider value={value}>

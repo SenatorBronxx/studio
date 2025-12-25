@@ -30,19 +30,19 @@ export function PlacesProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   const { t } = useLanguage();
 
-  const places = preferences?.savedPlaces || [];
+  const places = preferences?.savedPlaces ?? [];
 
   const addOrUpdatePlace = useCallback((place: NewSavedPlace | SavedPlace) => {
-    const currentPlaces = preferences?.savedPlaces || [];
+    const currentPlaces = preferences?.savedPlaces ?? [];
     let newPlaces: SavedPlace[];
 
     if ('id' in place && place.id) { // Update existing
       const existingIndex = currentPlaces.findIndex(p => p.id === place.id);
       if (existingIndex > -1) {
         newPlaces = [...currentPlaces];
-        newPlaces[existingIndex] = { ...newPlaces[existingIndex], ...place };
+        newPlaces[existingIndex] = { ...newPlaces[existingIndex], ...place } as SavedPlace;
       } else {
-        newPlaces = [...currentPlaces, { ...place, id: place.id || uuidv4() } as SavedPlace];
+        newPlaces = [...currentPlaces, { ...place, id: place.id } as SavedPlace];
       }
     } else { // Add new
         newPlaces = [...currentPlaces, { ...place, id: uuidv4() } as SavedPlace];
@@ -55,16 +55,16 @@ export function PlacesProvider({ children }: { children: ReactNode }) {
         description: t('addressSavedSuccessfully'),
     });
 
-  }, [preferences, setPreference, t, toast]);
+  }, [preferences?.savedPlaces, setPreference, t, toast]);
 
   const removePlace = useCallback((id: string) => {
-    const currentPlaces = preferences?.savedPlaces || [];
+    const currentPlaces = preferences?.savedPlaces ?? [];
     const newPlaces = currentPlaces.filter(p => p.id !== id);
     setPreference('savedPlaces', newPlaces);
     toast({
         title: t('placeRemoved'),
     });
-  }, [preferences, setPreference, t, toast]);
+  }, [preferences?.savedPlaces, setPreference, t, toast]);
 
   const value = { places, addOrUpdatePlace, removePlace, isHydrated };
 

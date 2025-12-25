@@ -41,7 +41,7 @@ const TripContext = createContext<TripContextType | undefined>(undefined);
 
 export function TripProvider({ children }: { children: ReactNode }) {
     const { preferences, setPreference, isHydrated } = useUserPreferences();
-    const activeTrip = preferences?.activeTrip || null;
+    const activeTrip = preferences?.activeTrip ?? null;
 
     const setActiveTrip = useCallback((trip: ActiveTrip | null) => {
         setPreference('activeTrip', trip);
@@ -58,13 +58,13 @@ export function TripProvider({ children }: { children: ReactNode }) {
     }, [activeTrip, setPreference]);
 
     const setCurrentStopIndex = useCallback((index: number) => {
-        if (!activeTrip) return null;
+        if (!activeTrip) return;
         const updatedTrip = { ...activeTrip, currentStopIndex: index };
         setPreference('activeTrip', updatedTrip);
     }, [activeTrip, setPreference]);
     
     const updateActiveTripBus = useCallback((bus: BusData) => {
-        if (!activeTrip) return null;
+        if (!activeTrip) return;
         const updatedTrip = { ...activeTrip, bus };
         setPreference('activeTrip', updatedTrip);
     }, [activeTrip, setPreference]);
@@ -78,10 +78,6 @@ export function TripProvider({ children }: { children: ReactNode }) {
         isHydrated,
         setCurrentStopIndex
     };
-    
-    if (!isHydrated) {
-        return null;
-    }
 
     return (
         <TripContext.Provider value={value}>

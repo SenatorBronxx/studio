@@ -22,23 +22,23 @@ const NotificationSettingsContext = createContext<NotificationSettingsContextTyp
 export function NotificationSettingsProvider({ children }: { children: ReactNode }) {
   const { preferences, setPreference, isHydrated } = useUserPreferences();
 
-  const settings = preferences?.notificationSettings || {
+  const settings = preferences?.notificationSettings ?? {
     routeAlerts: true,
     bookingAlerts: true,
     systemAlerts: false,
   };
 
   const setRouteAlerts = useCallback((value: boolean) => {
-    setPreference('notificationSettings', { ...settings, routeAlerts: value });
-  }, [setPreference, settings]);
+    setPreference('notificationSettings', { ...(preferences?.notificationSettings ?? settings), routeAlerts: value });
+  }, [setPreference, preferences?.notificationSettings, settings]);
   
   const setBookingAlerts = useCallback((value: boolean) => {
-    setPreference('notificationSettings', { ...settings, bookingAlerts: value });
-  }, [setPreference, settings]);
+    setPreference('notificationSettings', { ...(preferences?.notificationSettings ?? settings), bookingAlerts: value });
+  }, [setPreference, preferences?.notificationSettings, settings]);
 
   const setSystemAlerts = useCallback((value: boolean) => {
-    setPreference('notificationSettings', { ...settings, systemAlerts: value });
-  }, [setPreference, settings]);
+    setPreference('notificationSettings', { ...(preferences?.notificationSettings ?? settings), systemAlerts: value });
+  }, [setPreference, preferences?.notificationSettings, settings]);
   
   const value = {
     ...settings,

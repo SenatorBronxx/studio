@@ -2,7 +2,7 @@
 'use client';
 
 import { doc, setDoc, updateDoc } from 'firebase/firestore';
-import { createContext, useContext, ReactNode, useCallback, useMemo } from 'react';
+import { createContext, useContext, ReactNode, useCallback, useMemo, useEffect } from 'react';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
@@ -57,7 +57,7 @@ export interface UserPreferences {
 type UserPreferencesUpdate = Partial<UserPreferences>;
 
 type UserPreferencesContextType = {
-  preferences: UserPreferences | null;
+  preferences: UserPreferences;
   setPreference: <K extends keyof UserPreferences>(key: K, value: UserPreferences[K]) => void;
   updatePreferences: (updates: UserPreferencesUpdate) => void;
   isHydrated: boolean;
@@ -71,7 +71,8 @@ const UserPreferencesContext = createContext<UserPreferencesContextType | undefi
 
 export const PREFERENCES_DOC_ID = 'user-prefs';
 
-const defaultPreferences: Omit<UserPreferences, 'id'> = {
+const defaultPreferences: UserPreferences = {
+    id: PREFERENCES_DOC_ID,
     language: 'en-us',
     walletBalance: 0.00,
     loyaltyPoints: 0,
@@ -105,22 +106,17 @@ export function UserPreferencesProvider({ children }: { children: ReactNode }) {
     return doc(firestore, 'users', user.uid, 'preferences', PREFERENCES_DOC_ID);
   }, [user, firestore]);
 
-  const { data: preferences, isLoading, error } = useDoc<UserPreferences>(userPrefsRef);
+  const { data, isLoading, error } = useDoc<UserPreferences>(userPrefsRef);
   const isHydrated = !isUserLoading && !isLoading;
 
   const createInitialPreferences = useCallback(async () => {
     if (!userPrefsRef) return;
     
-    const initialData: UserPreferences = {
-        id: PREFERENCES_DOC_ID,
-        ...defaultPreferences
-    };
-    
-    setDoc(userPrefsRef, initialData).catch(err => {
+    setDoc(userPrefsRef, defaultPreferences).catch(err => {
       const permissionError = new FirestorePermissionError({
         path: userPrefsRef.path,
         operation: 'create',
-        requestResourceData: initialData
+        requestResourceData: defaultPreferences
       });
       errorEmitter.emit('permission-error', permissionError);
     });
@@ -128,11 +124,11 @@ export function UserPreferencesProvider({ children }: { children: ReactNode }) {
 
   // When the hook is hydrated and there's no data and no error, it's a new user.
   // We need to create their initial preferences document.
-  useMemo(() => {
-    if (isHydrated && !preferences && !error) {
+  useEffect(() => {
+    if (isHydrated && !data && !error) {
       createInitialPreferences();
     }
-  }, [isHydrated, preferences, error, createInitialPreferences]);
+  }, [isHydrated, data, error, createInitialPreferences]);
 
 
   const setPreference = useCallback(<K extends keyof UserPreferences>(key: K, value: UserPreferences[K]) => {
@@ -140,6 +136,8 @@ export function UserPreferencesProvider({ children }: { children: ReactNode }) {
       
       const updateData = { [key]: value };
 
+      // Use updateDoc for targeted updates, which is more efficient.
+      // Firestore's `onSnapshot` listener in `useDoc` will automatically update local state.
       updateDoc(userPrefsRef, updateData).catch(err => {
         const permissionError = new FirestorePermissionError({
             path: userPrefsRef.path,
@@ -165,7 +163,8 @@ export function UserPreferencesProvider({ children }: { children: ReactNode }) {
   }, [userPrefsRef]);
 
   const value = {
-    preferences: preferences || (defaultPreferences as UserPreferences),
+    // Provide the fetched preferences, or the default state if data is null (e.g., for a new user before the doc is created)
+    preferences: data || defaultPreferences,
     setPreference,
     updatePreferences,
     isHydrated,

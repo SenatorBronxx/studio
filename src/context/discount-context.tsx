@@ -24,8 +24,8 @@ const DiscountContext = createContext<DiscountContextType | undefined>(undefined
 export function DiscountProvider({ children }: { children: ReactNode }) {
   const { preferences, setPreference, isHydrated } = useUserPreferences();
   
-  const activeDiscount = preferences?.activeDiscount || null;
-  const isDiscountBannerDismissed = preferences?.isDiscountBannerDismissed || false;
+  const activeDiscount = preferences?.activeDiscount ?? null;
+  const isDiscountBannerDismissed = preferences?.isDiscountBannerDismissed ?? false;
 
   const activateDiscount = useCallback((discount: Discount) => {
     setPreference('activeDiscount', discount);

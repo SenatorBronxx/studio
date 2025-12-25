@@ -22,23 +22,23 @@ const SecuritySettingsContext = createContext<SecuritySettingsContextType | unde
 export function SecuritySettingsProvider({ children }: { children: ReactNode }) {
   const { preferences, setPreference, isHydrated } = useUserPreferences();
 
-  const settings = preferences?.securitySettings || {
+  const settings = preferences?.securitySettings ?? {
     isPinEnabled: false,
     isBiometricEnabled: true,
     is2faEnabled: false,
   };
 
   const setIsPinEnabled = useCallback((value: boolean) => {
-    setPreference('securitySettings', { ...settings, isPinEnabled: value });
-  }, [setPreference, settings]);
+    setPreference('securitySettings', { ...(preferences?.securitySettings ?? settings), isPinEnabled: value });
+  }, [setPreference, preferences?.securitySettings, settings]);
   
   const setIsBiometricEnabled = useCallback((value: boolean) => {
-    setPreference('securitySettings', { ...settings, isBiometricEnabled: value });
-  }, [setPreference, settings]);
+    setPreference('securitySettings', { ...(preferences?.securitySettings ?? settings), isBiometricEnabled: value });
+  }, [setPreference, preferences?.securitySettings, settings]);
 
   const setIs2faEnabled = useCallback((value: boolean) => {
-    setPreference('securitySettings', { ...settings, is2faEnabled: value });
-  }, [setPreference, settings]);
+    setPreference('securitySettings', { ...(preferences?.securitySettings ?? settings), is2faEnabled: value });
+  }, [setPreference, preferences?.securitySettings, settings]);
   
   const value = {
     ...settings,
