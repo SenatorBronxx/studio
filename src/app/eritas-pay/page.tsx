@@ -60,7 +60,7 @@ export default function EritasPayPage() {
   const { user, isUserLoading } = useUser();
   const router = useRouter();
   const maxBalance = 400.00;
-  const progressPercentage = (balance / maxBalance) * 100;
+  const progressPercentage = Math.min((balance / maxBalance) * 100, 100);
   
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isQrSheetOpen, setIsQrSheetOpen] = useState(false);
