@@ -41,25 +41,26 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const loyaltyPoints = preferences?.loyaltyPoints || 0;
   const isLowBalance = balance < LOW_BALANCE_THRESHOLD;
 
-  const deductBalance = (amount: number) => {
-    setPreference('walletBalance', balance - amount);
-  };
+  const deductBalance = useCallback((amount: number) => {
+    const newBalance = balance - amount;
+    setPreference('walletBalance', newBalance);
+  }, [balance, setPreference]);
   
-  const addBalance = (amount: number) => {
-    setPreference('walletBalance', balance + amount);
-  };
+  const addBalance = useCallback((amount: number) => {
+    const newBalance = balance + amount;
+    setPreference('walletBalance', newBalance);
+  }, [balance, setPreference]);
 
-  const addTransaction = (transaction: Omit<Transaction, 'id'>) => {
+  const addTransaction = useCallback((transaction: Omit<Transaction, 'id'>) => {
     const newTransaction = { ...transaction, id: uuidv4() };
-    // Add the new transaction to the beginning of the array
     const updatedTransactions = [newTransaction, ...transactions];
     setPreference('transactions', updatedTransactions);
-  };
+  }, [transactions, setPreference]);
   
-  const removeTransaction = (id: string) => {
+  const removeTransaction = useCallback((id: string) => {
     const newTransactions = transactions.filter(tx => tx.id !== id);
     setPreference('transactions', newTransactions);
-  };
+  }, [transactions, setPreference]);
   
   const addLoyaltyPoints = useCallback((points: number) => {
     setPreference('loyaltyPoints', loyaltyPoints + points);
