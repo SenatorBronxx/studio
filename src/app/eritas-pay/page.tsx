@@ -220,7 +220,6 @@ export default function EritasPayPage() {
                         {t('lowBalanceWarningToastDescription')}
                     </div>
                 )}
-                {!showLowBalanceMessage && <Badge variant="secondary" className="mt-2">{t('cashBackOnBusTickets')}</Badge>}
               </CardContent>
             </div>
           </Card>
