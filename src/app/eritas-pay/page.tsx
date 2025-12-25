@@ -13,7 +13,8 @@ import {
   Bus,
   ArrowDownToLine,
   AlertCircle,
-  Loader2
+  Loader2,
+  Shield,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -215,6 +216,10 @@ export default function EritasPayPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-4xl font-bold">GH₵ {balance.toFixed(2)}</div>
+                <Badge className="bg-green-100 hover:bg-green-100 text-green-800 border-green-200 mt-2">
+                  <Shield className="mr-1 h-3 w-3" />
+                  Secured
+                </Badge>
                 {showLowBalanceMessage && isLowBalance && (
                     <div className="mt-2 text-sm text-destructive-foreground bg-destructive/90 p-3 rounded-lg animate-in fade-in-50">
                         {t('lowBalanceWarningToastDescription')}
@@ -324,8 +329,7 @@ export default function EritasPayPage() {
                             <Badge>{t('seat')} {selectedSeat}</Badge>
                         </div>
                     </div>
-                </div>
-            </SheetContent>
+                </SheetContent>
         </Sheet>
     </div>
   );
