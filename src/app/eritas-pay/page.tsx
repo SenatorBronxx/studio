@@ -233,7 +233,6 @@ export default function EritasPayPage() {
                         <p className="text-sm font-mono text-muted-foreground">GH₵ {balance.toFixed(2)} / GH₵ {maxBalance.toFixed(2)}</p>
                     </div>
                     <Progress value={progressPercentage} className="h-2" />
-                    <p className="text-xs text-muted-foreground mt-2">{t('increaseLimitByVerifying')}</p>
                 </CardContent>
             </Card>
 
