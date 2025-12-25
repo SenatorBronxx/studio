@@ -1,7 +1,8 @@
 
 'use client';
 
-import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
+import { createContext, useContext, ReactNode, useCallback } from 'react';
+import { useUserPreferences } from './user-preferences-context';
 
 type BusData = {
     id: string;
@@ -39,81 +40,34 @@ type TripContextType = {
 const TripContext = createContext<TripContextType | undefined>(undefined);
 
 export function TripProvider({ children }: { children: ReactNode }) {
-    const [activeTrip, setActiveTripState] = useState<ActiveTrip | null>(null);
-    const [isHydrated, setIsHydrated] = useState(false);
-
-    // This context will now use localStorage for client-side persistence only.
-    // The data is not yet synced with Firestore.
-    useEffect(() => {
-        try {
-            const storedTrip = localStorage.getItem('eritas-active-trip');
-            if (storedTrip) {
-                const parsedTrip = JSON.parse(storedTrip);
-                if (parsedTrip && parsedTrip.bus && parsedTrip.destination) {
-                    setActiveTripState(parsedTrip);
-                }
-            }
-        } catch (error) {
-            console.error("Failed to read active trip from localStorage", error);
-        }
-        setIsHydrated(true);
-    }, []);
+    const { preferences, setPreference, isHydrated } = useUserPreferences();
+    const activeTrip = preferences?.activeTrip || null;
 
     const setActiveTrip = useCallback((trip: ActiveTrip | null) => {
-        setActiveTripState(trip);
-        try {
-            if (trip) {
-                localStorage.setItem('eritas-active-trip', JSON.stringify(trip));
-            } else {
-                localStorage.removeItem('eritas-active-trip');
-            }
-        } catch (error) {
-            console.error("Failed to write active trip to localStorage", error);
-        }
-    }, []);
+        setPreference('activeTrip', trip);
+    }, [setPreference]);
 
     const clearActiveTrip = useCallback(() => {
         setActiveTrip(null);
     }, [setActiveTrip]);
 
     const setDynamicEta = useCallback((eta: number) => {
-        setActiveTripState(prevTrip => {
-            if (!prevTrip) return null;
-            const updatedTrip = { ...prevTrip, eta: Math.max(0, eta) };
-            try {
-                localStorage.setItem('eritas-active-trip', JSON.stringify(updatedTrip));
-            } catch (error) {
-                console.error("Failed to write active trip to localStorage", error);
-            }
-            return updatedTrip;
-        });
-    }, []);
+        if (!activeTrip) return;
+        const updatedTrip = { ...activeTrip, eta: Math.max(0, eta) };
+        setPreference('activeTrip', updatedTrip);
+    }, [activeTrip, setPreference]);
 
     const setCurrentStopIndex = useCallback((index: number) => {
-        setActiveTripState(prevTrip => {
-            if (!prevTrip) return null;
-            const updatedTrip = { ...prevTrip, currentStopIndex: index };
-             try {
-                localStorage.setItem('eritas-active-trip', JSON.stringify(updatedTrip));
-            } catch (error) {
-                console.error("Failed to write active trip to localStorage", error);
-            }
-            return updatedTrip;
-        });
-    }, []);
+        if (!activeTrip) return null;
+        const updatedTrip = { ...activeTrip, currentStopIndex: index };
+        setPreference('activeTrip', updatedTrip);
+    }, [activeTrip, setPreference]);
     
     const updateActiveTripBus = useCallback((bus: BusData) => {
-        setActiveTripState(prevTrip => {
-            if (!prevTrip) return null;
-            const updatedTrip = { ...prevTrip, bus };
-            try {
-                localStorage.setItem('eritas-active-trip', JSON.stringify(updatedTrip));
-            } catch (error) {
-                console.error("Failed to write active trip to localStorage", error);
-            }
-            return updatedTrip;
-        });
-    }, []);
+        if (!activeTrip) return null;
+        const updatedTrip = { ...activeTrip, bus };
+        setPreference('activeTrip', updatedTrip);
+    }, [activeTrip, setPreference]);
 
     const value = {
         activeTrip,

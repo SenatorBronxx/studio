@@ -7,6 +7,7 @@ import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import type { Track } from './music-context';
+import type { ActiveTrip } from './trip-context';
 
 // --- Types ---
 
@@ -37,6 +38,7 @@ export interface UserPreferences {
   transactions: Transaction[];
   savedSongs: Track[];
   activeDiscount: Discount | null;
+  activeTrip: ActiveTrip | null;
   isDiscountBannerDismissed: boolean;
   notificationSettings: {
     routeAlerts: boolean;
@@ -76,6 +78,7 @@ const defaultPreferences: Omit<UserPreferences, 'id'> = {
     transactions: [],
     savedSongs: [],
     activeDiscount: null,
+    activeTrip: null,
     isDiscountBannerDismissed: false,
     notificationSettings: {
         routeAlerts: true,
