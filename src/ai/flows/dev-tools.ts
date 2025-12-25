@@ -61,18 +61,19 @@ const deleteAllUsersFlow = ai.defineFlow(
       // List all users from Firebase Authentication
       const listUsersResult = await auth.listUsers(1000); // Batched in 1000s
 
+      if (listUsersResult.users.length === 0) {
+        return { deletedUsersCount: 0, errors: [] };
+      }
+
       const userDeletionPromises = listUsersResult.users.map(async (userRecord) => {
         const uid = userRecord.uid;
         try {
-          // 1. Delete the user from Firebase Authentication
-          await auth.deleteUser(uid);
-
-          // 2. Delete the user's document from the 'users' collection in Firestore
+          // 1. Delete the user's document from the 'users' collection in Firestore
           const userDocRef = db.collection('users').doc(uid);
           await userDocRef.delete();
           
-          // Optionally, you could also delete subcollections if they exist
-          // For example: await db.recursiveDelete(userDocRef);
+          // 2. Delete the user from Firebase Authentication
+          await auth.deleteUser(uid);
 
           deletedUsersCount++;
         } catch (error: any) {
