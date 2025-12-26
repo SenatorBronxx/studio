@@ -343,7 +343,8 @@
     "finalDestination": "Final Destination",
     "clearNotificationsTitle": "Clear all notifications?",
     "clearNotificationsDescription": "Are you sure you want to clear all your notifications? This action cannot be undone.",
-    "confirmClear": "Clear"
+    "confirmClear": "Clear",
+    "noRecentActivity": "No recent activity to show."
 }
 
     
