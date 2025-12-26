@@ -17,7 +17,6 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { BusSeatingChart } from '@/components/bus-seating-chart';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
-import { useWallet } from '@/context/wallet-context';
 import Image from 'next/image';
 import { v4 as uuidv4 } from 'uuid';
 import { useLanguage } from '@/context/language-context';
@@ -100,7 +99,6 @@ export default function SearchPage() {
   const [isHydrated, setIsHydrated] = useState(false);
 
   const { toast } = useToast();
-  const { balance, deductBalance, addTransaction, addLoyaltyPoints, addBalance: refundBalance } = useWallet();
   const { activeTrip, setActiveTrip, setDynamicEta, isHydrated: isTripHydrated, clearActiveTrip, setCurrentStopIndex, isOnBus } = useTrip();
   const { t } = useLanguage();
   
@@ -235,28 +233,10 @@ export default function SearchPage() {
     let farePerSeat = stop.fare;
     const totalFare = farePerSeat * selectedSeats.length;
 
-    if (balance < totalFare) {
-      toast({
-        variant: "destructive",
-        title: t('insufficientBalanceToastTitle'),
-        description: t('insufficientBalanceToastDescription'),
-      });
-      return;
-    }
-
     setIsBoarding(true);
     setTimeout(() => {
         const tripId = uuidv4();
         setIsBoarding(false);
-        deductBalance(totalFare);
-
-        const newTransaction = {
-            id: tripId,
-            type: 'payment',
-            plate: selectedBus.plate || 'N/A',
-            amount: -totalFare,
-        };
-        addTransaction(newTransaction);
         
         let updatedBus : BusData | undefined;
         const updatedBuses = buses.map(b => {
@@ -284,9 +264,6 @@ export default function SearchPage() {
           setActiveTrip(newTrip);
         }
         
-        const pointsEarned = Math.floor(stop.fare);
-        addLoyaltyPoints(pointsEarned);
-
         const primarySeat = selectedSeats[0];
         const qrData = { tripId: tripId, bus: selectedBus.plate, seat: primarySeat, from: stop.name, to: selectedBus.finalDestination.name, fare: totalFare / selectedSeats.length, timestamp: new Date().toISOString() };
         const encodedQrData = encodeURIComponent(JSON.stringify(qrData));
@@ -334,28 +311,11 @@ export default function SearchPage() {
             setNotifications(prev => [reservedSeatsNotification, ...prev]);
         }
     
-        if (pointsEarned > 0) {
-            toast({
-                title: t('loyaltyPointsAwarded'),
-                description: t('loyaltyPointsAwardedDescription', { points: pointsEarned }),
-            });
-        }
-
     }, 1500);
   }
 
   const handleCancelTrip = () => {
     if (!activeTrip) return;
-
-    const tripId = activeTrip.id;
-    const allStops = [...activeTrip.bus.stops, activeTrip.bus.finalDestination];
-    const destinationStop = allStops.find(s => s.name === activeTrip.destination);
-    if (!destinationStop) return;
-
-    let fareToRefund = destinationStop.fare * activeTrip.seats.length;
-    
-    refundBalance(fareToRefund);
-    addTransaction({ type: 'top-up', plate: `Refund for ${activeTrip.bus.plate}`, amount: fareToRefund });
 
     const updatedBuses = buses.map(b => {
       if (b.id === activeTrip.bus.id) {
@@ -373,10 +333,9 @@ export default function SearchPage() {
 
     toast({
       title: t('tripCancelled'),
-      description: t('tripCancelledDescription', { fare: fareToRefund.toFixed(2) }),
     });
 
-    setNotifications(prev => prev.filter(n => n.tripId !== tripId));
+    setNotifications(prev => prev.filter(n => n.tripId !== activeTrip.id));
   };
   
   const handleSeatSelect = (seatId: string) => {

@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Award, Bus, History } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useWallet } from '@/context/wallet-context';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useLanguage } from '@/context/language-context';
@@ -13,10 +12,10 @@ import { BottomNav } from '@/components/bottom-nav';
 
 export default function LoyaltyPage() {
   const router = useRouter();
-  const { transactions, loyaltyPoints } = useWallet();
   const { t } = useLanguage();
 
-  const tripHistory = transactions.filter((tx) => tx.type === 'payment');
+  const tripHistory: any[] = [];
+  const loyaltyPoints = 0;
 
   const pointsHistory = tripHistory.map(trip => ({
     ...trip,

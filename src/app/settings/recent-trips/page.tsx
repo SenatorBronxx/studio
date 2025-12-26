@@ -5,17 +5,14 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Bus, History } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useWallet } from '@/context/wallet-context';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useLanguage } from '@/context/language-context';
 
 export default function RecentTripsPage() {
   const router = useRouter();
-  const { transactions } = useWallet();
   const { t } = useLanguage();
-
-  const tripHistory = transactions.filter((tx) => tx.type === 'payment');
+  const tripHistory: any[] = [];
 
   return (
     <div className="flex flex-col min-h-screen bg-background">

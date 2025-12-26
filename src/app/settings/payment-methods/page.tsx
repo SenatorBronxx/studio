@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, CreditCard, Plus, Trash2, Wallet, Smartphone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useWallet } from '@/context/wallet-context';
 import { VisaIcon } from '@/components/icons/visa';
 import { MastercardIcon } from '@/components/icons/mastercard';
 import {
@@ -34,8 +33,8 @@ const mobileMoneyAccounts = [
 
 export default function PaymentMethodsPage() {
   const router = useRouter();
-  const { balance } = useWallet();
   const { t } = useLanguage();
+  const balance = 0;
 
   const getCardIcon = (type: string) => {
     switch (type) {

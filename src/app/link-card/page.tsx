@@ -11,14 +11,12 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { VisaIcon } from '@/components/icons/visa';
 import { CardPattern } from '@/components/icons/card-pattern';
-import { useWallet } from '@/context/wallet-context';
 import { useLanguage } from '@/context/language-context';
 import Image from 'next/image';
 
 export default function LinkCardPage() {
     const router = useRouter();
     const { toast } = useToast();
-    const { addBalance, addTransaction } = useWallet();
     const { t } = useLanguage();
     const [isProcessing, setIsProcessing] = useState(false);
     const [cardHolder, setCardHolder] = useState('');
@@ -80,18 +78,12 @@ export default function LinkCardPage() {
         }
         setIsToppingUp(true);
         setTimeout(() => {
-            addBalance(amount);
-            addTransaction({
-                type: 'top-up',
-                plate: t('visaCardTopUp'),
-                amount: amount,
-            });
             toast({
                 title: t('topUpSuccessfulToastTitle'),
                 description: t('topUpSuccessfulToastDescription', { amount: amount.toFixed(2) }),
             });
             setIsToppingUp(false);
-            router.push('/eritas-pay');
+            router.push('/home');
         }, 1500);
     };
 

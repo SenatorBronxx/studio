@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Bus, History, QrCode } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useWallet } from '@/context/wallet-context';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useLanguage } from '@/context/language-context';
@@ -13,10 +12,8 @@ import Image from 'next/image';
 
 export default function TripQrsPage() {
   const router = useRouter();
-  const { transactions } = useWallet();
   const { t } = useLanguage();
-
-  const tripHistory = transactions.filter((tx) => tx.type === 'payment');
+  const tripHistory: any[] = [];
 
   const generateQrCodeUrl = (tripData: any) => {
     const encodedData = encodeURIComponent(JSON.stringify(tripData));

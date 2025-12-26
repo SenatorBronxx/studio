@@ -1,7 +1,7 @@
 
 'use client';
 
-import { LayoutGrid, Music, Search, Utensils, Wallet } from 'lucide-react';
+import { LayoutGrid, Music, Search, Utensils } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -13,9 +13,9 @@ export function BottomNav() {
 
   const navItems = [
     { href: '/home', icon: LayoutGrid, labelKey: 'home' },
-    { href: '/eritas-pay', icon: Wallet, labelKey: 'eritasPay' },
     { href: '/search', icon: Search, labelKey: 'findABus' },
     { href: '/food', icon: Utensils, labelKey: 'food' },
+    { href: '/music', icon: Music, labelKey: 'music' },
   ];
 
   return (

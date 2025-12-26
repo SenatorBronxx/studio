@@ -40,7 +40,6 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { BusSeatingChart } from '@/components/bus-seating-chart';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
-import { useWallet } from '@/context/wallet-context';
 import { v4 as uuidv4 } from 'uuid';
 import { Map } from '@/components/map';
 import { useLanguage } from '@/context/language-context';
@@ -121,7 +120,6 @@ export default function HomePage() {
   const router = useRouter();
   const user = mockUser; // Use mock user
   const { toast } = useToast();
-  const { balance, deductBalance, addTransaction, addLoyaltyPoints, addBalance: refundBalance, isLowBalance } = useWallet();
   const { activeTrip, setActiveTrip, isHydrated: isTripHydrated, setDynamicEta, clearActiveTrip, setCurrentStopIndex, isOnBus } = useTrip();
   const { t } = useLanguage();
   
@@ -201,27 +199,6 @@ export default function HomePage() {
     return () => clearInterval(interval);
   }, [activeTrip, isOnBus, setDynamicEta, t, toast, clearActiveTrip, setCurrentStopIndex, busHasArrived]);
 
-  useEffect(() => {
-    if (isLowBalance) {
-        if (!notifications.some(n => n.id === -1)) {
-            const lowBalanceNotification: Notification = {
-                id: -1,
-                title: t('lowBalanceWarningToastTitle'),
-                description: t('lowBalanceWarningToastDescription'),
-                action: (
-                    <Button onClick={() => router.push('/top-up')} size="sm">
-                        <ArrowUpRight className="mr-2 h-4 w-4" />
-                        {t('topUp')}
-                    </Button>
-                ),
-            };
-            setNotifications(prev => [lowBalanceNotification, ...prev.filter(n => n.id !== -1)]);
-        }
-    } else {
-        setNotifications(prev => prev.filter(n => n.id !== -1));
-    }
-  }, [isLowBalance, t, router]);
-
 
   const handleSearch = () => {
     router.push(`/search?from=${encodeURIComponent(fromLocation)}&to=${encodeURIComponent(toLocation)}`);
@@ -260,24 +237,11 @@ export default function HomePage() {
     let farePerSeat = stop.fare;
     const totalFare = farePerSeat * selectedSeats.length;
 
-    if (balance < totalFare) {
-      toast({
-        variant: "destructive",
-        title: t('insufficientBalanceToastTitle'),
-        description: t('insufficientBalanceToastDescription'),
-      });
-      return;
-    }
-
     setIsBoarding(true);
     
     // Simulate API call and local state update
     setTimeout(() => {
         const tripId = uuidv4();
-        
-        deductBalance(totalFare);
-        const newTransaction = { id: tripId, type: 'payment', plate: selectedBus?.plate || 'N/A', amount: -totalFare };
-        addTransaction(newTransaction);
         
         const updatedBusForTrip = {
             ...selectedBus,
@@ -296,9 +260,6 @@ export default function HomePage() {
             currentStopIndex: -1,
         };
         setActiveTrip(newTrip);
-
-        const pointsEarned = Math.floor(totalFare);
-        addLoyaltyPoints(pointsEarned);
 
         const primarySeat = selectedSeats[0];
         const qrData = { tripId: tripId, bus: selectedBus.plate, seat: primarySeat, from: stop.name, to: selectedBus.finalDestination.name, fare: totalFare / selectedSeats.length, timestamp: new Date().toISOString() };
@@ -342,29 +303,12 @@ export default function HomePage() {
             setNotifications(prev => [reservedSeatsNotification, ...prev]);
         }
     
-        if (pointsEarned > 0) {
-            toast({
-                title: t('loyaltyPointsAwarded'),
-                description: t('loyaltyPointsAwardedDescription', { points: pointsEarned }),
-            });
-        }
         setIsBoarding(false);
     }, 1500);
   }
 
    const handleCancelTrip = async () => {
     if (!activeTrip) return;
-
-    const tripId = activeTrip.id;
-
-    const allStops = [...activeTrip.bus.stops, activeTrip.bus.finalDestination];
-    const destinationStop = allStops.find(s => s.name === activeTrip.destination);
-    if (!destinationStop) return; 
-
-    let fareToRefund = destinationStop.fare * activeTrip.seats.length;
-    
-    refundBalance(fareToRefund);
-    addTransaction({ type: 'top-up', plate: `Refund for ${activeTrip.bus.plate}`, amount: fareToRefund });
 
     clearActiveTrip();
     setSelectedBus(null);
@@ -373,10 +317,9 @@ export default function HomePage() {
 
     toast({
       title: t('tripCancelled'),
-      description: t('tripCancelledDescription', { fare: fareToRefund.toFixed(2) }),
     });
 
-    setNotifications(prev => prev.filter(n => n.tripId !== tripId));
+    setNotifications(prev => prev.filter(n => n.tripId !== activeTrip.id));
 
   };
 
@@ -454,8 +397,8 @@ export default function HomePage() {
                         <Bell className="h-5 w-5" />
                         {notifications.length > 0 && (
                             <span className="absolute -top-1 -right-1 flex h-4 w-4">
-                                <span className={cn("animate-ping absolute inline-flex h-full w-full rounded-full opacity-75", isLowBalance ? "bg-destructive" : "bg-primary")}></span>
-                                <span className={cn("relative inline-flex rounded-full h-4 w-4 text-primary-foreground text-xs items-center justify-center", isLowBalance ? "bg-destructive" : "bg-primary")}>
+                                <span className={cn("animate-ping absolute inline-flex h-full w-full rounded-full opacity-75", "bg-primary")}></span>
+                                <span className={cn("relative inline-flex rounded-full h-4 w-4 text-primary-foreground text-xs items-center justify-center", "bg-primary")}>
                                     {notifications.length}
                                 </span>
                             </span>
@@ -497,7 +440,7 @@ export default function HomePage() {
                                         <AlertDialogFooter>
                                         <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
                                         <AlertDialogAction
-                                            onClick={() => setNotifications(isLowBalance ? notifications.filter(n => n.id === -1) : [])}
+                                            onClick={() => setNotifications([])}
                                         >
                                             {t('confirmClear')}
                                         </AlertDialogAction>

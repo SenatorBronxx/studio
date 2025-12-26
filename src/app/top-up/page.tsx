@@ -9,7 +9,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { useWallet } from '@/context/wallet-context';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/context/language-context';
 import Image from 'next/image';
@@ -26,7 +25,6 @@ export default function TopUpPage() {
     const [amount, setAmount] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
     
-    const { addBalance, addTransaction } = useWallet();
     const router = useRouter();
     const { toast } = useToast();
     const { t } = useLanguage();
@@ -47,20 +45,13 @@ export default function TopUpPage() {
 
         // Simulate API call
         setTimeout(() => {
-            addBalance(topUpAmount);
-            addTransaction({
-                type: 'top-up',
-                plate: `${mobileMoneyNetworks.find(n => n.id === network)?.name || t('topUp')}`,
-                amount: topUpAmount,
-            });
-
             toast({
                 title: t('topUpSuccessfulToastTitle'),
                 description: t('topUpSuccessfulToastDescription', { amount: topUpAmount.toFixed(2) }),
             });
             
             setIsProcessing(false);
-            router.push('/eritas-pay');
+            router.push('/home');
 
         }, 1500);
     };
