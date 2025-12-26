@@ -10,10 +10,14 @@ import { Loader2 } from 'lucide-react';
 import { SignupSlideshow } from '@/components/signup-slideshow';
 import { useUserPreferences } from '@/context/user-preferences-context';
 import { IconMosaicBackground } from '@/components/icon-mosaic-background';
+import { doc, getDoc } from 'firebase/firestore';
+import { useFirebase } from '@/firebase';
+import { PREFERENCES_DOC_ID } from '@/context/user-preferences-context';
 
 export default function LoginPage() {
   const router = useRouter();
   const { user, isUserLoading } = useUser();
+  const { firestore } = useFirebase();
   const [showSlideshow, setShowSlideshow] = useState(false);
   const { isHydrated } = useUserPreferences();
 
@@ -28,9 +32,16 @@ export default function LoginPage() {
     // The useEffect hook will handle the redirect for existing users.
   }
   
-  const handleSignUpSuccess = () => {
-    // A new user has signed up, show the slideshow immediately.
-    setShowSlideshow(true);
+  const handleSignUpSuccess = async (userId: string) => {
+    // For a new user, check if they have any preferences set up.
+    // If not (which they won't), show the slideshow.
+    const prefsRef = doc(firestore, 'users', userId, 'preferences', PREFERENCES_DOC_ID);
+    const docSnap = await getDoc(prefsRef);
+    if (!docSnap.exists()) {
+        setShowSlideshow(true);
+    } else {
+        router.push('/home');
+    }
   }
 
   const handleFinishSlideshow = () => {
@@ -41,6 +52,7 @@ export default function LoginPage() {
       return <SignupSlideshow onFinish={handleFinishSlideshow} />;
   }
   
+  // This more robust check ensures we wait for both Firebase Auth and our custom preferences to be loaded.
   if (isUserLoading || (user && !isHydrated && !showSlideshow)) {
     return (
         <div className="flex h-screen w-full items-center justify-center bg-background">
@@ -51,6 +63,7 @@ export default function LoginPage() {
   
   // If user is loaded but we are supposed to show the slideshow, don't show the loader
   if (user && isHydrated && !showSlideshow) {
+      // This is a transitional state, showing a loader is fine.
       return (
         <div className="flex h-screen w-full items-center justify-center bg-background">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />

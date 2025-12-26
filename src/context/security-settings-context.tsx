@@ -19,26 +19,31 @@ type SecuritySettingsContextType = SecuritySettings & {
 
 const SecuritySettingsContext = createContext<SecuritySettingsContextType | undefined>(undefined);
 
-export function SecuritySettingsProvider({ children }: { children: ReactNode }) {
-  const { preferences, setPreference, isHydrated } = useUserPreferences();
-
-  const settings = preferences?.securitySettings ?? {
+const defaultSettings: SecuritySettings = {
     isPinEnabled: false,
     isBiometricEnabled: true,
     is2faEnabled: false,
-  };
+};
+
+export function SecuritySettingsProvider({ children }: { children: ReactNode }) {
+  const { preferences, setPreference, isHydrated } = useUserPreferences();
+
+  const settings = preferences?.securitySettings ?? defaultSettings;
 
   const setIsPinEnabled = useCallback((value: boolean) => {
-    setPreference('securitySettings', { ...(preferences?.securitySettings ?? settings), isPinEnabled: value });
-  }, [setPreference, preferences?.securitySettings, settings]);
+    const currentSettings = preferences?.securitySettings ?? defaultSettings;
+    setPreference('securitySettings', { ...currentSettings, isPinEnabled: value });
+  }, [setPreference, preferences?.securitySettings]);
   
   const setIsBiometricEnabled = useCallback((value: boolean) => {
-    setPreference('securitySettings', { ...(preferences?.securitySettings ?? settings), isBiometricEnabled: value });
-  }, [setPreference, preferences?.securitySettings, settings]);
+    const currentSettings = preferences?.securitySettings ?? defaultSettings;
+    setPreference('securitySettings', { ...currentSettings, isBiometricEnabled: value });
+  }, [setPreference, preferences?.securitySettings]);
 
   const setIs2faEnabled = useCallback((value: boolean) => {
-    setPreference('securitySettings', { ...(preferences?.securitySettings ?? settings), is2faEnabled: value });
-  }, [setPreference, preferences?.securitySettings, settings]);
+    const currentSettings = preferences?.securitySettings ?? defaultSettings;
+    setPreference('securitySettings', { ...currentSettings, is2faEnabled: value });
+  }, [setPreference, preferences?.securitySettings]);
   
   const value = {
     ...settings,

@@ -2,7 +2,7 @@
 'use client';
 
 import { doc, setDoc, updateDoc } from 'firebase/firestore';
-import { createContext, useContext, ReactNode, useCallback, useMemo, useEffect } from 'react';
+import { createContext, useContext, ReactNode, useCallback, useEffect } from 'react';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
@@ -57,12 +57,10 @@ export interface UserPreferences {
 type UserPreferencesUpdate = Partial<UserPreferences>;
 
 type UserPreferencesContextType = {
-  preferences: UserPreferences;
+  preferences: UserPreferences | null;
   setPreference: <K extends keyof UserPreferences>(key: K, value: UserPreferences[K]) => void;
   updatePreferences: (updates: UserPreferencesUpdate) => void;
   isHydrated: boolean;
-  isLoading: boolean;
-  error: Error | null;
 };
 
 const UserPreferencesContext = createContext<UserPreferencesContextType | undefined>(undefined);
@@ -107,6 +105,7 @@ export function UserPreferencesProvider({ children }: { children: ReactNode }) {
   }, [user, firestore]);
 
   const { data, isLoading, error } = useDoc<UserPreferences>(userPrefsRef);
+  
   const isHydrated = !isUserLoading && !isLoading;
 
   const createInitialPreferences = useCallback(async () => {
@@ -163,13 +162,11 @@ export function UserPreferencesProvider({ children }: { children: ReactNode }) {
   }, [userPrefsRef]);
 
   const value = {
-    // Provide the fetched preferences, or the default state if data is null (e.g., for a new user before the doc is created)
-    preferences: data || defaultPreferences,
+    // Provide the fetched preferences, or null if it doesn't exist yet
+    preferences: data,
     setPreference,
     updatePreferences,
     isHydrated,
-    isLoading,
-    error
   };
 
   return (

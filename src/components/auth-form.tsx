@@ -26,6 +26,7 @@ import {
   signInWithPopup,
   GoogleAuthProvider,
   createUserWithEmailAndPassword,
+  updateProfile,
 } from "firebase/auth";
 import { doc, setDoc, serverTimestamp, getDoc } from "firebase/firestore";
 import { useFirebase } from "@/firebase";
@@ -50,7 +51,7 @@ const signUpSchema = z.object({
 });
 
 type AuthFormProps = {
-  onSignUpSuccess: (name: string) => void;
+  onSignUpSuccess: (userId: string) => void;
   onSignInSuccess: () => void;
 };
 
@@ -148,14 +149,17 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
   const handleSignUp = async (values: z.infer<typeof signUpSchema>) => {
     setIsSubmitting(true);
     createUserWithEmailAndPassword(auth, values.email, values.password)
-      .then((userCredential) => {
+      .then(async (userCredential) => {
         const user = userCredential.user;
+        // Update Firebase Auth profile
+        await updateProfile(user, { displayName: `${values.firstName} ${values.lastName}` });
+        
         createUserProfileDocument(user, values.firstName, values.lastName);
         toast({
           title: t('signUpSuccessfulToastTitle'),
           description: t('signUpSuccessfulToastDescription'),
         });
-        onSignUpSuccess(values.firstName);
+        onSignUpSuccess(user.uid);
       })
       .catch(handleError)
       .finally(() => setIsSubmitting(false));
@@ -178,7 +182,6 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
         const userRef = doc(firestore, "users", user.uid);
         const userDoc = await getDoc(userRef);
 
-        // Check if the user document already exists in Firestore
         if (!userDoc.exists()) {
           // This is a new user signing up with social auth
           const nameParts = user.displayName?.split(' ') || ['New', 'User'];
@@ -186,7 +189,7 @@ export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
           const lastName = nameParts.slice(1).join(' ') || ' ';
           
           createUserProfileDocument(user, firstName, lastName);
-          onSignUpSuccess(firstName);
+          onSignUpSuccess(user.uid);
         } else {
           // Existing user signing in
           setDoc(userRef, { lastLogin: serverTimestamp() }, { merge: true }).catch(err => {

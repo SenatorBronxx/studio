@@ -16,6 +16,7 @@ type LanguageContextType = {
   language: string;
   setLanguage: (language: string) => void;
   t: (key: string, options?: Record<string, string | number>) => string;
+  isHydrated: boolean;
 };
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -41,12 +42,10 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     return translation;
   }, [language]);
   
-  if (!isHydrated) {
-    return null; // Or a loading spinner
-  }
+  const value = { language, setLanguage, t, isHydrated };
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+    <LanguageContext.Provider value={value}>
       {children}
     </LanguageContext.Provider>
   );

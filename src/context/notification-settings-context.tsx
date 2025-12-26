@@ -19,26 +19,31 @@ type NotificationSettingsContextType = NotificationSettings & {
 
 const NotificationSettingsContext = createContext<NotificationSettingsContextType | undefined>(undefined);
 
+const defaultSettings: NotificationSettings = {
+  routeAlerts: true,
+  bookingAlerts: true,
+  systemAlerts: false,
+};
+
 export function NotificationSettingsProvider({ children }: { children: ReactNode }) {
   const { preferences, setPreference, isHydrated } = useUserPreferences();
 
-  const settings = preferences?.notificationSettings ?? {
-    routeAlerts: true,
-    bookingAlerts: true,
-    systemAlerts: false,
-  };
+  const settings = preferences?.notificationSettings ?? defaultSettings;
 
   const setRouteAlerts = useCallback((value: boolean) => {
-    setPreference('notificationSettings', { ...(preferences?.notificationSettings ?? settings), routeAlerts: value });
-  }, [setPreference, preferences?.notificationSettings, settings]);
+    const currentSettings = preferences?.notificationSettings ?? defaultSettings;
+    setPreference('notificationSettings', { ...currentSettings, routeAlerts: value });
+  }, [setPreference, preferences?.notificationSettings]);
   
   const setBookingAlerts = useCallback((value: boolean) => {
-    setPreference('notificationSettings', { ...(preferences?.notificationSettings ?? settings), bookingAlerts: value });
-  }, [setPreference, preferences?.notificationSettings, settings]);
+    const currentSettings = preferences?.notificationSettings ?? defaultSettings;
+    setPreference('notificationSettings', { ...currentSettings, bookingAlerts: value });
+  }, [setPreference, preferences?.notificationSettings]);
 
   const setSystemAlerts = useCallback((value: boolean) => {
-    setPreference('notificationSettings', { ...(preferences?.notificationSettings ?? settings), systemAlerts: value });
-  }, [setPreference, preferences?.notificationSettings, settings]);
+    const currentSettings = preferences?.notificationSettings ?? defaultSettings;
+    setPreference('notificationSettings', { ...currentSettings, systemAlerts: value });
+  }, [setPreference, preferences?.notificationSettings]);
   
   const value = {
     ...settings,

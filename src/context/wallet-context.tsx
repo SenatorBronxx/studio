@@ -3,8 +3,6 @@
 
 import { createContext, useContext, ReactNode, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { useToast } from '@/hooks/use-toast';
-import { useLanguage } from './language-context';
 import { useUserPreferences } from './user-preferences-context';
 
 type Transaction = {
@@ -41,12 +39,14 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const isLowBalance = balance < LOW_BALANCE_THRESHOLD;
 
   const deductBalance = useCallback((amount: number) => {
-    const newBalance = (preferences?.walletBalance ?? 0) - amount;
+    const currentBalance = preferences?.walletBalance ?? 0;
+    const newBalance = currentBalance - amount;
     setPreference('walletBalance', newBalance);
   }, [preferences?.walletBalance, setPreference]);
   
   const addBalance = useCallback((amount: number) => {
-    const newBalance = (preferences?.walletBalance ?? 0) + amount;
+    const currentBalance = preferences?.walletBalance ?? 0;
+    const newBalance = currentBalance + amount;
     setPreference('walletBalance', newBalance);
   }, [preferences?.walletBalance, setPreference]);
 

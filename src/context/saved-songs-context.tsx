@@ -29,9 +29,9 @@ export function SavedSongsProvider({ children }: { children: ReactNode }) {
   }, [savedSongs]);
 
   const saveSong = useCallback((track: Track) => {
-    if (isSongSaved(track.id)) return;
-    
     const currentSavedSongs = preferences?.savedSongs ?? [];
+    if (currentSavedSongs.some(song => song.id === track.id)) return;
+    
     const newSavedSongs = [track, ...currentSavedSongs];
     setPreference('savedSongs', newSavedSongs);
 
@@ -39,7 +39,7 @@ export function SavedSongsProvider({ children }: { children: ReactNode }) {
       title: "Song Saved",
       description: `'${track.title}' has been added to your library.`,
     });
-  }, [isSongSaved, preferences?.savedSongs, setPreference, toast]);
+  }, [preferences?.savedSongs, setPreference, toast]);
 
   const unsaveSong = useCallback((trackId: string) => {
     const currentSavedSongs = preferences?.savedSongs ?? [];
