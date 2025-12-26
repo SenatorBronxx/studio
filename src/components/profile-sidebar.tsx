@@ -51,9 +51,6 @@ import { ThemeSwitcher } from './theme-switcher';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { useLanguage } from '@/context/language-context';
-import { useTrip } from '@/context/trip-context';
-import { usePlaces, type SavedPlace } from '@/context/places-context';
-import { PlacesDialog, PlaceAction } from './places-dialog';
 import { useState } from 'react';
 
 const menuItems = [
@@ -61,11 +58,6 @@ const menuItems = [
     { id: 'trips', icon: History, labelKey: 'recentTrips', href: '/settings/recent-trips' },
     { id: 'share', icon: Share2, labelKey: 'shareMyTrip' },
     { id: 'qr', icon: QrCode, labelKey: 'tripQrCodes', href: '/settings/trip-qrs' },
-    {
-        id: 'places',
-        icon: MapPin,
-        labelKey: 'savedPlaces',
-    },
     { id: 'loyalty', icon: Award, labelKey: 'loyaltyPoints', href: '/loyalty' },
 ];
 
@@ -82,10 +74,6 @@ export function ProfileSidebar() {
     const router = useRouter();
     const { toast } = useToast();
     const { language, setLanguage, t } = useLanguage();
-    const { activeTrip } = useTrip();
-    const { places, removePlace } = usePlaces();
-    const [dialogState, setDialogState] = useState<{ isOpen: boolean; action: PlaceAction; place?: SavedPlace | { type: 'home' | 'work' | 'other' } }>({ isOpen: false, action: 'add' });
-
 
     const handleLogout = () => {
         router.push('/');
@@ -112,15 +100,12 @@ export function ProfileSidebar() {
     };
 
     const handleShareTrip = () => {
-        if (!activeTrip) {
-            toast({
-                variant: 'destructive',
-                title: t('noActiveTripTitle'),
-                description: t('noActiveTripDescription'),
-            });
-            return;
-        }
-        router.push('/share-trip');
+        // Since active trip is removed, we show a toast
+        toast({
+            variant: 'destructive',
+            title: t('noActiveTripTitle'),
+            description: t('noActiveTripDescription'),
+        });
     };
 
     const handleMenuClick = (item: (typeof menuItems)[0]) => {
@@ -131,13 +116,6 @@ export function ProfileSidebar() {
         }
     }
     
-    const openDialog = (action: PlaceAction, place?: SavedPlace | { type: 'home' | 'work' | 'other' }) => {
-        setDialogState({ isOpen: true, action, place });
-    }
-
-    const homePlace = places.find(p => p.type === 'home');
-    const workPlace = places.find(p => p.type === 'work');
-    const otherPlaces = places.filter(p => p.type === 'other');
     const user = mockUser; // Use the mock user
 
     return (
@@ -191,84 +169,20 @@ export function ProfileSidebar() {
 
                     {/* Menu Items */}
                     <div className="flex flex-col gap-1 flex-grow overflow-y-auto">
-                         <Accordion type="single" collapsible className="w-full -mt-2">
-                            {menuItems.map((item, index) => {
-                                const Icon = item.icon;
-
-                                if (item.id === 'places') {
-                                    return (
-                                        <AccordionItem value={`item-${index}`} key={item.id} className="border-b-0">
-                                            <AccordionTrigger className="hover:no-underline hover:bg-transparent p-0">
-                                                <Button variant="ghost" className="justify-start gap-3 text-md w-full" asChild>
-                                                    <div>
-                                                        <Icon className="h-5 w-5 text-muted-foreground" />
-                                                        {t(item.labelKey)}
-                                                    </div>
-                                                </Button>
-                                            </AccordionTrigger>
-                                            <AccordionContent className="pb-2">
-                                                <div className="flex flex-col gap-1 ml-8 mt-1 pr-4">
-                                                    {homePlace ? (
-                                                        <div className="flex items-center justify-between group">
-                                                            <Button variant="ghost" className="justify-start gap-3 text-md w-full" onClick={() => openDialog('edit', homePlace)}>
-                                                                <Home className="h-5 w-5 text-muted-foreground" />
-                                                                <span className="truncate">{homePlace.address}</span>
-                                                            </Button>
-                                                            <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100" onClick={() => removePlace(homePlace.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                                                        </div>
-                                                    ) : (
-                                                        <Button variant="ghost" className="justify-start gap-3 text-md" onClick={() => openDialog('add', { type: 'home' })}>
-                                                            <Home className="h-5 w-5 text-muted-foreground" />
-                                                            {t('addHomeAddress')}
-                                                        </Button>
-                                                    )}
-                                                    {workPlace ? (
-                                                        <div className="flex items-center justify-between group">
-                                                            <Button variant="ghost" className="justify-start gap-3 text-md w-full" onClick={() => openDialog('edit', workPlace)}>
-                                                                <Briefcase className="h-5 w-5 text-muted-foreground" />
-                                                                <span className="truncate">{workPlace.address}</span>
-                                                            </Button>
-                                                            <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100" onClick={() => removePlace(workPlace.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                                                        </div>
-                                                    ) : (
-                                                        <Button variant="ghost" className="justify-start gap-3 text-md" onClick={() => openDialog('add', { type: 'work' })}>
-                                                            <Briefcase className="h-5 w-5 text-muted-foreground" />
-                                                            {t('addWorkAddress')}
-                                                        </Button>
-                                                    )}
-                                                    {otherPlaces.map(place => (
-                                                        <div key={place.id} className="flex items-center justify-between group">
-                                                            <Button variant="ghost" className="justify-start gap-3 text-md w-full" onClick={() => openDialog('edit', place)}>
-                                                                <MapPin className="h-5 w-5 text-muted-foreground" />
-                                                                <span className="truncate">{place.address}</span>
-                                                            </Button>
-                                                            <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100" onClick={() => removePlace(place.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                                                        </div>
-                                                    ))}
-                                                    <Button variant="ghost" className="justify-start gap-3 text-md" onClick={() => openDialog('add', { type: 'other' })}>
-                                                        <Plus className="h-5 w-5 text-muted-foreground" />
-                                                        {t('addPlace')}
-                                                    </Button>
-                                                </div>
-                                            </AccordionContent>
-                                        </AccordionItem>
-                                    );
-                                }
-
-
-                                return (
-                                    <Button
-                                        key={item.id}
-                                        variant="ghost"
-                                        className="justify-start gap-3 text-md"
-                                        onClick={() => handleMenuClick(item)}
-                                    >
-                                        <Icon className="h-5 w-5 text-muted-foreground" />
-                                        {t(item.labelKey)}
-                                    </Button>
-                                );
-                            })}
-                         </Accordion>
+                        {menuItems.map((item, index) => {
+                            const Icon = item.icon;
+                            return (
+                                <Button
+                                    key={item.id}
+                                    variant="ghost"
+                                    className="justify-start gap-3 text-md"
+                                    onClick={() => handleMenuClick(item)}
+                                >
+                                    <Icon className="h-5 w-5 text-muted-foreground" />
+                                    {t(item.labelKey)}
+                                </Button>
+                            );
+                        })}
                     </div>
 
                     <div className="mt-auto pt-6 space-y-4">
@@ -328,12 +242,8 @@ export function ProfileSidebar() {
                 </div>
             </SheetContent>
         </Sheet>
-        <PlacesDialog 
-            isOpen={dialogState.isOpen} 
-            onOpenChange={(isOpen) => setDialogState(prev => ({...prev, isOpen}))}
-            action={dialogState.action}
-            place={dialogState.place}
-        />
         </>
     );
 }
+
+    

@@ -20,7 +20,6 @@ import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 import { v4 as uuidv4 } from 'uuid';
 import { useLanguage } from '@/context/language-context';
-import { useTrip, type ActiveTrip } from '@/context/trip-context';
 import { cn } from '@/lib/utils';
 import {
   AlertDialog,
@@ -99,7 +98,6 @@ export default function SearchPage() {
   const [isHydrated, setIsHydrated] = useState(false);
 
   const { toast } = useToast();
-  const { activeTrip, setActiveTrip, setDynamicEta, isHydrated: isTripHydrated, clearActiveTrip, setCurrentStopIndex, isOnBus } = useTrip();
   const { t } = useLanguage();
   
   const [buses, setBuses] = useState(initialBusData);
@@ -113,7 +111,6 @@ export default function SearchPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [busHasArrived, setBusHasArrived] = useState(false);
-  const [tripToRate, setTripToRate] = useState<ActiveTrip | null>(null);
   const [passedBusInfo, setPassedBusInfo] = useState<PassedBusInfo | null>(null);
 
   useBusArrivalNotification(busHasArrived);
@@ -143,73 +140,11 @@ export default function SearchPage() {
 }, [fromQuery, toQuery, buses, isHydrated]);
 
 
-  useEffect(() => {
-    if (isTripHydrated && activeTrip) {
-      const busData = buses.find(b => b.id === activeTrip.bus.id);
-      if (busData) {
-        setSelectedBus(busData);
-        setSelectedSeats(activeTrip.seats);
-      }
-    } else if (isTripHydrated && !activeTrip) {
-      setSelectedBus(null);
-      setSelectedSeats([]);
-    }
-  }, [isTripHydrated, activeTrip, buses]);
-
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-
-    if (activeTrip && activeTrip.eta > 0) {
-      interval = setInterval(() => {
-        setDynamicEta(activeTrip.eta - 1);
-      }, 60 * 1000); // 60 seconds
-    } else if (activeTrip && activeTrip.eta <= 0) {
-      if (isOnBus) {
-        // Trip has ended
-        toast({
-          title: t('tripEndedTitle'),
-          description: t('tripEndedDescription'),
-        });
-        setTripToRate(activeTrip);
-        clearActiveTrip();
-      } else {
-        // Bus has arrived for pickup
-        if (!busHasArrived) {
-          setBusHasArrived(true);
-        }
-        setIsTransitioning(true);
-        setTimeout(() => {
-          const destinationStop = [...activeTrip.bus.stops, activeTrip.bus.finalDestination].find(s => s.name === activeTrip.destination);
-          if (destinationStop) {
-            setDynamicEta(destinationStop.eta);
-            setCurrentStopIndex(0); // Start tracking stops
-          }
-          toast({
-            title: t('onTheBusToastTitle'),
-            description: t('onTheBusToastDescription'),
-          });
-          setIsTransitioning(false);
-        }, 2000);
-      }
-    }
-
-    return () => clearInterval(interval);
-  }, [activeTrip, isOnBus, setDynamicEta, t, toast, clearActiveTrip, setCurrentStopIndex, busHasArrived]);
-
-
   const handleSearch = () => {
     router.push(`/search?from=${encodeURIComponent(fromLocation)}&to=${encodeURIComponent(toLocation)}`);
   };
 
   const handleBusSelect = (bus: BusData) => {
-    if (activeTrip) {
-      toast({
-        variant: "destructive",
-        title: "Trip in Progress",
-        description: "You cannot select a new bus while a trip is in progress."
-      });
-      return;
-    }
     setSelectedBus(bus);
     setSelectedSeats([]);
     setPassedBusInfo(null);
@@ -237,32 +172,6 @@ export default function SearchPage() {
     setTimeout(() => {
         const tripId = uuidv4();
         setIsBoarding(false);
-        
-        let updatedBus : BusData | undefined;
-        const updatedBuses = buses.map(b => {
-            if (b.id === selectedBus.id) {
-                const newSeating = b.seating.map(s => s && selectedSeats.includes(s.id) ? { ...s, isOccupied: true } : s);
-                updatedBus = { ...b, seating: newSeating, capacity: { ...b.capacity, current: b.capacity.current + selectedSeats.length }};
-                setSelectedBus(updatedBus);
-                return updatedBus;
-            }
-            return b;
-        });
-        setBuses(updatedBuses);
-        
-        if (updatedBus) {
-          const newTrip: ActiveTrip = {
-            id: tripId,
-            bus: updatedBus,
-            from: "Your Location",
-            destination: stop.name,
-            eta: updatedBus.eta,
-            seats: selectedSeats,
-            destinationEta: stop.eta,
-            currentStopIndex: -1,
-          };
-          setActiveTrip(newTrip);
-        }
         
         const primarySeat = selectedSeats[0];
         const qrData = { tripId: tripId, bus: selectedBus.plate, seat: primarySeat, from: stop.name, to: selectedBus.finalDestination.name, fare: totalFare / selectedSeats.length, timestamp: new Date().toISOString() };
@@ -310,34 +219,10 @@ export default function SearchPage() {
             }
             setNotifications(prev => [reservedSeatsNotification, ...prev]);
         }
-    
+        clearSelectedBus();
     }, 1500);
   }
 
-  const handleCancelTrip = () => {
-    if (!activeTrip) return;
-
-    const updatedBuses = buses.map(b => {
-      if (b.id === activeTrip.bus.id) {
-        const newSeating = b.seating.map(s => (s && activeTrip.seats.includes(s.id)) ? { ...s, isOccupied: false } : s);
-        return { ...b, seating: newSeating, capacity: { ...b.capacity, current: b.capacity.current - activeTrip.seats.length }};
-      }
-      return b;
-    });
-    setBuses(updatedBuses);
-
-    clearActiveTrip();
-    setSelectedBus(null);
-    setSelectedSeats([]);
-    setQrCodeUrl(null);
-
-    toast({
-      title: t('tripCancelled'),
-    });
-
-    setNotifications(prev => prev.filter(n => n.tripId !== activeTrip.id));
-  };
-  
   const handleSeatSelect = (seatId: string) => {
     if (selectedBus) {
         const seat = selectedBus.seating.find(s => s?.id === seatId);
@@ -357,15 +242,7 @@ export default function SearchPage() {
     setIsSeatSheetOpen(false);
   }
   
-  const handleRatingSubmit = () => {
-    setTripToRate(null);
-    toast({
-        title: "Feedback Submitted",
-        description: "Thank you for helping us improve our service!",
-    });
-  }
-  
-  if (!isHydrated || !isTripHydrated) {
+  if (!isHydrated) {
     return (
         <div className="flex flex-col min-h-screen bg-background items-center justify-center">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -373,15 +250,11 @@ export default function SearchPage() {
     );
   }
 
-  const displayedBus = activeTrip?.bus || selectedBus;
-  const primarySeat = (activeTrip?.seats && activeTrip.seats.length > 0) ? activeTrip.seats[0] : (Array.isArray(selectedSeats) && selectedSeats.length > 0 ? selectedSeats[0] : null);
+  const displayedBus = selectedBus;
+  const primarySeat = (Array.isArray(selectedSeats) && selectedSeats.length > 0 ? selectedSeats[0] : null);
 
-
-    const allStops = displayedBus ? [...displayedBus.stops, displayedBus.finalDestination] : [];
-    const nextStop = (activeTrip && activeTrip.currentStopIndex >= 0 && activeTrip.currentStopIndex < allStops.length)
-        ? allStops[activeTrip.currentStopIndex]
-        : null;
-
+  const allStops = displayedBus ? [...displayedBus.stops, displayedBus.finalDestination] : [];
+  
   return (
     <div className="flex flex-col min-h-screen bg-background">
         <header className="sticky top-0 z-20 bg-background/75 backdrop-blur-sm p-4 shadow-sm">
@@ -428,13 +301,7 @@ export default function SearchPage() {
 
         <main className="flex-grow p-4 pb-20">
              <div className="fixed bottom-0 left-0 right-0 z-20 pointer-events-none pb-[80px]">
-                {tripToRate ? (
-                    <div className="p-2 sm:p-4 pointer-events-auto">
-                        <div className="bg-background/75 backdrop-blur-sm rounded-t-2xl max-w-md mx-auto shadow-lg p-4 space-y-3">
-                             <TripRating trip={tripToRate} onSubmit={handleRatingSubmit} />
-                        </div>
-                    </div>
-                ) : displayedBus && (
+                {displayedBus && (
                 <div className="p-2 sm:p-4 pointer-events-auto">
                     <div className="bg-background/75 backdrop-blur-sm rounded-t-2xl max-w-md mx-auto shadow-lg p-4 space-y-3">
                     <Card>
@@ -450,64 +317,12 @@ export default function SearchPage() {
                                         <p className="text-sm text-muted-foreground font-mono">{displayedBus.plate}</p>
                                     </div>
                                 </div>
-                                {!activeTrip && (
                                 <Button variant="ghost" size="icon" onClick={clearSelectedBus} className="h-8 w-8 -mt-1 -mr-2">
                                     <X className="h-5 w-5" />
                                 </Button>
-                                )}
-                                {activeTrip && !isOnBus && (
-                                    <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                        <Button variant="destructive" size="sm">
-                                            <X className="mr-2 h-4 w-4" />
-                                            {t('cancel')}
-                                        </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                        <AlertDialogTitle>{t('cancelTripConfirmationTitle')}</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                            {t('cancelTripConfirmationDescription')}
-                                        </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                        <AlertDialogCancel>{t('goBack')}</AlertDialogCancel>
-                                        <AlertDialogAction
-                                            onClick={handleCancelTrip}
-                                            className="bg-destructive hover:bg-destructive/90"
-                                        >
-                                            {t('confirmCancellation')}
-                                        </AlertDialogAction>
-                                        </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                    </AlertDialog>
-                                )}
                             </div>
 
-                            {activeTrip ? (
-                                <div className={cn("relative p-3 bg-primary/10 rounded-lg text-center", isTransitioning && 'overflow-hidden')}>
-                                    <div className={cn("transition-opacity duration-500", isTransitioning ? 'opacity-0' : 'opacity-100')}>
-                                        <p className='text-sm text-primary/80'>
-                                        {isOnBus ? (
-                                            <>
-                                                {nextStop ? `${t('nextStop')}: ${nextStop.name}` : `${t('arrivingAt')}`}
-                                            </>
-                                        ) : (
-                                            `${t('busArrivingAtYourLocation')}:`
-                                        )}
-                                        </p>
-                                        <div className="flex items-center justify-center gap-2 text-primary font-semibold text-lg">
-                                            <Clock className="h-5 w-5" />
-                                            {activeTrip.eta > 0 ? (
-                                                <span dangerouslySetInnerHTML={{ __html: t('arrivingIn', { minutes: activeTrip.eta }) }} />
-                                            ) : (
-                                                <span>{isOnBus ? t('youHaveArrived') : t('busHasArrived')}</span>
-                                            )}
-                                        </div>
-                                        {isOnBus && <p className='text-xs text-primary/60 mt-1'>{`${t('finalDestination')}: ${activeTrip.destination}`}</p>}
-                                    </div>
-                                </div>
-                            ) : passedBusInfo ? (
+                            {passedBusInfo ? (
                                 <Card className="bg-amber-50 border border-amber-200">
                                     <CardContent className="p-4 text-sm text-amber-900 space-y-3">
                                         <p>This bus has passed your current location. The next available stop you can board is:</p>
@@ -576,14 +391,12 @@ export default function SearchPage() {
                                                 </AccordionTrigger>
                                                 <AccordionContent>
                                                     <div className="px-3 pt-2 pb-2 text-center">
-                                                    {activeTrip ? (
-                                                        <p className='text-sm text-muted-foreground'>{t('tripInProgress')}</p>
-                                                    ) : passedBusInfo ? (
+                                                    {passedBusInfo ? (
                                                         <p className="text-sm text-destructive font-medium p-2 bg-destructive/10 rounded-md">This bus has passed. Please use the option above.</p>
                                                     ) : displayedBus.capacity.current + selectedSeats.length > displayedBus.capacity.max ? (
                                                         <p className="text-sm text-destructive font-medium p-2 bg-destructive/10 rounded-md">{t('notEnoughSeats')}</p>
                                                     ) : (
-                                                        <Button className='w-full' onClick={() => handleBoard(stop)} disabled={isBoarding || selectedSeats.length === 0 || !!activeTrip}>
+                                                        <Button className='w-full' onClick={() => handleBoard(stop)} disabled={isBoarding || selectedSeats.length === 0}>
                                                             {isBoarding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : selectedSeats.length === 0 ? t('selectBusSeatFirst') : t('board')}
                                                         </Button>
                                                     )}
@@ -673,3 +486,5 @@ export default function SearchPage() {
     </div>
   );
 }
+
+    

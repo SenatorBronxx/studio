@@ -43,7 +43,6 @@ import { Badge } from '@/components/ui/badge';
 import { v4 as uuidv4 } from 'uuid';
 import { Map } from '@/components/map';
 import { useLanguage } from '@/context/language-context';
-import { useTrip, type ActiveTrip } from '@/context/trip-context';
 import { cn } from '@/lib/utils';
 import {
   AlertDialog,
@@ -120,7 +119,6 @@ export default function HomePage() {
   const router = useRouter();
   const user = mockUser; // Use mock user
   const { toast } = useToast();
-  const { activeTrip, setActiveTrip, isHydrated: isTripHydrated, setDynamicEta, clearActiveTrip, setCurrentStopIndex, isOnBus } = useTrip();
   const { t } = useLanguage();
   
   const [fromLocation, setFromLocation] = useState('Your Current Location');
@@ -137,7 +135,6 @@ export default function HomePage() {
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [busHasArrived, setBusHasArrived] = useState(false);
-  const [tripToRate, setTripToRate] = useState<ActiveTrip | null>(null);
   const [passedBusInfo, setPassedBusInfo] = useState<PassedBusInfo | null>(null);
   const [isBusArriving, setIsBusArriving] = useState(false);
 
@@ -149,70 +146,11 @@ export default function HomePage() {
     setTimeout(() => setIsLoadingBuses(false), 500);
   }, []);
 
-  useEffect(() => {
-    if (isTripHydrated && activeTrip && buses) {
-      const busData = buses.find(b => b.id === activeTrip.bus.id);
-      if (busData) {
-        setSelectedBus(busData);
-        setSelectedSeats(activeTrip.seats);
-      }
-    } else if (isTripHydrated && !activeTrip) {
-      setSelectedBus(null);
-      setSelectedSeats([]);
-    }
-  }, [isTripHydrated, activeTrip, buses]);
-
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-
-    if (activeTrip && activeTrip.eta > 0) {
-      interval = setInterval(() => {
-        setDynamicEta(activeTrip.eta - 1);
-      }, 60 * 1000); // 60 seconds
-    } else if (activeTrip && activeTrip.eta <= 0) {
-      if (isOnBus) {
-        // Trip has ended
-        toast({
-          title: t('tripEndedTitle'),
-          description: t('tripEndedDescription'),
-        });
-        setTripToRate(activeTrip);
-        clearActiveTrip();
-      } else {
-        // Bus has arrived for pickup
-        if (!busHasArrived) {
-          setBusHasArrived(true);
-          setIsBusArriving(true);
-        }
-        const destinationStop = [...activeTrip.bus.stops, activeTrip.bus.finalDestination].find(s => s.name === activeTrip.destination);
-        if (destinationStop) {
-            setDynamicEta(destinationStop.eta);
-            setCurrentStopIndex(0); // Start tracking stops
-        }
-        toast({
-            title: t('onTheBusToastTitle'),
-            description: t('onTheBusToastDescription'),
-        });
-      }
-    }
-
-    return () => clearInterval(interval);
-  }, [activeTrip, isOnBus, setDynamicEta, t, toast, clearActiveTrip, setCurrentStopIndex, busHasArrived]);
-
-
   const handleSearch = () => {
     router.push(`/search?from=${encodeURIComponent(fromLocation)}&to=${encodeURIComponent(toLocation)}`);
   };
 
   const handleBusSelect = (bus: BusData) => {
-    if (activeTrip) {
-      toast({
-        variant: "destructive",
-        title: "Trip in Progress",
-        description: "You cannot select a new bus while a trip is in progress."
-      });
-      return;
-    }
     setSelectedBus(bus);
     setSelectedSeats([]); 
     setPassedBusInfo(null); // Reset passed bus info
@@ -241,48 +179,29 @@ export default function HomePage() {
     
     // Simulate API call and local state update
     setTimeout(() => {
-        const tripId = uuidv4();
-        
-        const updatedBusForTrip = {
-            ...selectedBus,
-            seating: selectedBus.seating.map(s => (s && selectedSeats.includes(s.id)) ? { ...s, isOccupied: true } : s),
-            capacity: { ...selectedBus.capacity, current: selectedBus.capacity.current + selectedSeats.length }
-        };
-
-        const newTrip: ActiveTrip = {
-            id: tripId,
-            bus: updatedBusForTrip,
-            from: "Your Location",
-            destination: stop.name,
-            eta: updatedBusForTrip.eta,
-            seats: selectedSeats,
-            destinationEta: stop.eta,
-            currentStopIndex: -1,
-        };
-        setActiveTrip(newTrip);
-
+        const tripId = uuidv1();
         const primarySeat = selectedSeats[0];
         const qrData = { tripId: tripId, bus: selectedBus.plate, seat: primarySeat, from: stop.name, to: selectedBus.finalDestination.name, fare: totalFare / selectedSeats.length, timestamp: new Date().toISOString() };
         const encodedQrData = encodeURIComponent(JSON.stringify(qrData));
         const newQrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodedQrData}`;
         setQrCodeUrl(newQrCodeUrl);
         
-        let toastDescription = t('fareDeductedToastDescription', { fare: totalFare.toFixed(2) });
+        let toastDescription = `The fare of GHS ${totalFare.toFixed(2)} has been deducted.`;
 
         toast({
-            title: t('seatBookedToastTitle'),
+            title: "Seat Booked!",
             description: toastDescription,
-            action: (<Button variant="outline" size="sm" onClick={() => setIsQrSheetOpen(true)}><QrCode className="mr-2 h-4 w-4" />{t('viewQrCode')}</Button>)
+            action: (<Button variant="outline" size="sm" onClick={() => setIsQrSheetOpen(true)}><QrCode className="mr-2 h-4 w-4" />View QR Code</Button>)
         });
 
          const qrNotification: Notification = {
             id: Date.now(),
-            title: t('yourBoardingPass'),
-            description: `${t('showQrToDriver')} (${selectedBus.plate} - ${t('seat')}: ${primarySeat})`,
+            title: "Your Boarding Pass",
+            description: `Show this QR code to the driver for verification. (${selectedBus.plate} - Seat: ${primarySeat})`,
             tripId: tripId,
             action: (
                 <div className="mt-2 flex justify-center">
-                    <Image src={newQrCodeUrl} alt={t('boardingQrCode')} width={150} height={150} />
+                    <Image src={newQrCodeUrl} alt="Boarding QR Code" width={150} height={150} />
                 </div>
             )
         };
@@ -291,12 +210,12 @@ export default function HomePage() {
         if (selectedSeats.length > 1) {
             const reservedSeatsNotification: Notification = {
                 id: Date.now() + 1,
-                title: t('seatsReservedForOthers'),
-                description: t('seatsReservedForOthersDescription'),
+                title: "Seats Reserved for Others",
+                description: "You have reserved multiple seats. You can share the trip details with the recipients.",
                 action: (
                     <Button variant="default" size="sm" onClick={() => router.push('/share-trip')}>
                         <Send className="mr-2 h-4 w-4" />
-                        {t('sendToRecipient')}
+                        Send to Recipient
                     </Button>
                 )
             }
@@ -304,25 +223,10 @@ export default function HomePage() {
         }
     
         setIsBoarding(false);
+        // We are no longer setting an active trip, just closing the selection UI
+        clearSelectedBus();
     }, 1500);
   }
-
-   const handleCancelTrip = async () => {
-    if (!activeTrip) return;
-
-    clearActiveTrip();
-    setSelectedBus(null);
-    setSelectedSeats([]);
-    setQrCodeUrl(null);
-
-    toast({
-      title: t('tripCancelled'),
-    });
-
-    setNotifications(prev => prev.filter(n => n.tripId !== activeTrip.id));
-
-  };
-
   
   const handleSeatSelect = (seatId: string) => {
     if (selectedBus) {
@@ -342,24 +246,12 @@ export default function HomePage() {
   const handleConfirmSeat = () => {
     setIsSeatSheetOpen(false);
   }
-  
-  const handleRatingSubmit = () => {
-    setTripToRate(null);
-    toast({
-        title: "Feedback Submitted",
-        description: "Thank you for helping us improve our service!",
-    });
-  }
 
-  const displayedBus = activeTrip?.bus || selectedBus;
-  const primarySeat = (activeTrip?.seats && activeTrip.seats.length > 0) ? activeTrip.seats[0] : (Array.isArray(selectedSeats) && selectedSeats.length > 0 ? selectedSeats[0] : null);
+  const displayedBus = selectedBus;
+  const primarySeat = (Array.isArray(selectedSeats) && selectedSeats.length > 0 ? selectedSeats[0] : null);
 
   const allStops = displayedBus ? [...displayedBus.stops, displayedBus.finalDestination] : [];
-  const nextStop = (activeTrip && activeTrip.currentStopIndex >= 0 && activeTrip.currentStopIndex < allStops.length)
-      ? allStops[activeTrip.currentStopIndex]
-      : null;
-
-
+ 
   if (isLoadingBuses && !buses) {
       return (
         <div className="flex flex-col min-h-screen bg-background items-center justify-center">
@@ -482,9 +374,7 @@ export default function HomePage() {
       <div className="fixed bottom-0 left-0 right-0 z-20 pointer-events-none pb-[80px]">
         <div className="p-2 sm:p-4 pointer-events-auto">
             <div className="bg-background/75 backdrop-blur-sm rounded-t-2xl max-w-md mx-auto p-4 flex flex-col gap-4 shadow-lg">
-                {tripToRate ? (
-                     <TripRating trip={tripToRate} onSubmit={handleRatingSubmit} />
-                ) : displayedBus && isTripHydrated ? (
+                {displayedBus ? (
                 <div className="space-y-3">
                     <div className="flex justify-between items-start">
                         <div className="flex items-center gap-3">
@@ -497,64 +387,12 @@ export default function HomePage() {
                                 <p className="text-sm text-muted-foreground font-mono">{displayedBus.plate}</p>
                             </div>
                         </div>
-                        {!activeTrip && (
                         <Button variant="ghost" size="icon" onClick={clearSelectedBus} className="h-8 w-8 -mt-1 -mr-2">
                             <X className="h-5 w-5" />
                         </Button>
-                        )}
-                        {activeTrip && !isOnBus && (
-                            <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <Button variant="destructive" size="sm">
-                                    <X className="mr-2 h-4 w-4" />
-                                    {t('cancel')}
-                                </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                <AlertDialogTitle>{t('cancelTripConfirmationTitle')}</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    {t('cancelTripConfirmationDescription')}
-                                </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                <AlertDialogCancel>{t('goBack')}</AlertDialogCancel>
-                                <AlertDialogAction
-                                    onClick={handleCancelTrip}
-                                    className="bg-destructive hover:bg-destructive/90"
-                                >
-                                    {t('confirmCancellation')}
-                                </AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                            </AlertDialog>
-                        )}
                     </div>
 
-                    {activeTrip ? (
-                    <div className={cn("relative p-3 bg-primary/10 rounded-lg text-center")}>
-                            <div className={cn("transition-opacity duration-500")}>
-                                <p className='text-sm text-primary/80'>
-                                {isOnBus ? (
-                                    <>
-                                        {nextStop ? `${t('nextStop')}: ${nextStop.name}` : `${t('arrivingAt')}`}
-                                    </>
-                                ) : (
-                                    `${t('busArrivingAtYourLocation')}:`
-                                )}
-                                </p>
-                                <div className="flex items-center justify-center gap-2 text-primary font-semibold text-lg">
-                                    <Clock className="h-5 w-5" />
-                                    {activeTrip.eta > 0 ? (
-                                        <span dangerouslySetInnerHTML={{ __html: t('arrivingIn', { minutes: activeTrip.eta }) }} />
-                                    ) : (
-                                        <span>{isBusArriving ? t('busHasArrived') : t('youHaveArrived')}</span>
-                                    )}
-                                </div>
-                                {isOnBus && <p className='text-xs text-primary/60 mt-1'>{`${t('finalDestination')}: ${activeTrip.destination}`}</p>}
-                            </div>
-                        </div>
-                    ) : passedBusInfo ? (
+                    {passedBusInfo ? (
                         <Card className="bg-amber-50 border border-amber-200">
                             <CardContent className="p-4 text-sm text-amber-900 space-y-3">
                                 <p>This bus has passed your current location. The next available stop you can board is:</p>
@@ -626,9 +464,7 @@ export default function HomePage() {
                                     </AccordionTrigger>
                                     <AccordionContent>
                                         <div className="px-3 pt-2 pb-2 text-center">
-                                        {activeTrip ? (
-                                            <p className='text-sm text-muted-foreground'>{t('tripInProgress')}</p>
-                                        ): passedBusInfo ? (
+                                        {passedBusInfo ? (
                                             <p className="text-sm text-destructive font-medium p-2 bg-destructive/10 rounded-md">This bus has passed. Please use the option above.</p>
                                         ) : displayedBus.capacity.current + selectedSeats.length > displayedBus.capacity.max ? (
                                             <p className="text-sm text-destructive font-medium p-2 bg-destructive/10 rounded-md">{t('notEnoughSeats')}</p>
@@ -636,7 +472,7 @@ export default function HomePage() {
                                             <Button 
                                                 className='w-full' 
                                                 onClick={() => handleBoard(stop)} 
-                                                disabled={isBoarding || selectedSeats.length === 0 || !!activeTrip}
+                                                disabled={isBoarding || selectedSeats.length === 0}
                                             >
                                                 {isBoarding ? (
                                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -724,3 +560,5 @@ export default function HomePage() {
     </div>
   );
 }
+
+    
