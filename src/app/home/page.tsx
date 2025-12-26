@@ -80,7 +80,7 @@ type BusData = {
   driverImage: string | undefined;
   seating: ({ id: string; isOccupied: boolean; } | null)[];
 };
-type StopInfo = { name: string; fare: number; eta: number };
+type StopInfo = { name: string; fare: number; eta: number; };
 type Notification = {
     id: number;
     title: string;
@@ -99,7 +99,7 @@ export default function HomePage() {
   const firestore = useFirestore();
   const { toast } = useToast();
   const { balance, deductBalance, addTransaction, addLoyaltyPoints, addBalance: refundBalance, isLowBalance } = useWallet();
-  const { isOnBus, setNowPlaying } = useMusic();
+  const { setNowPlaying, isOnBus } = useMusic();
   const { activeTrip, setActiveTrip, isHydrated: isTripHydrated, setDynamicEta, clearActiveTrip, setCurrentStopIndex } = useTrip();
   const { bookingAlerts } = useNotificationSettings();
   const { activeDiscount, isDiscountBannerDismissed, dismissDiscountBanner } = useDiscount();
@@ -212,7 +212,7 @@ export default function HomePage() {
     } else {
         setNotifications(prev => prev.filter(n => n.id !== -1));
     }
-  }, [isLowBalance, t, router]);
+  }, [isLowBalance, t, router, notifications]);
 
 
   const handleSearch = () => {
@@ -348,7 +348,40 @@ export default function HomePage() {
                 action: (<Button variant="outline" size="sm" onClick={() => setIsQrSheetOpen(true)}><QrCode className="mr-2 h-4 w-4" />{t('viewQrCode')}</Button>)
             });
 
-            // ... other notifications
+             const qrNotification: Notification = {
+                id: Date.now(),
+                title: t('yourBoardingPass'),
+                description: `${t('showQrToDriver')} (${selectedBus.plate} - ${t('seat')}: ${primarySeat})`,
+                tripId: tripId,
+                action: (
+                    <div className="mt-2 flex justify-center">
+                        <Image src={newQrCodeUrl} alt={t('boardingQrCode')} width={150} height={150} />
+                    </div>
+                )
+            };
+            setNotifications(prev => [qrNotification, ...prev]);
+
+            if (selectedSeats.length > 1) {
+                const reservedSeatsNotification: Notification = {
+                    id: Date.now() + 1,
+                    title: t('seatsReservedForOthers'),
+                    description: t('seatsReservedForOthersDescription'),
+                    action: (
+                        <Button variant="default" size="sm" onClick={() => router.push('/share-trip')}>
+                            <Send className="mr-2 h-4 w-4" />
+                            {t('sendToRecipient')}
+                        </Button>
+                    )
+                }
+                setNotifications(prev => [reservedSeatsNotification, ...prev]);
+            }
+        
+            if (pointsEarned > 0) {
+                toast({
+                    title: t('loyaltyPointsAwarded'),
+                    description: t('loyaltyPointsAwardedDescription', { points: pointsEarned }),
+                });
+            }
         }
 
     } catch (error) {
@@ -853,3 +886,5 @@ export default function HomePage() {
     </div>
   );
 }
+
+    
