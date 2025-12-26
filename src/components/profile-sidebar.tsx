@@ -49,7 +49,6 @@ import {
   } from '@/components/ui/alert-dialog';
 import { ThemeSwitcher } from './theme-switcher';
 import { useToast } from '@/hooks/use-toast';
-import { useDiscount } from '@/context/discount-context';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { useLanguage } from '@/context/language-context';
 import { useTrip } from '@/context/trip-context';
@@ -67,15 +66,8 @@ const menuItems = [
         icon: MapPin,
         labelKey: 'savedPlaces',
     },
-    { id: 'discounts', icon: Percent, labelKey: 'userDiscounts' },
     { id: 'loyalty', icon: Award, labelKey: 'loyaltyPoints', href: '/loyalty' },
 ];
-
-const discountOffer = {
-    code: 'ERITAS15',
-    percentage: 15,
-    description: '15% discount on your next 3 trips',
-};
 
 // Mock user data for a DB-less experience
 const mockUser = {
@@ -89,7 +81,6 @@ const mockUser = {
 export function ProfileSidebar() {
     const router = useRouter();
     const { toast } = useToast();
-    const { activeDiscount, activateDiscount, deactivateDiscount } = useDiscount();
     const { language, setLanguage, t } = useLanguage();
     const { activeTrip } = useTrip();
     const { places, removePlace } = usePlaces();
@@ -138,22 +129,6 @@ export function ProfileSidebar() {
         } else if (item.href) {
             handleNavigate(item.href);
         }
-    }
-
-    const handleActivateDiscount = () => {
-        activateDiscount(discountOffer);
-        toast({
-            title: t('discountActivatedToastTitle'),
-            description: t('discountActivatedToastDescription', { percentage: discountOffer.percentage }),
-        });
-    }
-
-    const handleDeactivateDiscount = () => {
-        deactivateDiscount();
-        toast({
-            title: t('discountDeactivatedToastTitle'),
-            description: t('discountDeactivatedToastDescription'),
-        });
     }
     
     const openDialog = (action: PlaceAction, place?: SavedPlace | { type: 'home' | 'work' | 'other' }) => {
@@ -219,64 +194,6 @@ export function ProfileSidebar() {
                          <Accordion type="single" collapsible className="w-full -mt-2">
                             {menuItems.map((item, index) => {
                                 const Icon = item.icon;
-
-                                if (item.id === 'discounts') {
-                                    return (
-                                        <AlertDialog key={item.id}>
-                                            <AlertDialogTrigger asChild>
-                                                <Button
-                                                    variant="ghost"
-                                                    className="justify-start gap-3 text-md w-full"
-                                                >
-                                                    <Icon className="h-5 w-5 text-muted-foreground" />
-                                                    {t(item.labelKey)}
-                                                </Button>
-                                            </AlertDialogTrigger>
-                                            <AlertDialogContent>
-                                                {activeDiscount ? (
-                                                    <>
-                                                        <AlertDialogHeader>
-                                                            <AlertDialogTitle>{t('deactivateDiscountTitle')}</AlertDialogTitle>
-                                                            <AlertDialogDescription>
-                                                                {t('deactivateDiscountDescription', { percentage: activeDiscount.percentage })}
-                                                            </AlertDialogDescription>
-                                                        </AlertDialogHeader>
-                                                        <AlertDialogFooter>
-                                                            <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-                                                            <AlertDialogAction
-                                                                onClick={handleDeactivateDiscount}
-                                                                className="bg-destructive hover:bg-destructive/90"
-                                                            >
-                                                                {t('deactivate')}
-                                                            </AlertDialogAction>
-                                                        </AlertDialogFooter>
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <AlertDialogHeader>
-                                                            <AlertDialogTitle>{t('discountEligibilityTitle')}</AlertDialogTitle>
-                                                            <AlertDialogDescription>
-                                                                {t('discountEligibilityDescription', { percentage: discountOffer.percentage })}
-                                                            </AlertDialogDescription>
-                                                        </AlertDialogHeader>
-                                                        <div className="py-4">
-                                                            <div className="relative rounded-lg bg-muted p-4 flex items-center justify-center">
-                                                                <Ticket className="absolute left-4 top-1/2 -translate-y-1/2 h-8 w-8 text-primary/30" />
-                                                                <p className="font-mono text-2xl font-bold tracking-widest text-primary">
-                                                                    {discountOffer.code}
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                        <AlertDialogFooter>
-                                                            <AlertDialogCancel>{t('close')}</AlertDialogCancel>
-                                                            <AlertDialogAction onClick={handleActivateDiscount}>{t('activate')}</AlertDialogAction>
-                                                        </AlertDialogFooter>
-                                                    </>
-                                                )}
-                                            </AlertDialogContent>
-                                        </AlertDialog>
-                                    )
-                                }
 
                                 if (item.id === 'places') {
                                     return (

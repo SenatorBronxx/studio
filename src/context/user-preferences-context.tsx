@@ -3,7 +3,6 @@
 
 import { createContext, useContext, ReactNode, useState, useCallback, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { useLanguage } from './language-context';
 
 export const PREFERENCES_DOC_ID = 'userPreferences';
 
@@ -33,7 +32,6 @@ export function UserPreferencesProvider({ children }: { children: ReactNode }) {
   const [preferences, setPreferences] = useState<Preferences | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
   const { toast } = useToast();
-  const { t } = useLanguage();
 
   useEffect(() => {
     // In a DB-less app, we can load from localStorage
@@ -60,13 +58,13 @@ export function UserPreferencesProvider({ children }: { children: ReactNode }) {
              console.error("Failed to save preferences to localStorage", error);
              toast({
                 variant: 'destructive',
-                title: t('uhOhSomethingWentWrong'),
+                title: 'Uh oh! Something went wrong.',
                 description: 'Could not save your preferences.',
              });
         }
         return newPrefs;
     });
-  }, [t, toast]);
+  }, [toast]);
   
   const value = { preferences, setPreference, isHydrated };
 

@@ -43,9 +43,6 @@ import { Badge } from '@/components/ui/badge';
 import { useWallet } from '@/context/wallet-context';
 import { v4 as uuidv4 } from 'uuid';
 import { Map } from '@/components/map';
-import { useMusic } from '@/context/music-context';
-import { useNotificationSettings } from '@/context/notification-settings-context';
-import { useDiscount } from '@/context/discount-context';
 import { useLanguage } from '@/context/language-context';
 import { useTrip, type ActiveTrip } from '@/context/trip-context';
 import { cn } from '@/lib/utils';
@@ -125,10 +122,7 @@ export default function HomePage() {
   const user = mockUser; // Use mock user
   const { toast } = useToast();
   const { balance, deductBalance, addTransaction, addLoyaltyPoints, addBalance: refundBalance, isLowBalance } = useWallet();
-  const { setNowPlaying, isOnBus } = useMusic();
-  const { activeTrip, setActiveTrip, isHydrated: isTripHydrated, setDynamicEta, clearActiveTrip, setCurrentStopIndex } = useTrip();
-  const { bookingAlerts } = useNotificationSettings();
-  const { activeDiscount, isDiscountBannerDismissed, dismissDiscountBanner } = useDiscount();
+  const { activeTrip, setActiveTrip, isHydrated: isTripHydrated, setDynamicEta, clearActiveTrip, setCurrentStopIndex, isOnBus } = useTrip();
   const { t } = useLanguage();
   
   const [fromLocation, setFromLocation] = useState('Your Current Location');
@@ -144,7 +138,6 @@ export default function HomePage() {
   const [isQrSheetOpen, setIsQrSheetOpen] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [showDiscountBanner, setShowDiscountBanner] = useState(false);
   const [busHasArrived, setBusHasArrived] = useState(false);
   const [tripToRate, setTripToRate] = useState<ActiveTrip | null>(null);
   const [passedBusInfo, setPassedBusInfo] = useState<PassedBusInfo | null>(null);
@@ -157,14 +150,6 @@ export default function HomePage() {
     // Simulate loading buses
     setTimeout(() => setIsLoadingBuses(false), 500);
   }, []);
-
-  useEffect(() => {
-    if (activeDiscount && !isDiscountBannerDismissed) {
-      setShowDiscountBanner(true);
-    } else {
-      setShowDiscountBanner(false);
-    }
-  }, [activeDiscount, isDiscountBannerDismissed]);
 
   useEffect(() => {
     if (isTripHydrated && activeTrip && buses) {
@@ -195,7 +180,6 @@ export default function HomePage() {
         });
         setTripToRate(activeTrip);
         clearActiveTrip();
-        setNowPlaying(null);
       } else {
         // Bus has arrived for pickup
         if (!busHasArrived) {
@@ -215,7 +199,7 @@ export default function HomePage() {
     }
 
     return () => clearInterval(interval);
-  }, [activeTrip, isOnBus, setDynamicEta, t, toast, clearActiveTrip, setCurrentStopIndex, busHasArrived, setNowPlaying]);
+  }, [activeTrip, isOnBus, setDynamicEta, t, toast, clearActiveTrip, setCurrentStopIndex, busHasArrived]);
 
   useEffect(() => {
     if (isLowBalance) {
@@ -274,9 +258,6 @@ export default function HomePage() {
     if (!selectedBus || selectedSeats.length === 0) return;
 
     let farePerSeat = stop.fare;
-    if (activeDiscount) {
-        farePerSeat = farePerSeat * (1 - activeDiscount.percentage / 100);
-    }
     const totalFare = farePerSeat * selectedSeats.length;
 
     if (balance < totalFare) {
@@ -325,50 +306,47 @@ export default function HomePage() {
         const newQrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodedQrData}`;
         setQrCodeUrl(newQrCodeUrl);
         
-        if (bookingAlerts) {
-            let toastDescription = t('fareDeductedToastDescription', { fare: totalFare.toFixed(2) });
-            if (activeDiscount) { toastDescription += ` (${t('discountAppliedToast', { percentage: activeDiscount.percentage })})` }
+        let toastDescription = t('fareDeductedToastDescription', { fare: totalFare.toFixed(2) });
 
-            toast({
-                title: t('seatBookedToastTitle'),
-                description: toastDescription,
-                action: (<Button variant="outline" size="sm" onClick={() => setIsQrSheetOpen(true)}><QrCode className="mr-2 h-4 w-4" />{t('viewQrCode')}</Button>)
-            });
+        toast({
+            title: t('seatBookedToastTitle'),
+            description: toastDescription,
+            action: (<Button variant="outline" size="sm" onClick={() => setIsQrSheetOpen(true)}><QrCode className="mr-2 h-4 w-4" />{t('viewQrCode')}</Button>)
+        });
 
-             const qrNotification: Notification = {
-                id: Date.now(),
-                title: t('yourBoardingPass'),
-                description: `${t('showQrToDriver')} (${selectedBus.plate} - ${t('seat')}: ${primarySeat})`,
-                tripId: tripId,
+         const qrNotification: Notification = {
+            id: Date.now(),
+            title: t('yourBoardingPass'),
+            description: `${t('showQrToDriver')} (${selectedBus.plate} - ${t('seat')}: ${primarySeat})`,
+            tripId: tripId,
+            action: (
+                <div className="mt-2 flex justify-center">
+                    <Image src={newQrCodeUrl} alt={t('boardingQrCode')} width={150} height={150} />
+                </div>
+            )
+        };
+        setNotifications(prev => [qrNotification, ...prev]);
+
+        if (selectedSeats.length > 1) {
+            const reservedSeatsNotification: Notification = {
+                id: Date.now() + 1,
+                title: t('seatsReservedForOthers'),
+                description: t('seatsReservedForOthersDescription'),
                 action: (
-                    <div className="mt-2 flex justify-center">
-                        <Image src={newQrCodeUrl} alt={t('boardingQrCode')} width={150} height={150} />
-                    </div>
+                    <Button variant="default" size="sm" onClick={() => router.push('/share-trip')}>
+                        <Send className="mr-2 h-4 w-4" />
+                        {t('sendToRecipient')}
+                    </Button>
                 )
-            };
-            setNotifications(prev => [qrNotification, ...prev]);
-
-            if (selectedSeats.length > 1) {
-                const reservedSeatsNotification: Notification = {
-                    id: Date.now() + 1,
-                    title: t('seatsReservedForOthers'),
-                    description: t('seatsReservedForOthersDescription'),
-                    action: (
-                        <Button variant="default" size="sm" onClick={() => router.push('/share-trip')}>
-                            <Send className="mr-2 h-4 w-4" />
-                            {t('sendToRecipient')}
-                        </Button>
-                    )
-                }
-                setNotifications(prev => [reservedSeatsNotification, ...prev]);
             }
-        
-            if (pointsEarned > 0) {
-                toast({
-                    title: t('loyaltyPointsAwarded'),
-                    description: t('loyaltyPointsAwardedDescription', { points: pointsEarned }),
-                });
-            }
+            setNotifications(prev => [reservedSeatsNotification, ...prev]);
+        }
+    
+        if (pointsEarned > 0) {
+            toast({
+                title: t('loyaltyPointsAwarded'),
+                description: t('loyaltyPointsAwardedDescription', { points: pointsEarned }),
+            });
         }
         setIsBoarding(false);
     }, 1500);
@@ -384,9 +362,6 @@ export default function HomePage() {
     if (!destinationStop) return; 
 
     let fareToRefund = destinationStop.fare * activeTrip.seats.length;
-    if (activeDiscount) {
-      fareToRefund *= (1 - activeDiscount.percentage / 100);
-    }
     
     refundBalance(fareToRefund);
     addTransaction({ type: 'top-up', plate: `Refund for ${activeTrip.bus.plate}`, amount: fareToRefund });
@@ -423,11 +398,6 @@ export default function HomePage() {
   
   const handleConfirmSeat = () => {
     setIsSeatSheetOpen(false);
-  }
-
-  const handleDismissBanner = () => {
-    dismissDiscountBanner();
-    setShowDiscountBanner(false);
   }
   
   const handleRatingSubmit = () => {
@@ -569,20 +539,6 @@ export default function HomePage() {
       <div className="fixed bottom-0 left-0 right-0 z-20 pointer-events-none pb-[80px]">
         <div className="p-2 sm:p-4 pointer-events-auto">
             <div className="bg-background/75 backdrop-blur-sm rounded-t-2xl max-w-md mx-auto p-4 flex flex-col gap-4 shadow-lg">
-                {showDiscountBanner && activeDiscount && (
-                    <div className="relative bg-primary/10 border-l-4 border-primary text-primary-foreground p-4 rounded-lg animate-in fade-in-50 slide-in-from-bottom-5">
-                        <Button variant="ghost" size="icon" className="absolute top-1 right-1 h-6 w-6 text-primary hover:bg-primary/20" onClick={handleDismissBanner}>
-                            <X className="h-4 w-4" />
-                        </Button>
-                        <div className="flex items-center gap-3">
-                            <Ticket className="h-8 w-8 text-primary" />
-                            <div>
-                                <h3 className="font-bold text-primary">{t('discountActivatedTitle', { percentage: activeDiscount.percentage })}</h3>
-                                <p className="text-sm text-primary/80">{activeDiscount.description}</p>
-                            </div>
-                        </div>
-                    </div>
-                )}
                 {tripToRate ? (
                      <TripRating trip={tripToRate} onSubmit={handleRatingSubmit} />
                 ) : displayedBus && isTripHydrated ? (
@@ -709,9 +665,6 @@ export default function HomePage() {
                         <Accordion type="single" collapsible className="w-full">
                             {[...displayedBus.stops, { ...displayedBus.finalDestination, isFinal: true }].map((stop, index) => {
                                 let fare = stop.fare;
-                                if (activeDiscount) {
-                                    fare = fare * (1 - activeDiscount.percentage / 100);
-                                }
 
                                 return (
                                 <AccordionItem value={`item-${index}`} key={index} className="border-b-0">
@@ -724,7 +677,6 @@ export default function HomePage() {
                                                 <p className={`text-sm ${stop.isFinal ? 'font-semibold text-primary' : 'text-foreground'}`}>{stop.name} {stop.isFinal && `(${t('final')})`}</p>
                                             </div>
                                             <div className='flex items-center gap-2'>
-                                            {activeDiscount && <Badge variant="destructive">-{activeDiscount.percentage}%</Badge>}
                                                 <p className={`font-mono text-sm ${stop.isFinal ? 'font-semibold text-primary' : 'text-foreground'}`}>{t('farePerSeat', { fare: fare.toFixed(2) })}</p>
                                             </div>
                                         </div>

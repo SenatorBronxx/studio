@@ -16,7 +16,6 @@ export function BottomNav() {
     { href: '/eritas-pay', icon: Wallet, labelKey: 'eritasPay' },
     { href: '/search', icon: Search, labelKey: 'findABus' },
     { href: '/food', icon: Utensils, labelKey: 'food' },
-    { href: '/music', icon: Music, labelKey: 'music' },
   ];
 
   return (

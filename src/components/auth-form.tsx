@@ -29,7 +29,7 @@ const formSchema = z.object({
 
 type AuthFormProps = {
   onSignInSuccess: () => void;
-  onSignUpSuccess: (userId: string) => void;
+  onSignUpSuccess: () => void;
 };
 
 export function AuthForm({ onSignInSuccess, onSignUpSuccess }: AuthFormProps) {
@@ -70,7 +70,7 @@ export function AuthForm({ onSignInSuccess, onSignUpSuccess }: AuthFormProps) {
         title: t('signUpSuccessfulToastTitle'),
         description: t('signUpSuccessfulToastDescription'),
       });
-      onSignUpSuccess('mock-user-id'); // Pass a mock user ID
+      onSignUpSuccess(); 
     }, 1000);
   };
   

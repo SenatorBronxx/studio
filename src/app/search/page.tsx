@@ -20,9 +20,6 @@ import { Badge } from '@/components/ui/badge';
 import { useWallet } from '@/context/wallet-context';
 import Image from 'next/image';
 import { v4 as uuidv4 } from 'uuid';
-import { useMusic } from '@/context/music-context';
-import { NowPlayingIcon } from '@/components/icons/now-playing-icon';
-import { ListMusic } from 'lucide-react';
 import { useLanguage } from '@/context/language-context';
 import { useTrip, type ActiveTrip } from '@/context/trip-context';
 import { cn } from '@/lib/utils';
@@ -37,9 +34,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { useDiscount } from '@/context/discount-context';
 import { useBusArrivalNotification } from '@/hooks/use-bus-arrival-notification';
-import { useNotificationSettings } from '@/context/notification-settings-context';
 import { TripRating } from '@/components/trip-rating';
 
 const initialBusData = [
@@ -106,19 +101,8 @@ export default function SearchPage() {
 
   const { toast } = useToast();
   const { balance, deductBalance, addTransaction, addLoyaltyPoints, addBalance: refundBalance } = useWallet();
-  const { 
-    playlist,
-    nowPlaying,
-    songProgress,
-    isPlaylistOpen,
-    setIsPlaylistOpen,
-    removeFromPlaylist,
-    isOnBus,
-    setNowPlaying,
-  } = useMusic();
-  const { activeTrip, setActiveTrip, setDynamicEta, isHydrated: isTripHydrated, clearActiveTrip, setCurrentStopIndex } = useTrip();
+  const { activeTrip, setActiveTrip, setDynamicEta, isHydrated: isTripHydrated, clearActiveTrip, setCurrentStopIndex, isOnBus } = useTrip();
   const { t } = useLanguage();
-  const { activeDiscount } = useDiscount();
   
   const [buses, setBuses] = useState(initialBusData);
   const [filteredBuses, setFilteredBuses] = useState<BusData[]>([]);
@@ -131,7 +115,6 @@ export default function SearchPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [busHasArrived, setBusHasArrived] = useState(false);
-  const { bookingAlerts } = useNotificationSettings();
   const [tripToRate, setTripToRate] = useState<ActiveTrip | null>(null);
   const [passedBusInfo, setPassedBusInfo] = useState<PassedBusInfo | null>(null);
 
@@ -191,7 +174,6 @@ export default function SearchPage() {
         });
         setTripToRate(activeTrip);
         clearActiveTrip();
-        setNowPlaying(null);
       } else {
         // Bus has arrived for pickup
         if (!busHasArrived) {
@@ -214,7 +196,7 @@ export default function SearchPage() {
     }
 
     return () => clearInterval(interval);
-  }, [activeTrip, isOnBus, setDynamicEta, t, toast, clearActiveTrip, setCurrentStopIndex, busHasArrived, setNowPlaying]);
+  }, [activeTrip, isOnBus, setDynamicEta, t, toast, clearActiveTrip, setCurrentStopIndex, busHasArrived]);
 
 
   const handleSearch = () => {
@@ -251,9 +233,6 @@ export default function SearchPage() {
     if(!selectedBus || selectedSeats.length === 0) return;
     
     let farePerSeat = stop.fare;
-    if (activeDiscount) {
-        farePerSeat *= (1 - activeDiscount.percentage / 100);
-    }
     const totalFare = farePerSeat * selectedSeats.length;
 
     if (balance < totalFare) {
@@ -314,57 +293,52 @@ export default function SearchPage() {
         const newQrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodedQrData}`;
         setQrCodeUrl(newQrCodeUrl);
         
-        if (bookingAlerts) {
-            let toastDescription = t('fareDeductedToastDescription', { fare: totalFare.toFixed(2) });
-            if (activeDiscount) {
-                toastDescription += ` (${t('discountAppliedToast', { percentage: activeDiscount.percentage })})`
-            }
+        let toastDescription = t('fareDeductedToastDescription', { fare: totalFare.toFixed(2) });
 
-            toast({
-                title: t('seatBookedToastTitle'),
-                description: toastDescription,
+        toast({
+            title: t('seatBookedToastTitle'),
+            description: toastDescription,
+            action: (
+                <Button variant="outline" size="sm" onClick={() => setIsQrSheetOpen(true)}>
+                    <QrCode className="mr-2 h-4 w-4" />
+                    {t('viewQrCode')}
+                </Button>
+            )
+        });
+
+        const qrNotification: Notification = {
+            id: Date.now(),
+            title: t('yourBoardingPass'),
+            description: `${t('showQrToDriver')} (${selectedBus.plate} - ${t('seat')}: ${primarySeat})`,
+            tripId: tripId,
+            action: (
+                <div className="mt-2 flex justify-center">
+                    <Image src={newQrCodeUrl} alt={t('boardingQrCode')} width={150} height={150} />
+                </div>
+            )
+        };
+        setNotifications(prev => [qrNotification, ...prev]);
+
+        if (selectedSeats.length > 1) {
+            const reservedSeatsNotification: Notification = {
+                id: Date.now() + 1,
+                title: t('seatsReservedForOthers'),
+                description: t('seatsReservedForOthersDescription'),
                 action: (
-                    <Button variant="outline" size="sm" onClick={() => setIsQrSheetOpen(true)}>
-                        <QrCode className="mr-2 h-4 w-4" />
-                        {t('viewQrCode')}
+                    <Button variant="default" size="sm" onClick={() => router.push('/share-trip')}>
+                        <Send className="mr-2 h-4 w-4" />
+                        {t('sendToRecipient')}
                     </Button>
                 )
+            }
+            setNotifications(prev => [reservedSeatsNotification, ...prev]);
+        }
+    
+        if (pointsEarned > 0) {
+            toast({
+                title: t('loyaltyPointsAwarded'),
+                description: t('loyaltyPointsAwardedDescription', { points: pointsEarned }),
             });
-
-            const qrNotification: Notification = {
-                id: Date.now(),
-                title: t('yourBoardingPass'),
-                description: `${t('showQrToDriver')} (${selectedBus.plate} - ${t('seat')}: ${primarySeat})`,
-                tripId: tripId,
-                action: (
-                    <div className="mt-2 flex justify-center">
-                        <Image src={newQrCodeUrl} alt={t('boardingQrCode')} width={150} height={150} />
-                    </div>
-                )
-            };
-            setNotifications(prev => [qrNotification, ...prev]);
-
-            if (selectedSeats.length > 1) {
-                const reservedSeatsNotification: Notification = {
-                    id: Date.now() + 1,
-                    title: t('seatsReservedForOthers'),
-                    description: t('seatsReservedForOthersDescription'),
-                    action: (
-                        <Button variant="default" size="sm" onClick={() => router.push('/share-trip')}>
-                            <Send className="mr-2 h-4 w-4" />
-                            {t('sendToRecipient')}
-                        </Button>
-                    )
-                }
-                setNotifications(prev => [reservedSeatsNotification, ...prev]);
-            }
-        
-            if (pointsEarned > 0) {
-                toast({
-                    title: t('loyaltyPointsAwarded'),
-                    description: t('loyaltyPointsAwardedDescription', { points: pointsEarned }),
-                });
-            }
         }
 
     }, 1500);
@@ -379,9 +353,6 @@ export default function SearchPage() {
     if (!destinationStop) return;
 
     let fareToRefund = destinationStop.fare * activeTrip.seats.length;
-     if (activeDiscount) {
-      fareToRefund *= (1 - activeDiscount.percentage / 100);
-    }
     
     refundBalance(fareToRefund);
     addTransaction({ type: 'top-up', plate: `Refund for ${activeTrip.bus.plate}`, amount: fareToRefund });
@@ -629,9 +600,6 @@ export default function SearchPage() {
                                 <Accordion type="single" collapsible className="w-full">
                                     {[...displayedBus.stops, { ...displayedBus.finalDestination, isFinal: true }].map((stop, index) => {
                                         let fare = stop.fare;
-                                        if (activeDiscount) {
-                                            fare *= (1 - activeDiscount.percentage / 100);
-                                        }
                                         return (
                                             <AccordionItem value={`item-${index}`} key={index} className="border-b-0">
                                                 <AccordionTrigger className="py-2 rounded-lg hover:bg-muted/50 px-2 data-[state=open]:bg-muted">
@@ -643,7 +611,6 @@ export default function SearchPage() {
                                                             <p className={`text-sm ${stop.isFinal ? 'font-semibold text-primary' : 'text-foreground'}`}>{stop.name} {stop.isFinal && `(${t('final')})`}</p>
                                                         </div>
                                                         <div className='flex items-center gap-2'>
-                                                            {activeDiscount && <Badge variant="destructive">-{activeDiscount.percentage}%</Badge>}
                                                             <p className={`font-mono text-sm ${stop.isFinal ? 'font-semibold text-primary' : 'text-foreground'}`}>{t('farePerSeat', { fare: fare.toFixed(2) })}</p>
                                                         </div>
                                                     </div>
@@ -741,82 +708,6 @@ export default function SearchPage() {
                             {primarySeat && <Badge>{t('seat')}: {primarySeat}</Badge>}
                         </div>
                     </div>
-                </div>
-            </SheetContent>
-        </Sheet>
-        <Sheet open={isPlaylistOpen} onOpenChange={setIsPlaylistOpen}>
-            <SheetContent>
-                <SheetHeader>
-                    <SheetTitle>{t('busPlaylist')}</SheetTitle>
-                </SheetHeader>
-                <div className="py-4 flex flex-col h-full">
-                {isOnBus ? (
-                    <>
-                        {nowPlaying ? (
-                                <>
-                                    <div className='mb-4 space-y-3'>
-                                        <p className="text-sm font-medium text-muted-foreground">{t('nowPlaying')}</p>
-                                        <div className="flex items-center gap-4 p-3 bg-primary/10 rounded-lg">
-                                            <Image src={nowPlaying.image} alt={nowPlaying.title} width={48} height={48} className="rounded-md" />
-                                            <div className="flex-grow space-y-2">
-                                                <div>
-                                                    <p className="font-semibold">{nowPlaying.title}</p>
-                                                    <div className="flex text-sm text-muted-foreground">
-                                                        <span>{nowPlaying.artist}</span>
-                                                        <span className="mx-2">•</span>
-                                                        <span>{nowPlaying.duration}</span>
-                                                    </div>
-                                                </div>
-                                                <Progress value={songProgress} className="h-1" />
-                                            </div>
-                                            <NowPlayingIcon />
-                                        </div>
-                                    </div>
-                                    <Separator />
-                                </>
-                        ) : null}
-
-                        <div className="flex-grow overflow-y-auto mt-4">
-                            {playlist.filter(p => p.id !== nowPlaying?.id).length > 0 ? (
-                                <>
-                                    <p className="text-sm font-medium text-muted-foreground mb-2">{t('upNext')}</p>
-                                    <div className="space-y-3">
-                                    {playlist.filter(p => p.id !== nowPlaying?.id).map(track => (
-                                        <div key={track.id} className="flex items-center gap-4 group">
-                                            <Image src={track.image} alt={track.title} width={48} height={48} className="rounded-md" />
-                                            <div className="flex-grow">
-                                                <p className="font-semibold">{track.title}</p>
-                                                <div className="flex text-sm text-muted-foreground">
-                                                    <span>{track.artist}</span>
-                                                    <span className="mx-2">•</span>
-                                                    <span>{track.duration}</span>
-                                                </div>
-                                            </div>
-                                            {track.addedBy === 'user' && (
-                                                <Button size="icon" variant="ghost" className="opacity-0 group-hover:opacity-100" onClick={() => removeFromPlaylist(track.id)}>
-                                                    <X className="h-5 w-5 text-muted-foreground" />
-                                                </Button>
-                                            )}
-                                        </div>
-                                    ))}
-                                    </div>
-                                </>
-                            ) : !nowPlaying ? (
-                                <div className="text-center text-muted-foreground py-12 flex flex-col items-center justify-center h-full">
-                                    <ListMusic className="h-12 w-12 mx-auto mb-4" />
-                                    <p>{t('noSongsAdded')}</p>
-                                    <p className="text-xs">{t('browseAndAddSongs')}</p>
-                                </div>
-                            ) : null}
-                        </div>
-                    </>
-                ) : (
-                    <div className="flex flex-col items-center justify-center text-center h-full text-muted-foreground">
-                        <Bus className="h-12 w-12 mb-4" />
-                        <h3 className="font-semibold">{t('boardBusToSeePlaylist')}</h3>
-                        <p className="text-sm mt-1">{t('playlistOnlyOnTrip')}</p>
-                    </div>
-                )}
                 </div>
             </SheetContent>
         </Sheet>
