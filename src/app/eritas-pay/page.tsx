@@ -68,6 +68,11 @@ export default function EritasPayPage() {
   const [selectedSeat, setSelectedSeat] = useState<string | null>(null);
   const [showAllTransactions, setShowAllTransactions] = useState(false);
   const [showLowBalanceMessage, setShowLowBalanceMessage] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const maxBalance = 400.00;
   const progressPercentage = Math.min((balance / maxBalance) * 100, 100);
@@ -91,9 +96,9 @@ export default function EritasPayPage() {
     } else {
         setNotifications(prev => prev.filter(n => n.id !== -1));
     }
-  }, [isLowBalance, t, router]);
+  }, [isLowBalance, t, router, notifications]);
 
-  if (isUserLoading) {
+  if (!isClient || isUserLoading) {
       return (
         <div className="flex flex-col min-h-screen bg-background items-center justify-center">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -336,5 +341,3 @@ export default function EritasPayPage() {
     </div>
   );
 }
-
-    
