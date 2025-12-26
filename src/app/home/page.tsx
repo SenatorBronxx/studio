@@ -108,11 +108,7 @@ export default function HomePage() {
   const [fromLocation, setFromLocation] = useState('Your Current Location');
   const [toLocation, setToLocation] = useState('');
   
-  // *** POINT 1: LISTENING FOR DRIVER APPS ***
-  // This fetches all bus data from the `/buses` collection in Firestore.
-  // Driver apps would be responsible for writing and updating their documents here.
   const busesQuery = useMemoFirebase(() => {
-    // **FIX**: Only create the query if firestore is available AND we have a confirmed user.
     if (!firestore || !user) return null;
     return collection(firestore, 'buses');
   }, [firestore, user]);
@@ -161,7 +157,7 @@ export default function HomePage() {
     if (activeTrip && activeTrip.eta > 0) {
       interval = setInterval(() => {
         setDynamicEta(activeTrip.eta - 1);
-      }, 60 * 1000); // 60 seconds
+      }, 60 * 1000); // Changed to 60 seconds
     } else if (activeTrip && activeTrip.eta <= 0) {
       if (isOnBus) {
         // Trip has ended
@@ -886,7 +882,3 @@ export default function HomePage() {
     </div>
   );
 }
-
-    
-
-    
