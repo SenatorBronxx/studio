@@ -11,31 +11,28 @@ import { LanguageProvider } from "@/context/language-context";
 import { TripProvider } from "@/context/trip-context";
 import { PlacesProvider } from "@/context/places-context";
 import { SavedSongsProvider } from "@/context/saved-songs-context";
-import { UserPreferencesProvider } from "@/context/user-preferences-context";
 
 
 export function ClientProviders({ children }: { children: ReactNode }) {
     return (
-        <UserPreferencesProvider>
-            <LanguageProvider>
-                <WalletProvider>
-                    <TripProvider>
-                        <SavedSongsProvider>
-                            <MusicProvider>
-                                <NotificationSettingsProvider>
-                                    <SecuritySettingsProvider>
-                                        <DiscountProvider>
-                                            <PlacesProvider>
-                                                {children}
-                                            </PlacesProvider>
-                                        </DiscountProvider>
-                                    </SecuritySettingsProvider>
-                                </NotificationSettingsProvider>
-                            </MusicProvider>
-                        </SavedSongsProvider>
-                    </TripProvider>
-                </WalletProvider>
-            </LanguageProvider>
-        </UserPreferencesProvider>
+        <LanguageProvider>
+            <WalletProvider>
+                <TripProvider>
+                    <SavedSongsProvider>
+                        <MusicProvider>
+                            <NotificationSettingsProvider>
+                                <SecuritySettingsProvider>
+                                    <DiscountProvider>
+                                        <PlacesProvider>
+                                            {children}
+                                        </PlacesProvider>
+                                    </DiscountProvider>
+                                </SecuritySettingsProvider>
+                            </NotificationSettingsProvider>
+                        </MusicProvider>
+                    </SavedSongsProvider>
+                </TripProvider>
+            </WalletProvider>
+        </LanguageProvider>
     );
 }

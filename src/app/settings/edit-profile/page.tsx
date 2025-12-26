@@ -11,11 +11,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { useUser, useAuth } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState, useRef } from 'react';
 import { useLanguage } from '@/context/language-context';
-import { updateProfile, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
 
 const profileSchema = z.object({
   displayName: z.string().min(2, 'Name must be at least 2 characters.'),
@@ -43,10 +41,17 @@ const profileSchema = z.object({
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
 
+// Mock user data for a DB-less experience
+const mockUser = {
+    uid: 'mock-user-id',
+    displayName: 'Eritas User',
+    email: 'user@eritas.app',
+    photoURL: 'https://images.unsplash.com/photo-1639149888905-fb39731f2e6c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8dXNlciUyMGF2YXRhcnxlbnwwfHx8fDE3NjI2MzIyNTZ8MA&ixlib=rb-4.1.0&q=80&w=1080',
+};
+
 export default function EditProfilePage() {
   const router = useRouter();
-  const { user, isUserLoading } = useUser();
-  const auth = useAuth();
+  const [user, setUser] = useState(mockUser);
   const { toast } = useToast();
   const { t } = useLanguage();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -65,13 +70,11 @@ export default function EditProfilePage() {
   });
   
   useEffect(() => {
-    if (!isUserLoading && user) {
-        form.reset({
-            displayName: user.displayName || '',
-            email: user.email || '',
-        });
-    }
-  }, [isUserLoading, user, form]);
+    form.reset({
+        displayName: user.displayName || '',
+        email: user.email || '',
+    });
+  }, [user, form]);
 
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
@@ -83,97 +86,43 @@ export default function EditProfilePage() {
 
     setIsUploading(true);
     
-    // In a real app, you would upload the file to a storage service (e.g., Firebase Storage)
-    // and get a URL back. Here, we'll simulate it.
-    try {
-        await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate upload delay
-        const newPhotoURL = URL.createObjectURL(file);
+    // Simulate upload and get a local URL
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    const newPhotoURL = URL.createObjectURL(file);
+    setUser(prev => ({...prev, photoURL: newPhotoURL})); // Update local mock user state
 
-        // Update the user's profile with the new photo URL
-        await updateProfile(user, { photoURL: newPhotoURL });
+    toast({
+        title: "Profile Picture Updated",
+        description: "Your new profile picture has been saved.",
+    });
 
-        toast({
-            title: "Profile Picture Updated",
-            description: "Your new profile picture has been saved.",
-        });
-
-        // Force a re-render or context update if the user object is not automatically updated
-        // This might not be necessary depending on your useUser hook implementation.
-        router.refresh(); 
-
-    } catch (error) {
-        console.error("Error updating profile picture:", error);
-        toast({
-            variant: "destructive",
-            title: "Upload Failed",
-            description: "Could not update your profile picture.",
-        });
-    } finally {
-        setIsUploading(false);
-    }
+    setIsUploading(false);
   };
 
-
   const onSubmit = async (data: ProfileFormValues) => {
-    if (!user) return;
     setIsSubmitting(true);
+    // Simulate API call
+    setTimeout(() => {
+        setIsSubmitting(false);
 
-    try {
-        // Update display name if changed
-        if (data.displayName !== user.displayName) {
-            await updateProfile(user, { displayName: data.displayName });
-        }
+        const updatedUser = {...user, displayName: data.displayName };
+        setUser(updatedUser);
 
-        // Update password if a new one is provided
-        if (data.newPassword && data.currentPassword) {
-            const credential = EmailAuthProvider.credential(user.email!, data.currentPassword);
-            await reauthenticateWithCredential(user, credential);
-            await updatePassword(user, data.newPassword);
-            toast({
-                title: t('passwordUpdatedToastDescription'),
-            });
-        }
-        
         toast({
             title: t('profileUpdatedToastTitle'),
             description: t('profileUpdatedToastDescription'),
         });
+
+        if (data.newPassword) {
+             toast({
+                title: t('passwordUpdatedToastDescription'),
+            });
+        }
         
         router.back();
 
-    } catch (error: any) {
-        console.error("Profile update error:", error);
-        let message = "An error occurred while updating your profile.";
-        if (error.code === 'auth/wrong-password') {
-            message = "The current password you entered is incorrect.";
-        }
-        toast({
-            variant: "destructive",
-            title: "Update Failed",
-            description: message,
-        });
-    } finally {
-        setIsSubmitting(false);
-    }
+    }, 1500);
   };
-  
-  if (isUserLoading) {
-    return (
-        <div className="flex flex-col min-h-screen bg-background items-center justify-center">
-            <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        </div>
-    );
-  }
-  
-  if (!user) {
-    return (
-        <div className="flex flex-col min-h-screen bg-background items-center justify-center text-center p-4">
-            <h1 className="text-xl font-bold">{t('notLoggedIn')}</h1>
-            <p className='text-muted-foreground'>{t('signInToEditProfile')}</p>
-            <Button onClick={() => router.push('/')} className="mt-4">{t('goToSignIn')}</Button>
-        </div>
-    );
-  }
 
   return (
     <div className="flex flex-col min-h-screen bg-background">

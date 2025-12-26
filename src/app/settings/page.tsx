@@ -19,7 +19,7 @@ import Link from 'next/link';
 import { ThemeSwitcher } from '@/components/theme-switcher';
 import { Palette } from 'lucide-react';
 import { useLanguage } from '@/context/language-context';
-import { useUser } from '@/firebase';
+import { useState } from 'react';
 
 const settingsOptions = [
   {
@@ -54,10 +54,20 @@ const settingsOptions = [
   },
 ];
 
+// Mock user data for a DB-less experience
+const mockUser = {
+    uid: 'mock-user-id',
+    displayName: 'Eritas User',
+    email: 'user@eritas.app',
+    photoURL: 'https://images.unsplash.com/photo-1639149888905-fb39731f2e6c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8dXNlciUyMGF2YXRhcnxlbnwwfHx8fDE3NjI2MzIyNTZ8MA&ixlib=rb-4.1.0&q=80&w=1080',
+};
+
+
 export default function SettingsPage() {
   const router = useRouter();
   const { t } = useLanguage();
-  const { user, isUserLoading } = useUser();
+  const [user, setUser] = useState(mockUser);
+  const [isLoading, setIsLoading] = useState(false);
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -78,7 +88,7 @@ export default function SettingsPage() {
       <main className="flex-grow p-4">
         <div className="max-w-md mx-auto">
           <div className="flex flex-col items-center justify-center -mt-2 mb-6">
-            {isUserLoading ? (
+            {isLoading ? (
                 <div className='h-24 w-24 flex items-center justify-center'>
                     <Loader2 className="h-12 w-12 animate-spin text-primary" />
                 </div>

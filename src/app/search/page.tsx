@@ -57,19 +57,10 @@ const initialBusData = [
       position: { top: '45%', left: '25%' },
       driverImage: PlaceHolderImages.find((p) => p.id === 'user-avatar')?.imageUrl,
       seating: [
-        { id: '1A', isOccupied: false }, // Front seat
-        { id: '2A', isOccupied: true },  // Left column
-        { id: '3A', isOccupied: false },
-        { id: '4A', isOccupied: false },
-        { id: '1B', isOccupied: false }, // Right column 1
-        { id: '1C', isOccupied: true },  // Right column 2
-        { id: '2B', isOccupied: false },
-        { id: '2C', isOccupied: true },
-        { id: '3B', isOccupied: true },
-        { id: '3C', isOccupied: false },
-        { id: '4B', isOccupied: false },
-        { id: '4C', isOccupied: false },
-      ]
+        { id: '1A', isOccupied: false }, { id: '2A', isOccupied: true }, { id: '3A', isOccupied: false }, { id: '4A', isOccupied: false },
+        { id: '1B', isOccupied: false }, { id: '1C', isOccupied: true }, { id: '2B', isOccupied: false }, { id: '2C', isOccupied: true },
+        { id: '3B', isOccupied: true }, { id: '3C', isOccupied: false }, { id: '4B', isOccupied: false }, { id: '4C', isOccupied: false },
+      ].concat(Array.from({ length: 13 }, (_, i) => ({ id: `5${String.fromCharCode(65 + i)}`, isOccupied: Math.random() > 0.5 })))
     },
     {
       id: 'bus-2',
@@ -157,8 +148,6 @@ export default function SearchPage() {
                 const allStops = [...bus.stops.map(s => s.name.toLowerCase()), bus.finalDestination.name.toLowerCase()];
                 const isFromCurrentLocation = fromQuery === 'Your Current Location';
                 
-                // If "From" is the user's current location, we only need to match the "To" location.
-                // Otherwise, we check if the "From" location is one of the stops.
                 const fromMatch = isFromCurrentLocation ? true : allStops.some(stop => stop.includes(fromQuery.toLowerCase()));
                 
                 const toMatch = toQuery ? allStops.some(stop => stop.includes(toQuery.toLowerCase())) : true;
@@ -177,7 +166,6 @@ export default function SearchPage() {
     if (isTripHydrated && activeTrip) {
       const busData = buses.find(b => b.id === activeTrip.bus.id);
       if (busData) {
-        // Sync selectedBus with activeTrip from context
         setSelectedBus(busData);
         setSelectedSeats(activeTrip.seats);
       }
@@ -221,7 +209,7 @@ export default function SearchPage() {
             description: t('onTheBusToastDescription'),
           });
           setIsTransitioning(false);
-        }, 2000); // Duration of the animation
+        }, 2000);
       }
     }
 
@@ -244,7 +232,7 @@ export default function SearchPage() {
     }
     setSelectedBus(bus);
     setSelectedSeats([]);
-    setPassedBusInfo(null); // Reset
+    setPassedBusInfo(null);
 
     if (bus.eta <= 0 && bus.stops.length > 0) {
         const nextStop = bus.stops[0];
@@ -410,14 +398,13 @@ export default function SearchPage() {
     clearActiveTrip();
     setSelectedBus(null);
     setSelectedSeats([]);
-    setQrCodeUrl(null); // Invalidate QR Code
+    setQrCodeUrl(null);
 
     toast({
       title: t('tripCancelled'),
       description: t('tripCancelledDescription', { fare: fareToRefund.toFixed(2) }),
     });
 
-    // Remove any related notifications
     setNotifications(prev => prev.filter(n => n.tripId !== tripId));
   };
   

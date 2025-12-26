@@ -1,61 +1,73 @@
 
 'use client';
 
-import { createContext, useContext, ReactNode, useCallback } from 'react';
+import { createContext, useContext, ReactNode, useState, useCallback, useEffect } from 'react';
+import { Track } from './music-context';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from './language-context';
-import type { Track } from './music-context';
-import { useUserPreferences } from './user-preferences-context';
 
 type SavedSongsContextType = {
   savedSongs: Track[];
-  saveSong: (track: Track) => void;
-  unsaveSong: (trackId: string) => void;
-  isSongSaved: (trackId: string) => boolean;
-  isHydrated: boolean;
+  saveSong: (song: Track) => void;
+  unsaveSong: (songId: string) => void;
+  isSongSaved: (songId: string) => boolean;
 };
 
 const SavedSongsContext = createContext<SavedSongsContextType | undefined>(undefined);
 
 export function SavedSongsProvider({ children }: { children: ReactNode }) {
-  const { preferences, setPreference, isHydrated } = useUserPreferences();
+  const [savedSongs, setSavedSongs] = useState<Track[]>([]);
   const { toast } = useToast();
   const { t } = useLanguage();
 
-  const savedSongs = preferences?.savedSongs ?? [];
+  useEffect(() => {
+    try {
+        const storedSongs = localStorage.getItem('savedSongs');
+        if (storedSongs) {
+            setSavedSongs(JSON.parse(storedSongs));
+        }
+    } catch (error) {
+        console.error("Failed to load saved songs from localStorage", error);
+    }
+  }, []);
+  
+  const updateLocalStorage = (songs: Track[]) => {
+      try {
+          localStorage.setItem('savedSongs', JSON.stringify(songs));
+      } catch (error) {
+          console.error("Failed to save songs to localStorage", error);
+      }
+  };
 
-  const isSongSaved = useCallback((trackId: string) => {
-    return savedSongs.some(song => song.id === trackId);
+  const saveSong = useCallback((song: Track) => {
+    setSavedSongs(prev => {
+        if (prev.some(s => s.id === song.id)) {
+            return prev; // Already saved
+        }
+        const newSongs = [...prev, song];
+        updateLocalStorage(newSongs);
+        toast({ title: "Song Saved", description: `${song.title} has been added to your saved songs.` });
+        return newSongs;
+    });
+  }, [toast]);
+
+  const unsaveSong = useCallback((songId: string) => {
+    setSavedSongs(prev => {
+        const songToRemove = prev.find(s => s.id === songId);
+        const newSongs = prev.filter(s => s.id !== songId);
+        updateLocalStorage(newSongs);
+        if (songToRemove) {
+            toast({ title: "Song Unsaved", description: `${songToRemove.title} has been removed.` });
+        }
+        return newSongs;
+    });
+  }, [toast]);
+
+  const isSongSaved = useCallback((songId: string) => {
+    return savedSongs.some(s => s.id === songId);
   }, [savedSongs]);
 
-  const saveSong = useCallback((track: Track) => {
-    const currentSavedSongs = preferences?.savedSongs ?? [];
-    if (currentSavedSongs.some(song => song.id === track.id)) return;
-    
-    const newSavedSongs = [track, ...currentSavedSongs];
-    setPreference('savedSongs', newSavedSongs);
-
-    toast({
-      title: "Song Saved",
-      description: `'${track.title}' has been added to your library.`,
-    });
-  }, [preferences?.savedSongs, setPreference, toast]);
-
-  const unsaveSong = useCallback((trackId: string) => {
-    const currentSavedSongs = preferences?.savedSongs ?? [];
-    const songToRemove = currentSavedSongs.find(song => song.id === trackId);
-    if (!songToRemove) return;
-
-    const newSavedSongs = currentSavedSongs.filter(song => song.id !== trackId);
-    setPreference('savedSongs', newSavedSongs);
-    
-    toast({
-      title: "Song Unsaved",
-      description: `'${songToRemove.title}' has been removed from your library.`,
-    });
-  }, [preferences?.savedSongs, setPreference, toast]);
-
-  const value = { savedSongs, saveSong, unsaveSong, isSongSaved, isHydrated };
+  const value = { savedSongs, saveSong, unsaveSong, isSongSaved };
 
   return (
     <SavedSongsContext.Provider value={value}>

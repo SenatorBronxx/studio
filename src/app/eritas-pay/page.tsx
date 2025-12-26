@@ -31,7 +31,6 @@ import { useState, useEffect } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import Image from 'next/image';
 import { useLanguage } from '@/context/language-context';
-import { useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { IconMosaicBackground } from '@/components/icon-mosaic-background';
 import { cn } from '@/lib/utils';
@@ -58,7 +57,6 @@ type Notification = {
 export default function EritasPayPage() {
   const { balance, transactions, removeTransaction, isLowBalance } = useWallet();
   const { t } = useLanguage();
-  const { user, isUserLoading } = useUser();
   const router = useRouter();
   
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -98,23 +96,10 @@ export default function EritasPayPage() {
     }
   }, [isLowBalance, t, router]);
 
-  if (!isClient || isUserLoading) {
+  if (!isClient) {
       return (
         <div className="flex flex-col min-h-screen bg-background items-center justify-center">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        </div>
-    );
-  }
-
-  if (!user) {
-    return (
-        <div className="flex flex-col min-h-screen bg-background items-center justify-center text-center p-4">
-            <h1 className="text-xl font-bold">{t('signInToContinue')}</h1>
-            <p className='text-muted-foreground'>{t('signInToAccessFeatures')}</p>
-            <Button onClick={() => router.push('/')} className="mt-4">
-              <LogIn className="mr-2 h-4 w-4" />
-              {t('goToSignIn')}
-            </Button>
         </div>
     );
   }

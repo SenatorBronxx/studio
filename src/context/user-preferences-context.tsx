@@ -1,173 +1,74 @@
 
 'use client';
 
-import { doc, setDoc, updateDoc } from 'firebase/firestore';
-import { createContext, useContext, ReactNode, useCallback, useEffect } from 'react';
-import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
-import type { Track } from './music-context';
-import type { ActiveTrip } from './trip-context';
+import { createContext, useContext, ReactNode, useState, useCallback, useEffect } from 'react';
+import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from './language-context';
 
-// --- Types ---
+export const PREFERENCES_DOC_ID = 'userPreferences';
 
-type Transaction = {
-  id: string;
-  type: 'payment' | 'top-up';
-  plate: string;
-  amount: number;
+type Preferences = {
+  language?: string;
+  food?: string;
+  music?: string;
+  destination?: string;
 };
-
-type SavedPlace = {
-  id: string;
-  type: 'home' | 'work' | 'other';
-  address: string;
-};
-
-type Discount = {
-    code: string;
-    percentage: number;
-    description: string;
-};
-
-export interface UserPreferences {
-  id: string;
-  language: string;
-  walletBalance: number;
-  loyaltyPoints: number;
-  transactions: Transaction[];
-  savedSongs: Track[];
-  activeDiscount: Discount | null;
-  activeTrip: ActiveTrip | null;
-  isDiscountBannerDismissed: boolean;
-  notificationSettings: {
-    routeAlerts: boolean;
-    bookingAlerts: boolean;
-    systemAlerts: boolean;
-  };
-  securitySettings: {
-    isPinEnabled: boolean;
-    isBiometricEnabled: boolean;
-    is2faEnabled: boolean;
-  };
-  savedPlaces: SavedPlace[];
-}
-
-// All fields in UserPreferences are optional for partial updates
-type UserPreferencesUpdate = Partial<UserPreferences>;
 
 type UserPreferencesContextType = {
-  preferences: UserPreferences | null;
-  setPreference: <K extends keyof UserPreferences>(key: K, value: UserPreferences[K]) => void;
-  updatePreferences: (updates: UserPreferencesUpdate) => void;
+  preferences: Preferences | null;
+  setPreference: (key: keyof Preferences, value: string) => void;
   isHydrated: boolean;
 };
 
 const UserPreferencesContext = createContext<UserPreferencesContextType | undefined>(undefined);
 
-// --- Constants ---
-
-export const PREFERENCES_DOC_ID = 'user-prefs';
-
-const defaultPreferences: UserPreferences = {
-    id: PREFERENCES_DOC_ID,
-    language: 'en-us',
-    walletBalance: 0.00,
-    loyaltyPoints: 0,
-    transactions: [],
-    savedSongs: [],
-    activeDiscount: null,
-    activeTrip: null,
-    isDiscountBannerDismissed: false,
-    notificationSettings: {
-        routeAlerts: true,
-        bookingAlerts: true,
-        systemAlerts: false,
-    },
-    securitySettings: {
-        isPinEnabled: false,
-        isBiometricEnabled: true,
-        is2faEnabled: false,
-    },
-    savedPlaces: [],
+const initialPreferences: Preferences = {
+  language: 'en-us',
+  food: '',
+  music: '',
+  destination: '',
 };
 
-
-// --- Provider ---
-
 export function UserPreferencesProvider({ children }: { children: ReactNode }) {
-  const { user, isUserLoading } = useUser();
-  const firestore = useFirestore();
+  const [preferences, setPreferences] = useState<Preferences | null>(null);
+  const [isHydrated, setIsHydrated] = useState(false);
+  const { toast } = useToast();
+  const { t } = useLanguage();
 
-  const userPrefsRef = useMemoFirebase(() => {
-    if (!user || !firestore) return null;
-    return doc(firestore, 'users', user.uid, 'preferences', PREFERENCES_DOC_ID);
-  }, [user, firestore]);
-
-  const { data, isLoading, error } = useDoc<UserPreferences>(userPrefsRef);
-  
-  const isHydrated = !isUserLoading && !isLoading;
-
-  const createInitialPreferences = useCallback(async () => {
-    if (!userPrefsRef) return;
-    
-    setDoc(userPrefsRef, defaultPreferences).catch(err => {
-      const permissionError = new FirestorePermissionError({
-        path: userPrefsRef.path,
-        operation: 'create',
-        requestResourceData: defaultPreferences
-      });
-      errorEmitter.emit('permission-error', permissionError);
-    });
-  }, [userPrefsRef]);
-
-  // When the hook is hydrated and there's no data and no error, it's a new user.
-  // We need to create their initial preferences document.
   useEffect(() => {
-    if (isHydrated && !data && !error) {
-      createInitialPreferences();
+    // In a DB-less app, we can load from localStorage
+    try {
+        const storedPrefs = localStorage.getItem('userPreferences');
+        if (storedPrefs) {
+            setPreferences(JSON.parse(storedPrefs));
+        } else {
+            setPreferences(initialPreferences);
+        }
+    } catch (error) {
+        console.error("Failed to load preferences from localStorage", error);
+        setPreferences(initialPreferences);
     }
-  }, [isHydrated, data, error, createInitialPreferences]);
+    setIsHydrated(true);
+  }, []);
 
-
-  const setPreference = useCallback(<K extends keyof UserPreferences>(key: K, value: UserPreferences[K]) => {
-      if (!userPrefsRef) return;
-      
-      const updateData = { [key]: value };
-
-      // Use updateDoc for targeted updates, which is more efficient.
-      // Firestore's `onSnapshot` listener in `useDoc` will automatically update local state.
-      updateDoc(userPrefsRef, updateData).catch(err => {
-        const permissionError = new FirestorePermissionError({
-            path: userPrefsRef.path,
-            operation: 'update',
-            requestResourceData: updateData
-        });
-        errorEmitter.emit('permission-error', permissionError);
-      });
-  }, [userPrefsRef]);
-
-
-  const updatePreferences = useCallback((updates: UserPreferencesUpdate) => {
-    if (!userPrefsRef) return;
-
-    updateDoc(userPrefsRef, updates).catch(err => {
-        const permissionError = new FirestorePermissionError({
-            path: userPrefsRef.path,
-            operation: 'update',
-            requestResourceData: updates
-        });
-        errorEmitter.emit('permission-error', permissionError);
-      });
-  }, [userPrefsRef]);
-
-  const value = {
-    // Provide the fetched preferences, or null if it doesn't exist yet
-    preferences: data,
-    setPreference,
-    updatePreferences,
-    isHydrated,
-  };
+  const setPreference = useCallback((key: keyof Preferences, value: string) => {
+    setPreferences(prev => {
+        const newPrefs = { ...(prev || initialPreferences), [key]: value };
+        try {
+            localStorage.setItem('userPreferences', JSON.stringify(newPrefs));
+        } catch (error) {
+             console.error("Failed to save preferences to localStorage", error);
+             toast({
+                variant: 'destructive',
+                title: t('uhOhSomethingWentWrong'),
+                description: 'Could not save your preferences.',
+             });
+        }
+        return newPrefs;
+    });
+  }, [t, toast]);
+  
+  const value = { preferences, setPreference, isHydrated };
 
   return (
     <UserPreferencesContext.Provider value={value}>
@@ -175,8 +76,6 @@ export function UserPreferencesProvider({ children }: { children: ReactNode }) {
     </UserPreferencesContext.Provider>
   );
 }
-
-// --- Hook ---
 
 export function useUserPreferences() {
   const context = useContext(UserPreferencesContext);

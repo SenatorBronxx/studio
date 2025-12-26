@@ -56,8 +56,6 @@ import { useTrip } from '@/context/trip-context';
 import { usePlaces, type SavedPlace } from '@/context/places-context';
 import { PlacesDialog, PlaceAction } from './places-dialog';
 import { useState } from 'react';
-import { useAuth, useFirebase, useUser } from '@/firebase';
-import { doc, deleteDoc } from 'firebase/firestore';
 
 const menuItems = [
     { id: 'settings', icon: Settings, labelKey: 'profileSettings', href: '/settings' },
@@ -79,9 +77,16 @@ const discountOffer = {
     description: '15% discount on your next 3 trips',
 };
 
+// Mock user data for a DB-less experience
+const mockUser = {
+    uid: 'mock-user-id',
+    displayName: 'Eritas User',
+    email: 'user@eritas.app',
+    photoURL: 'https://images.unsplash.com/photo-1639149888905-fb39731f2e6c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8dXNlciUyMGF2YXRhcnxlbnwwfHx8fDE3NjI2MzIyNTZ8MA&ixlib=rb-4.1.0&q=80&w=1080',
+};
+
+
 export function ProfileSidebar() {
-    const { user } = useUser();
-    const { auth, firestore } = useFirebase();
     const router = useRouter();
     const { toast } = useToast();
     const { activeDiscount, activateDiscount, deactivateDiscount } = useDiscount();
@@ -92,56 +97,21 @@ export function ProfileSidebar() {
 
 
     const handleLogout = () => {
-        auth.signOut().then(() => {
-            router.push('/');
-            toast({
-                title: 'Logged Out',
-                description: 'You have been successfully logged out.',
-            });
-            // Also clear any local storage data if needed
-            localStorage.clear();
-        }).catch((error) => {
-            console.error('Logout error:', error);
-            toast({
-                variant: 'destructive',
-                title: 'Logout Failed',
-                description: 'An error occurred while logging out. Please try again.',
-            });
+        router.push('/');
+        toast({
+            title: 'Logged Out',
+            description: 'You have been successfully logged out.',
         });
+        localStorage.clear();
     };
 
     const handleDeleteAccount = async () => {
-        const currentUser = auth.currentUser;
-        if (currentUser) {
-            try {
-                // 1. Delete user's document from Firestore
-                const userDocRef = doc(firestore, 'users', currentUser.uid);
-                await deleteDoc(userDocRef);
-
-                // 2. Delete the user from Firebase Authentication
-                await currentUser.delete();
-
-                toast({
-                    title: t('accountDeletedToastTitle'),
-                    description: t('accountDeletedToastDescription')
-                });
-                router.push('/');
-                localStorage.clear();
-
-            } catch (error: any) {
-                 let message = 'An error occurred while deleting your account.';
-                 if (error.code === 'auth/requires-recent-login') {
-                    message = 'This operation requires recent authentication. Please log out and log in again before deleting your account.';
-                 } else if (error.code === 'permission-denied') {
-                    message = "You don't have permission to delete this data. Please contact support.";
-                 }
-                 toast({
-                    variant: 'destructive',
-                    title: 'Deletion Failed',
-                    description: message,
-                });
-            }
-        }
+        toast({
+            title: t('accountDeletedToastTitle'),
+            description: t('accountDeletedToastDescription')
+        });
+        router.push('/');
+        localStorage.clear();
     };
     
     const handleNavigate = (href?: string) => {
@@ -193,6 +163,7 @@ export function ProfileSidebar() {
     const homePlace = places.find(p => p.type === 'home');
     const workPlace = places.find(p => p.type === 'work');
     const otherPlaces = places.filter(p => p.type === 'other');
+    const user = mockUser; // Use the mock user
 
     return (
         <>
@@ -211,7 +182,6 @@ export function ProfileSidebar() {
                     <SheetTitle>{t('myProfile')}</SheetTitle>
                 </SheetHeader>
                 <div className="py-6 flex flex-col h-full">
-                    {/* Profile Section */}
                     {user ? (
                         <div className="flex items-center gap-4">
                             <Avatar className="h-16 w-16">
@@ -257,7 +227,6 @@ export function ProfileSidebar() {
                                                 <Button
                                                     variant="ghost"
                                                     className="justify-start gap-3 text-md w-full"
-                                                    disabled={!user}
                                                 >
                                                     <Icon className="h-5 w-5 text-muted-foreground" />
                                                     {t(item.labelKey)}
@@ -311,9 +280,9 @@ export function ProfileSidebar() {
 
                                 if (item.id === 'places') {
                                     return (
-                                        <AccordionItem value={`item-${index}`} key={item.id} className="border-b-0" disabled={!user}>
-                                            <AccordionTrigger className="hover:no-underline hover:bg-transparent p-0" disabled={!user}>
-                                                <Button variant="ghost" className="justify-start gap-3 text-md w-full" asChild disabled={!user}>
+                                        <AccordionItem value={`item-${index}`} key={item.id} className="border-b-0">
+                                            <AccordionTrigger className="hover:no-underline hover:bg-transparent p-0">
+                                                <Button variant="ghost" className="justify-start gap-3 text-md w-full" asChild>
                                                     <div>
                                                         <Icon className="h-5 w-5 text-muted-foreground" />
                                                         {t(item.labelKey)}
@@ -376,7 +345,6 @@ export function ProfileSidebar() {
                                         variant="ghost"
                                         className="justify-start gap-3 text-md"
                                         onClick={() => handleMenuClick(item)}
-                                        disabled={!user}
                                     >
                                         <Icon className="h-5 w-5 text-muted-foreground" />
                                         {t(item.labelKey)}
@@ -412,7 +380,7 @@ export function ProfileSidebar() {
 
                         <div className="space-y-2">
                             {/* Logout Button */}
-                            <Button variant="outline" className="w-full" onClick={handleLogout} disabled={!user}>
+                            <Button variant="outline" className="w-full" onClick={handleLogout}>
                                 <LogOut className="mr-2 h-5 w-5" />
                                 {t('logout')}
                             </Button>
@@ -420,7 +388,7 @@ export function ProfileSidebar() {
                             {/* Delete Account Button */}
                             <AlertDialog>
                                 <AlertDialogTrigger asChild>
-                                    <Button variant="destructive" className="w-full" disabled={!user}>
+                                    <Button variant="destructive" className="w-full">
                                         <Trash2 className="mr-2 h-5 w-5" />
                                         {t('deleteAccount')}
                                     </Button>

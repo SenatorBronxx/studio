@@ -1,11 +1,11 @@
 
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { Button } from "@/components/ui/button";
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
@@ -13,334 +13,137 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
-import { useLanguage } from "@/context/language-context";
-import Image from "next/image";
-import {
-  getAuth,
-  signInWithEmailAndPassword,
-  signInWithPopup,
-  GoogleAuthProvider,
-  createUserWithEmailAndPassword,
-  updateProfile,
-} from "firebase/auth";
-import { doc, setDoc, serverTimestamp, getDoc } from "firebase/firestore";
-import { useFirebase } from "@/firebase";
-import { errorEmitter } from "@/firebase/error-emitter";
-import { FirestorePermissionError } from "@/firebase/errors";
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/use-toast';
+import { AppleIcon } from './icons/apple';
+import { GoogleIcon } from './icons/google';
+import { Loader2 } from 'lucide-react';
+import { Separator } from './ui/separator';
+import { useLanguage } from '@/context/language-context';
 
-// Schemas
-const signInSchema = z.object({
-  email: z.string().email({ message: "Invalid email address." }),
-  password: z.string().min(1, { message: "Password is required." }),
-});
-
-const signUpSchema = z.object({
-  firstName: z.string().min(1, { message: "First name is required." }),
-  lastName: z.string().min(1, { message: "Last name is required." }),
-  email: z.string().email({ message: "Invalid email address." }),
-  password: z.string().min(8, { message: "Password must be at least 8 characters." }),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
+const formSchema = z.object({
+  email: z.string().email('Please enter a valid email.'),
+  password: z.string().min(8, 'Password must be at least 8 characters.'),
 });
 
 type AuthFormProps = {
-  onSignUpSuccess: (userId: string) => void;
   onSignInSuccess: () => void;
+  onSignUpSuccess: (userId: string) => void;
 };
 
-export function AuthForm({ onSignUpSuccess, onSignInSuccess }: AuthFormProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+export function AuthForm({ onSignInSuccess, onSignUpSuccess }: AuthFormProps) {
   const { toast } = useToast();
   const { t } = useLanguage();
-  const { auth, firestore } = useFirebase();
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSocialLoading, setIsSocialLoading] = useState<null | 'google' | 'apple'>(null);
 
-  const signInForm = useForm<z.infer<typeof signInSchema>>({
-    resolver: zodResolver(signInSchema),
-    defaultValues: { email: "", password: "" },
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
   });
 
-  const signUpForm = useForm<z.infer<typeof signUpSchema>>({
-    resolver: zodResolver(signUpSchema),
-    defaultValues: { firstName: "", lastName: "", email: "", password: "", confirmPassword: "" },
-  });
-
-  const handleError = (error: any) => {
-    console.error("Authentication error:", error);
-    let message = "An unexpected error occurred. Please try again.";
-    if (error.code) {
-        switch (error.code) {
-            case 'auth/user-not-found':
-            case 'auth/wrong-password':
-            case 'auth/invalid-credential':
-                message = 'Invalid email or password.';
-                break;
-            case 'auth/email-already-in-use':
-                message = 'This email address is already in use.';
-                break;
-            case 'auth/weak-password':
-                message = 'The password is too weak.';
-                break;
-            case 'auth/invalid-email':
-                message = 'Please enter a valid email address.';
-                break;
-             case 'auth/popup-closed-by-user':
-                message = 'Sign-in process was cancelled.';
-                break;
-            default:
-                message = error.message;
-        }
-    }
-    toast({
-        variant: 'destructive',
-        title: 'Authentication Failed',
-        description: message,
-    });
-    setIsSubmitting(false);
-  };
-  
-  const createUserProfileDocument = (user: import("firebase/auth").User, firstName: string, lastName: string) => {
-      const userRef = doc(firestore, "users", user.uid);
-      const userData = {
-        id: user.uid,
-        email: user.email,
-        firstName: firstName,
-        lastName: lastName,
-        signUpDate: serverTimestamp(),
-        lastLogin: serverTimestamp(),
-        profilePicture: user.photoURL || '',
-      };
-      
-      setDoc(userRef, userData, { merge: true }).catch(err => {
-          const permissionError = new FirestorePermissionError({
-              path: userRef.path,
-              operation: 'create',
-              requestResourceData: userData,
-          });
-          errorEmitter.emit('permission-error', permissionError);
+  // Mock sign-in function
+  const handleSignIn = async (values: z.infer<typeof formSchema>) => {
+    setIsLoading(true);
+    // Simulate API call
+    setTimeout(() => {
+      setIsLoading(false);
+      toast({
+        title: t('signInSuccessfulToastTitle'),
+        description: t('signInSuccessfulToastDescription'),
       });
-  };
-
-  const handleSignIn = async (values: z.infer<typeof signInSchema>) => {
-    setIsSubmitting(true);
-    signInWithEmailAndPassword(auth, values.email, values.password)
-      .then((userCredential) => {
-        const user = userCredential.user;
-        const userRef = doc(firestore, "users", user.uid);
-        setDoc(userRef, { lastLogin: serverTimestamp() }, { merge: true }).catch(err => {
-            console.warn("Could not update last login time for user:", err);
-        });
-        toast({
-          title: t('signInSuccessfulToastTitle'),
-          description: t('signInSuccessfulToastDescription'),
-        });
-        onSignInSuccess();
-      })
-      .catch(handleError)
-      .finally(() => setIsSubmitting(false));
-  };
-
-  const handleSignUp = async (values: z.infer<typeof signUpSchema>) => {
-    setIsSubmitting(true);
-    createUserWithEmailAndPassword(auth, values.email, values.password)
-      .then(async (userCredential) => {
-        const user = userCredential.user;
-        // Update Firebase Auth profile
-        await updateProfile(user, { displayName: `${values.firstName} ${values.lastName}` });
-        
-        createUserProfileDocument(user, values.firstName, values.lastName);
-        toast({
-          title: t('signUpSuccessfulToastTitle'),
-          description: t('signUpSuccessfulToastDescription'),
-        });
-        onSignUpSuccess(user.uid);
-      })
-      .catch(handleError)
-      .finally(() => setIsSubmitting(false));
+      onSignInSuccess();
+    }, 1000);
   };
   
-  const handleSocialLogin = async (providerName: 'Google') => {
-    setIsSubmitting(true);
-    
-    let provider;
-    if (providerName === 'Google') {
-        provider = new GoogleAuthProvider();
-    } else {
-        setIsSubmitting(false);
-        return;
-    }
-
-    signInWithPopup(auth, provider)
-      .then(async (result) => {
-        const user = result.user;
-        const userRef = doc(firestore, "users", user.uid);
-        const userDoc = await getDoc(userRef);
-
-        if (!userDoc.exists()) {
-          // This is a new user signing up with social auth
-          const nameParts = user.displayName?.split(' ') || ['New', 'User'];
-          const firstName = nameParts[0];
-          const lastName = nameParts.slice(1).join(' ') || ' ';
-          
-          createUserProfileDocument(user, firstName, lastName);
-          onSignUpSuccess(user.uid);
-        } else {
-          // Existing user signing in
-          setDoc(userRef, { lastLogin: serverTimestamp() }, { merge: true }).catch(err => {
-            console.warn("Could not update last login time for user:", err);
-          });
-          onSignInSuccess();
-        }
+  // Mock sign-up function
+  const handleSignUp = async (values: z.infer<typeof formSchema>) => {
+    setIsLoading(true);
+    // Simulate API call
+    setTimeout(() => {
+      setIsLoading(false);
+      toast({
+        title: t('signUpSuccessfulToastTitle'),
+        description: t('signUpSuccessfulToastDescription'),
+      });
+      onSignUpSuccess('mock-user-id'); // Pass a mock user ID
+    }, 1000);
+  };
+  
+  // Mock social sign-in
+  const handleSocialSignIn = (provider: 'google' | 'apple') => {
+    setIsSocialLoading(provider);
+    setTimeout(() => {
+        setIsSocialLoading(null);
         toast({
-            title: t('socialSignInToastTitle', { provider: providerName }),
+            title: t('socialSignInToastTitle', { provider }),
             description: t('welcome'),
         });
-      })
-      .catch(handleError)
-      .finally(() => setIsSubmitting(false));
-  }
+        onSignInSuccess();
+    }, 1500);
+  };
 
   return (
-    <Tabs defaultValue="sign-in" className="w-full">
-      <TabsList className="grid w-full grid-cols-2">
-        <TabsTrigger value="sign-in">{t('signIn')}</TabsTrigger>
-        <TabsTrigger value="sign-up">{t('signUp')}</TabsTrigger>
-      </TabsList>
-      <TabsContent value="sign-in">
-        <Form {...signInForm}>
-          <form onSubmit={signInForm.handleSubmit(handleSignIn)} className="space-y-4 mt-4">
-            <FormField
-              control={signInForm.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('emailAddressLabel')}</FormLabel>
-                  <FormControl>
-                    <Input placeholder="m@example.com" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={signInForm.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('passwordLabel')}</FormLabel>
-                  <FormControl>
-                    <Input type="password" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {t('signIn')}
-            </Button>
-          </form>
-        </Form>
-      </TabsContent>
-      <TabsContent value="sign-up">
-        <Form {...signUpForm}>
-          <form onSubmit={signUpForm.handleSubmit(handleSignUp)} className="space-y-4 mt-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormField
-                control={signUpForm.control}
-                name="firstName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('firstNameLabel')}</FormLabel>
-                    <FormControl>
-                      <Input placeholder={t('firstNamePlaceholder')} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={signUpForm.control}
-                name="lastName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('lastNameLabel')}</FormLabel>
-                    <FormControl>
-                      <Input placeholder={t('lastNamePlaceholder')} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-             <FormField
-              control={signUpForm.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('emailAddressLabel')}</FormLabel>
-                  <FormControl>
-                    <Input placeholder="m@example.com" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={signUpForm.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('passwordLabel')}</FormLabel>
-                  <FormControl>
-                    <Input type="password" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-             <FormField
-              control={signUpForm.control}
-              name="confirmPassword"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('confirmPasswordLabel')}</FormLabel>
-                  <FormControl>
-                    <Input type="password" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
-             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {t('signUp')}
-            </Button>
-          </form>
-        </Form>
-      </TabsContent>
-      <div className="relative mt-6">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">
-            {t('orContinueWith')}
-          </span>
-        </div>
-      </div>
-      <div className="mt-6">
-        <Button variant="outline" className="w-full" onClick={() => handleSocialLogin('Google')}>
-          <Image src="https://www.svgrepo.com/show/303108/google-icon-logo.svg" alt="Google" width={16} height={16} className="mr-2 h-4 w-4" />
+    <>
+      <div className="grid grid-cols-2 gap-4">
+        <Button variant="outline" onClick={() => handleSocialSignIn('google')} disabled={!!isSocialLoading}>
+          {isSocialLoading === 'google' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon className="mr-2 h-4 w-4" />}
           Google
         </Button>
+        <Button variant="outline" onClick={() => handleSocialSignIn('apple')} disabled={!!isSocialLoading}>
+          {isSocialLoading === 'apple' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <AppleIcon className="mr-2 h-4 w-4" />}
+          Apple
+        </Button>
       </div>
-    </Tabs>
+      <div className="relative my-4">
+        <Separator />
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-2 text-xs text-muted-foreground">
+          {t('orContinueWith')}
+        </div>
+      </div>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleSignIn)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('emailAddressLabel')}</FormLabel>
+                <FormControl>
+                  <Input placeholder={t('emailAddressPlaceholder')} {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('passwordLabel')}</FormLabel>
+                <FormControl>
+                  <Input type="password" placeholder="••••••••" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {t('signIn')}
+            </Button>
+            <Button type="button" variant="secondary" onClick={form.handleSubmit(handleSignUp)} className="w-full" disabled={isLoading}>
+              {t('signUp')}
+            </Button>
+          </div>
+        </form>
+      </Form>
+    </>
   );
 }

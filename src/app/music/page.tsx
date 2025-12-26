@@ -15,7 +15,6 @@ import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { useMusic, type Track, PlaylistItem } from '@/context/music-context';
 import { useLanguage } from '@/context/language-context';
-import { useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { useDebounce } from '@/hooks/use-debounce';
 import { searchMusic } from '@/ai/flows/search-music';
@@ -52,7 +51,6 @@ export default function MusicPage() {
     const { savedSongs, saveSong, unsaveSong, isSongSaved } = useSavedSongs();
 
     const { t } = useLanguage();
-    const { user, isUserLoading } = useUser();
     const router = useRouter();
     const [searchQuery, setSearchQuery] = useState('');
     const debouncedSearchQuery = useDebounce(searchQuery, 500);
@@ -149,27 +147,6 @@ export default function MusicPage() {
             image: albumImage
         };
     };
-
-    if (isUserLoading) {
-        return (
-            <div className="flex flex-col min-h-screen bg-background items-center justify-center">
-                <Loader2 className="h-12 w-12 animate-spin text-primary" />
-            </div>
-        );
-    }
-
-    if (!user) {
-        return (
-            <div className="flex flex-col min-h-screen bg-background items-center justify-center text-center p-4">
-                <h1 className="text-xl font-bold">{t('signInToContinue')}</h1>
-                <p className='text-muted-foreground'>{t('signInToAccessFeatures')}</p>
-                <Button onClick={() => router.push('/')} className="mt-4">
-                  <LogIn className="mr-2 h-4 w-4" />
-                  {t('goToSignIn')}
-                </Button>
-            </div>
-        );
-    }
 
     const upNextPlaylist = playlist
         .filter(p => p.id !== nowPlaying?.id);
@@ -290,7 +267,7 @@ export default function MusicPage() {
                                                         <span>{track.duration}</span>
                                                     </div>
                                                 </div>
-                                                {track.addedBy === user?.uid && (
+                                                {track.addedBy === 'user-id' && ( // Replace with actual user ID
                                                     <Button size="icon" variant="ghost" className="opacity-0 group-hover:opacity-100" onClick={() => removeFromPlaylist(track.id)}>
                                                         <X className="h-5 w-5 text-muted-foreground" />
                                                     </Button>

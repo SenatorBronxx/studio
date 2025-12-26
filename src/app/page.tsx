@@ -4,44 +4,29 @@
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { AuthForm } from '@/components/auth-form';
-import { useUser } from '@/firebase';
 import { useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { SignupSlideshow } from '@/components/signup-slideshow';
-import { useUserPreferences } from '@/context/user-preferences-context';
 import { IconMosaicBackground } from '@/components/icon-mosaic-background';
-import { doc, getDoc } from 'firebase/firestore';
-import { useFirebase } from '@/firebase';
-import { PREFERENCES_DOC_ID } from '@/context/user-preferences-context';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { user, isUserLoading } = useUser();
-  const { firestore } = useFirebase();
   const [showSlideshow, setShowSlideshow] = useState(false);
-  const { isHydrated } = useUserPreferences();
+  const [loading, setLoading] = useState(true);
 
+  // Simulate a logged-out state.
   useEffect(() => {
-    // Redirect existing users who land on this page
-    if (!isUserLoading && user && isHydrated) {
-        router.push('/home');
-    }
-  }, [user, isUserLoading, router, isHydrated]);
+    // In a real app, you might check for a token here.
+    // For now, we just show the login page.
+    setLoading(false);
+  }, []);
   
   const handleSignInSuccess = () => {
-    // The useEffect hook will handle the redirect for existing users.
+    router.push('/home');
   }
   
-  const handleSignUpSuccess = async (userId: string) => {
-    // For a new user, check if they have any preferences set up.
-    // If not (which they won't), show the slideshow.
-    const prefsRef = doc(firestore, 'users', userId, 'preferences', PREFERENCES_DOC_ID);
-    const docSnap = await getDoc(prefsRef);
-    if (!docSnap.exists()) {
-        setShowSlideshow(true);
-    } else {
-        router.push('/home');
-    }
+  const handleSignUpSuccess = () => {
+    setShowSlideshow(true);
   }
 
   const handleFinishSlideshow = () => {
@@ -51,25 +36,15 @@ export default function LoginPage() {
   if (showSlideshow) {
       return <SignupSlideshow onFinish={handleFinishSlideshow} />;
   }
-  
-  // This more robust check ensures we wait for both Firebase Auth and our custom preferences to be loaded.
-  if (isUserLoading || (user && !isHydrated && !showSlideshow)) {
-    return (
+
+  if (loading) {
+     return (
         <div className="flex h-screen w-full items-center justify-center bg-background">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />
         </div>
     );
   }
-  
-  // If user is loaded but we are supposed to show the slideshow, don't show the loader
-  if (user && isHydrated && !showSlideshow) {
-      // This is a transitional state, showing a loader is fine.
-      return (
-        <div className="flex h-screen w-full items-center justify-center bg-background">
-            <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        </div>
-    );
-  }
+
 
   return (
     <div className="relative flex min-h-screen items-center justify-center bg-background p-4 overflow-hidden">

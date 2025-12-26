@@ -61,25 +61,46 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useBusArrivalNotification } from '@/hooks/use-bus-arrival-notification';
-import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { TripRating } from '@/components/trip-rating';
-import { collection, doc, setDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
 
+const initialBusData = [
+    {
+      id: 'bus-1',
+      driver: 'Kofi Mensah',
+      plate: 'GT 4589-23',
+      eta: 1,
+      capacity: { current: 35, max: 52 },
+      stops: [
+        { name: 'Adenta', fare: 5.00, eta: 5 },
+        { name: 'Madina', fare: 7.50, eta: 15 },
+      ],
+      finalDestination: { name: 'Atomic Junction', fare: 10.00, eta: 25 },
+      position: { top: '45%', left: '25%' },
+      driverImage: PlaceHolderImages.find((p) => p.id === 'user-avatar')?.imageUrl,
+      seating: [
+        { id: '1A', isOccupied: false }, { id: '2A', isOccupied: true }, { id: '3A', isOccupied: false }, { id: '4A', isOccupied: false },
+        { id: '1B', isOccupied: false }, { id: '1C', isOccupied: true }, { id: '2B', isOccupied: false }, { id: '2C', isOccupied: true },
+        { id: '3B', isOccupied: true }, { id: '3C', isOccupied: false }, { id: '4B', isOccupied: false }, { id: '4C', isOccupied: false },
+      ].concat(Array.from({ length: 13 }, (_, i) => ({ id: `5${String.fromCharCode(65 + i)}`, isOccupied: Math.random() > 0.5 })))
+    },
+    {
+      id: 'bus-2',
+      driver: 'Ama Serwaa',
+      plate: 'AS 1234-24',
+      eta: 25,
+      capacity: { current: 48, max: 48 },
+      stops: [
+        { name: 'Circle', fare: 6.00, eta: 10 },
+        { name: 'Kaneshie', fare: 8.50, eta: 20 },
+      ],
+      finalDestination: { name: 'Mallam', fare: 12.00, eta: 30 },
+      position: { top: '55%', left: '65%' },
+      driverImage: PlaceHolderImages.find((p) => p.id === 'user-avatar')?.imageUrl,
+      seating: Array.from({ length: 25 }, (_, i) => ({ id: `${Math.floor(i/5)+1}${String.fromCharCode(65 + (i % 5 > 1 ? i%5-1 : i%5))}`, isOccupied: true }))
+    },
+];
 
-type BusData = {
-  id: string;
-  driver: string;
-  plate: string;
-  eta: number;
-  capacity: { current: number, max: number };
-  stops: { name: string; fare: number; eta: number; }[];
-  finalDestination: { name: string; fare: number; eta: number; };
-  position: { top: string; left: string; };
-  driverImage: string | undefined;
-  seating: ({ id: string; isOccupied: boolean; } | null)[];
-};
+type BusData = typeof initialBusData[0];
 type StopInfo = { name: string; fare: number; eta: number; };
 type Notification = {
     id: number;
@@ -92,11 +113,16 @@ type PassedBusInfo = {
     nextStop: StopInfo;
     walkingTime: number;
 };
+// Mock user for DB-less experience
+const mockUser = {
+    uid: 'mock-user-id',
+    displayName: 'Eritas User',
+    email: 'user@eritas.app'
+}
 
 export default function HomePage() {
   const router = useRouter();
-  const { user, isUserLoading } = useUser();
-  const firestore = useFirestore();
+  const user = mockUser; // Use mock user
   const { toast } = useToast();
   const { balance, deductBalance, addTransaction, addLoyaltyPoints, addBalance: refundBalance, isLowBalance } = useWallet();
   const { setNowPlaying, isOnBus } = useMusic();
@@ -108,11 +134,8 @@ export default function HomePage() {
   const [fromLocation, setFromLocation] = useState('Your Current Location');
   const [toLocation, setToLocation] = useState('');
   
-  const busesQuery = useMemoFirebase(() => {
-    if (!firestore || !user) return null;
-    return collection(firestore, 'buses');
-  }, [firestore, user]);
-  const { data: buses, isLoading: isLoadingBuses } = useCollection<BusData>(busesQuery);
+  const [buses, setBuses] = useState(initialBusData);
+  const [isLoadingBuses, setIsLoadingBuses] = useState(true);
 
   const [selectedBus, setSelectedBus] = useState<BusData | null>(null);
   const [isBoarding, setIsBoarding] = useState(false);
@@ -130,6 +153,11 @@ export default function HomePage() {
 
   useBusArrivalNotification(busHasArrived);
   
+  useEffect(() => {
+    // Simulate loading buses
+    setTimeout(() => setIsLoadingBuses(false), 500);
+  }, []);
+
   useEffect(() => {
     if (activeDiscount && !isDiscountBannerDismissed) {
       setShowDiscountBanner(true);
@@ -157,7 +185,7 @@ export default function HomePage() {
     if (activeTrip && activeTrip.eta > 0) {
       interval = setInterval(() => {
         setDynamicEta(activeTrip.eta - 1);
-      }, 60 * 1000); // Changed to 60 seconds
+      }, 60 * 1000); // 60 seconds
     } else if (activeTrip && activeTrip.eta <= 0) {
       if (isOnBus) {
         // Trip has ended
@@ -216,14 +244,6 @@ export default function HomePage() {
   };
 
   const handleBusSelect = (bus: BusData) => {
-     if (!user) {
-      toast({
-        variant: "destructive",
-        title: t('notLoggedIn'),
-        description: "You must be logged in to select a bus.",
-      });
-      return;
-    }
     if (activeTrip) {
       toast({
         variant: "destructive",
@@ -251,7 +271,7 @@ export default function HomePage() {
   }
 
   const handleBoard = async (stop: {name: string, fare: number, eta: number}) => {
-    if (!selectedBus || selectedSeats.length === 0 || !user || !firestore) return;
+    if (!selectedBus || selectedSeats.length === 0) return;
 
     let farePerSeat = stop.fare;
     if (activeDiscount) {
@@ -270,47 +290,18 @@ export default function HomePage() {
 
     setIsBoarding(true);
     
-    const tripId = uuidv4();
-    const tripRef = doc(firestore, 'trips', tripId);
-    const busRef = doc(firestore, 'buses', selectedBus.id);
-
-    const tripData = {
-        id: tripId,
-        userId: user.uid,
-        busId: selectedBus.id,
-        busPlate: selectedBus.plate,
-        status: 'pending',
-        origin: { name: 'Current Location', location: null },
-        destination: { name: stop.name, location: null },
-        pickupLocation: null,
-        currentBusLocation: null,
-        eta: selectedBus.eta,
-        fare: totalFare,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-    };
-
-    const updatedSeating = selectedBus.seating.map(s => (s && selectedSeats.includes(s.id)) ? { ...s, isOccupied: true } : s);
-    const updatedCapacity = selectedBus.capacity.current + selectedSeats.length;
-    const busUpdateData = {
-      'seating': updatedSeating,
-      'capacity.current': updatedCapacity,
-    };
-    
-    try {
-        // Perform Firestore writes
-        await setDoc(tripRef, tripData);
-        await updateDoc(busRef, busUpdateData);
-    
-        // All local state updates happen after successful DB write.
+    // Simulate API call and local state update
+    setTimeout(() => {
+        const tripId = uuidv4();
+        
         deductBalance(totalFare);
         const newTransaction = { id: tripId, type: 'payment', plate: selectedBus?.plate || 'N/A', amount: -totalFare };
         addTransaction(newTransaction);
         
         const updatedBusForTrip = {
             ...selectedBus,
-            seating: updatedSeating,
-            capacity: { ...selectedBus.capacity, current: updatedCapacity }
+            seating: selectedBus.seating.map(s => (s && selectedSeats.includes(s.id)) ? { ...s, isOccupied: true } : s),
+            capacity: { ...selectedBus.capacity, current: selectedBus.capacity.current + selectedSeats.length }
         };
 
         const newTrip: ActiveTrip = {
@@ -379,23 +370,12 @@ export default function HomePage() {
                 });
             }
         }
-
-    } catch (error) {
-        console.error("Error creating trip:", error);
-        toast({ variant: 'destructive', title: "Booking Failed", description: "Could not create your trip. Please try again."});
-        const permissionError = new FirestorePermissionError({
-            path: tripRef.path, // or busRef.path depending on which one failed
-            operation: 'write',
-            requestResourceData: { trip: tripData, busUpdate: busUpdateData },
-        });
-        errorEmitter.emit('permission-error', permissionError);
-    } finally {
         setIsBoarding(false);
-    }
+    }, 1500);
   }
 
    const handleCancelTrip = async () => {
-    if (!activeTrip || !firestore) return;
+    if (!activeTrip) return;
 
     const tripId = activeTrip.id;
 
@@ -408,40 +388,21 @@ export default function HomePage() {
       fareToRefund *= (1 - activeDiscount.percentage / 100);
     }
     
-    const busRef = doc(firestore, 'buses', activeTrip.bus.id);
-    const busUpdateData = {
-        'seating': activeTrip.bus.seating.map(s => (s && activeTrip.seats.includes(s.id)) ? { ...s, isOccupied: false } : s),
-        'capacity.current': activeTrip.bus.capacity.current - activeTrip.seats.length,
-    };
+    refundBalance(fareToRefund);
+    addTransaction({ type: 'top-up', plate: `Refund for ${activeTrip.bus.plate}`, amount: fareToRefund });
 
-    try {
-        await updateDoc(busRef, busUpdateData);
+    clearActiveTrip();
+    setSelectedBus(null);
+    setSelectedSeats([]);
+    setQrCodeUrl(null);
 
-        refundBalance(fareToRefund);
-        addTransaction({ type: 'top-up', plate: `Refund for ${activeTrip.bus.plate}`, amount: fareToRefund });
+    toast({
+      title: t('tripCancelled'),
+      description: t('tripCancelledDescription', { fare: fareToRefund.toFixed(2) }),
+    });
 
-        clearActiveTrip();
-        setSelectedBus(null);
-        setSelectedSeats([]);
-        setQrCodeUrl(null);
+    setNotifications(prev => prev.filter(n => n.tripId !== tripId));
 
-        toast({
-        title: t('tripCancelled'),
-        description: t('tripCancelledDescription', { fare: fareToRefund.toFixed(2) }),
-        });
-
-        setNotifications(prev => prev.filter(n => n.tripId !== tripId));
-
-    } catch (error) {
-        console.error("Error canceling trip:", error);
-        toast({ variant: 'destructive', title: "Cancellation Failed", description: "Could not cancel your trip. Please try again."});
-        const permissionError = new FirestorePermissionError({
-            path: busRef.path,
-            operation: 'update',
-            requestResourceData: busUpdateData,
-        });
-        errorEmitter.emit('permission-error', permissionError);
-    }
   };
 
   
@@ -486,27 +447,13 @@ export default function HomePage() {
       : null;
 
 
-  if (isUserLoading || isLoadingBuses && !buses) {
+  if (isLoadingBuses && !buses) {
       return (
         <div className="flex flex-col min-h-screen bg-background items-center justify-center">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />
         </div>
     );
   }
-
-  if (!user) {
-    return (
-        <div className="flex flex-col min-h-screen bg-background items-center justify-center text-center p-4">
-            <h1 className="text-xl font-bold">{t('signInToContinue')}</h1>
-            <p className='text-muted-foreground'>{t('signInToAccessFeatures')}</p>
-            <Button onClick={() => router.push('/')} className="mt-4">
-              <LogIn className="mr-2 h-4 w-4" />
-              {t('goToSignIn')}
-            </Button>
-        </div>
-    );
-  }
-
 
   return (
     <div className="relative flex flex-col min-h-screen w-full bg-background font-sans overflow-hidden">
