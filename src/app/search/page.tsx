@@ -193,7 +193,7 @@ export default function SearchPage() {
     if (activeTrip && activeTrip.eta > 0) {
       interval = setInterval(() => {
         setDynamicEta(activeTrip.eta - 1);
-      }, 5 * 1000); // 5 seconds for faster testing
+      }, 60 * 1000); // 60 seconds
     } else if (activeTrip && activeTrip.eta <= 0) {
       if (isOnBus) {
         // Trip has ended
