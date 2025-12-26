@@ -26,6 +26,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getArtistAlbums, type ArtistAlbum, type AlbumTrack as ApiAlbumTrack } from '@/ai/flows/get-artist-albums';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
+import { NowPlayingIcon } from '@/components/icons/now-playing-icon';
 
 const fallbackImage = PlaceHolderImages.find(p => p.id === 'music-art-1')?.imageUrl || '';
 
@@ -507,6 +508,27 @@ export default function MusicPage() {
             )}
         </div>
       </main>
+      
+      {nowPlaying && isOnBus && (
+        <div className="sticky bottom-0 left-0 right-0 z-20 pb-[80px] pointer-events-none">
+             <div className="p-2 sm:p-4 pointer-events-auto">
+                 <div className="bg-background/75 backdrop-blur-sm rounded-lg max-w-4xl mx-auto shadow-lg p-2 flex items-center gap-3">
+                    <Image src={nowPlaying.image} alt={nowPlaying.title} width={40} height={40} className="rounded-md" />
+                    <div className="flex-grow">
+                        <p className="font-semibold text-sm truncate">{nowPlaying.title}</p>
+                        <p className="text-xs text-muted-foreground">{nowPlaying.artist}</p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <div className="w-20">
+                             <Progress value={songProgress} className="h-1" />
+                        </div>
+                        <NowPlayingIcon />
+                    </div>
+                </div>
+            </div>
+        </div>
+      )}
+
 
       {/* Now Playing Bar and Bottom Nav */}
       <div className="fixed bottom-0 left-0 right-0 z-10">

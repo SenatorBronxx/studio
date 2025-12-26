@@ -37,7 +37,7 @@ const MusicContext = createContext<MusicContextType | undefined>(undefined);
 export function MusicProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   const { t } = useLanguage();
-  const { activeTrip, clearActiveTrip } = useTrip();
+  const { activeTrip } = useTrip();
   const firestore = useFirestore();
   const { user } = useUser();
 

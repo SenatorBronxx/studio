@@ -99,7 +99,7 @@ export default function HomePage() {
   const firestore = useFirestore();
   const { toast } = useToast();
   const { balance, deductBalance, addTransaction, addLoyaltyPoints, addBalance: refundBalance, isLowBalance } = useWallet();
-  const { setIsOnBus, isOnBus, setNowPlaying } = useMusic();
+  const { isOnBus, setNowPlaying } = useMusic();
   const { activeTrip, setActiveTrip, isHydrated: isTripHydrated, setDynamicEta, clearActiveTrip, setCurrentStopIndex } = useTrip();
   const { bookingAlerts } = useNotificationSettings();
   const { activeDiscount, isDiscountBannerDismissed, dismissDiscountBanner } = useDiscount();
@@ -129,6 +129,8 @@ export default function HomePage() {
   const [busHasArrived, setBusHasArrived] = useState(false);
   const [tripToRate, setTripToRate] = useState<ActiveTrip | null>(null);
   const [passedBusInfo, setPassedBusInfo] = useState<PassedBusInfo | null>(null);
+  const [isBusArriving, setIsBusArriving] = useState(false);
+
 
   useBusArrivalNotification(busHasArrived);
   
@@ -169,14 +171,13 @@ export default function HomePage() {
         });
         setTripToRate(activeTrip);
         clearActiveTrip();
-        setIsOnBus(false);
         setNowPlaying(null);
       } else {
         // Bus has arrived for pickup
         if (!busHasArrived) {
           setBusHasArrived(true);
+          setIsBusArriving(true);
         }
-        setIsOnBus(true);
         const destinationStop = [...activeTrip.bus.stops, activeTrip.bus.finalDestination].find(s => s.name === activeTrip.destination);
         if (destinationStop) {
             setDynamicEta(destinationStop.eta);
@@ -190,7 +191,7 @@ export default function HomePage() {
     }
 
     return () => clearInterval(interval);
-  }, [activeTrip, isOnBus, setDynamicEta, setIsOnBus, t, toast, clearActiveTrip, setCurrentStopIndex, busHasArrived, setNowPlaying]);
+  }, [activeTrip, isOnBus, setDynamicEta, t, toast, clearActiveTrip, setCurrentStopIndex, busHasArrived, setNowPlaying]);
 
   useEffect(() => {
     if (isLowBalance) {
@@ -393,7 +394,6 @@ export default function HomePage() {
         clearActiveTrip();
         setSelectedBus(null);
         setSelectedSeats([]);
-        setIsOnBus(false);
         setQrCodeUrl(null);
 
         toast({
@@ -673,7 +673,7 @@ export default function HomePage() {
                                     {activeTrip.eta > 0 ? (
                                         <span dangerouslySetInnerHTML={{ __html: t('arrivingIn', { minutes: activeTrip.eta }) }} />
                                     ) : (
-                                        <span>{isOnBus ? t('youHaveArrived') : t('busHasArrived')}</span>
+                                        <span>{isBusArriving ? t('busHasArrived') : t('youHaveArrived')}</span>
                                     )}
                                 </div>
                                 {isOnBus && <p className='text-xs text-primary/60 mt-1'>{`${t('finalDestination')}: ${activeTrip.destination}`}</p>}

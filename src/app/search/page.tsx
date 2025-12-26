@@ -122,7 +122,6 @@ export default function SearchPage() {
     isPlaylistOpen,
     setIsPlaylistOpen,
     removeFromPlaylist,
-    setIsOnBus,
     isOnBus,
     setNowPlaying,
   } = useMusic();
@@ -204,7 +203,6 @@ export default function SearchPage() {
         });
         setTripToRate(activeTrip);
         clearActiveTrip();
-        setIsOnBus(false);
         setNowPlaying(null);
       } else {
         // Bus has arrived for pickup
@@ -213,7 +211,6 @@ export default function SearchPage() {
         }
         setIsTransitioning(true);
         setTimeout(() => {
-          setIsOnBus(true);
           const destinationStop = [...activeTrip.bus.stops, activeTrip.bus.finalDestination].find(s => s.name === activeTrip.destination);
           if (destinationStop) {
             setDynamicEta(destinationStop.eta);
@@ -229,7 +226,7 @@ export default function SearchPage() {
     }
 
     return () => clearInterval(interval);
-  }, [activeTrip, isOnBus, setDynamicEta, setIsOnBus, t, toast, clearActiveTrip, setCurrentStopIndex, busHasArrived, setNowPlaying]);
+  }, [activeTrip, isOnBus, setDynamicEta, t, toast, clearActiveTrip, setCurrentStopIndex, busHasArrived, setNowPlaying]);
 
 
   const handleSearch = () => {
@@ -413,7 +410,6 @@ export default function SearchPage() {
     clearActiveTrip();
     setSelectedBus(null);
     setSelectedSeats([]);
-    setIsOnBus(false);
     setQrCodeUrl(null); // Invalidate QR Code
 
     toast({
@@ -809,7 +805,7 @@ export default function SearchPage() {
                                                     <span>{track.duration}</span>
                                                 </div>
                                             </div>
-                                            {track.addedByUser && (
+                                            {track.addedBy === 'user' && (
                                                 <Button size="icon" variant="ghost" className="opacity-0 group-hover:opacity-100" onClick={() => removeFromPlaylist(track.id)}>
                                                     <X className="h-5 w-5 text-muted-foreground" />
                                                 </Button>
