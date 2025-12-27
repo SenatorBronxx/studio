@@ -46,6 +46,7 @@ export default function EritasPayPage() {
   const { t } = useLanguage();
   const { notifications, clearNotifications } = useNotification();
 
+  const WALLET_THRESHOLD = 400;
 
   const getTransactionIcon = (transaction: Transaction) => {
     switch (transaction.type) {
@@ -143,24 +144,25 @@ export default function EritasPayPage() {
             <div className="space-y-4">
                 <Card className="shadow-lg relative overflow-hidden">
                     <CardIconBackground />
-                    <div className="absolute top-3 right-3 p-2 bg-primary/10 rounded-full">
+                     <div className="absolute top-3 right-3 p-2 bg-primary/10 rounded-full">
                         <Wallet className="h-5 w-5 text-primary" />
                     </div>
-                    <CardContent className="p-6 relative">
-                        <div className='space-y-2'>
-                            <div>
-                                <p className="text-sm text-muted-foreground mb-1">{t('eritasPayBalance')}</p>
-                                <div className="flex justify-between items-center">
-                                    {isHydrated ? 
-                                        <p className="text-4xl font-bold">GH₵ {balance.toFixed(2)}</p>
-                                        : <Loader2 className="h-8 w-8 animate-spin" />
-                                    }
-                                </div>
+                    <CardHeader>
+                        <CardTitle>{t('eritasPayBalance')}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="relative">
+                        <div className="flex justify-between items-center mb-2">
+                            {isHydrated ? 
+                                <p className="text-4xl font-bold">GH₵ {balance.toFixed(2)}</p>
+                                : <Loader2 className="h-8 w-8 animate-spin" />
+                            }
+                        </div>
+                        <div className="space-y-2">
+                            <Progress value={isHydrated ? (balance / WALLET_THRESHOLD) * 100 : 0} className="h-2" />
+                            <div className="flex justify-between text-xs text-muted-foreground">
+                                <span>GH₵ 0.00</span>
+                                <span>GH₵ {WALLET_THRESHOLD.toFixed(2)}</span>
                             </div>
-                            <Badge variant="secondary" className='border-green-500/20 bg-green-500/10 text-green-700 dark:text-green-400'>
-                                <Shield className="mr-1 h-3 w-3" />
-                                Secured
-                            </Badge>
                         </div>
                     </CardContent>
                 </Card>

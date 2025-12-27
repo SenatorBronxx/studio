@@ -12,6 +12,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/context/language-context';
 import Image from 'next/image';
+import { useWallet } from '@/context/wallet-context';
 
 const mobileMoneyNetworks = [
     { id: 'mtn', name: 'MTN Mobile Money', logo: "https://momodeveloper.mtn.com/content/momo_mtnb.png" },
@@ -28,9 +29,14 @@ export default function TopUpPage() {
     const router = useRouter();
     const { toast } = useToast();
     const { t } = useLanguage();
+    const { balance, addTransaction, isHydrated } = useWallet();
+
+    const WALLET_THRESHOLD = 400;
 
     const handleTopUp = (e: React.FormEvent) => {
         e.preventDefault();
+        if (!isHydrated) return;
+
         const topUpAmount = parseFloat(amount);
         if (!topUpAmount || topUpAmount <= 0) {
             toast({
@@ -41,17 +47,32 @@ export default function TopUpPage() {
             return;
         }
 
+        if (balance + topUpAmount > WALLET_THRESHOLD) {
+             toast({
+                variant: 'destructive',
+                title: 'Transaction Limit Exceeded',
+                description: `You cannot add more than GH₵${(WALLET_THRESHOLD - balance).toFixed(2)} to your wallet.`,
+            });
+            return;
+        }
+
         setIsProcessing(true);
 
         // Simulate API call
         setTimeout(() => {
+            addTransaction({
+                type: 'top-up',
+                amount: topUpAmount,
+                description: `Mobile Money Top-up from ${phone}`,
+            });
+            
             toast({
                 title: t('topUpSuccessfulToastTitle'),
                 description: t('topUpSuccessfulToastDescription', { amount: topUpAmount.toFixed(2) }),
             });
             
             setIsProcessing(false);
-            router.push('/home');
+            router.push('/eritas-pay');
 
         }, 1500);
     };
@@ -130,7 +151,7 @@ export default function TopUpPage() {
                     </CardContent>
                 </Card>
 
-                <Button type="submit" size="lg" className="w-full mt-6" disabled={isProcessing}>
+                <Button type="submit" size="lg" className="w-full mt-6" disabled={isProcessing || !isHydrated}>
                     {isProcessing ? (
                         <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                     ) : (
