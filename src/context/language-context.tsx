@@ -1,10 +1,9 @@
 
 'use client';
 
-import { createContext, useContext, ReactNode, useCallback } from 'react';
+import { createContext, useContext, ReactNode, useCallback, useState, useEffect } from 'react';
 import en from '@/locales/en.json';
 import tw from '@/locales/tw.json';
-import { useUserPreferences } from './user-preferences-context';
 
 const translations: Record<string, Record<string, string>> = {
   'en-us': en,
@@ -22,13 +21,21 @@ type LanguageContextType = {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const { preferences, setPreference, isHydrated } = useUserPreferences();
+  const [language, setLanguageState] = useState('en-us');
+  const [isHydrated, setIsHydrated] = useState(false);
 
-  const language = preferences?.language ?? 'en-us';
-  
+  useEffect(() => {
+    const storedLang = localStorage.getItem('language');
+    if (storedLang && translations[storedLang]) {
+      setLanguageState(storedLang);
+    }
+    setIsHydrated(true);
+  }, []);
+
   const setLanguage = useCallback((lang: string) => {
-    setPreference('language', lang);
-  }, [setPreference]);
+    setLanguageState(lang);
+    localStorage.setItem('language', lang);
+  }, []);
 
   const t = useCallback((key: string, options?: Record<string, string | number>) => {
     let translation = translations[language]?.[key] || translations['en-us'][key] || key;

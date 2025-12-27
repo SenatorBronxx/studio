@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
-import { ClientProviders } from "@/components/client-providers";
+import { ClientProviders } from "@/client-providers";
 import { OfflineIndicator } from "@/components/offline-indicator";
 
 export const metadata: Metadata = {
