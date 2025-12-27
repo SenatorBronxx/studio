@@ -144,15 +144,15 @@ export default function EritasPayPage() {
 
       <main className="flex-grow p-4 pb-24">
         <div className="max-w-md mx-auto space-y-6">
-            <Card className="bg-primary text-primary-foreground shadow-lg overflow-hidden">
+            <Card className="text-primary-foreground shadow-lg overflow-hidden border-primary/20">
                 <CardContent className="p-6 relative">
                     <CardIconBackground />
                     <div className='relative z-10'>
-                        <p className="text-sm opacity-80 mb-1">{t('eritasPayBalance')}</p>
+                        <p className="text-sm text-primary/80 mb-1">{t('eritasPayBalance')}</p>
                         <div className="flex justify-between items-center">
                             {isHydrated ? 
-                                <p className="text-4xl font-bold">GH₵ {balance.toFixed(2)}</p>
-                                : <Loader2 className="h-8 w-8 animate-spin" />
+                                <p className="text-4xl font-bold text-primary">GH₵ {balance.toFixed(2)}</p>
+                                : <Loader2 className="h-8 w-8 animate-spin text-primary" />
                             }
                             <Link href="/top-up">
                                 <Button variant="secondary" size="lg">{t('topUp')}</Button>
