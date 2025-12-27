@@ -40,7 +40,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { BusSeatingChart } from '@/components/bus-seating-chart';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
-import { v1 as uuidv1 } from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 import { Map } from '@/components/map';
 import { useLanguage } from '@/context/language-context';
 import { cn } from '@/lib/utils';
@@ -196,7 +196,7 @@ export default function HomePage() {
             plate: selectedBus.plate,
         });
 
-        const tripId = uuidv1();
+        const tripId = uuidv4();
         const primarySeat = selectedSeats[0];
         const qrData = { tripId: tripId, bus: selectedBus.plate, seat: primarySeat, from: stop.name, to: selectedBus.finalDestination.name, fare: totalFare / selectedSeats.length, timestamp: new Date().toISOString() };
         const encodedQrData = encodeURIComponent(JSON.stringify(qrData));
