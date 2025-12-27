@@ -34,6 +34,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useBusArrivalNotification } from '@/hooks/use-bus-arrival-notification';
 import { TripRating } from '@/components/trip-rating';
+import { useWallet } from '@/context/wallet-context';
 
 const initialBusData = [
     {
@@ -99,6 +100,7 @@ export default function SearchPage() {
 
   const { toast } = useToast();
   const { t } = useLanguage();
+  const { balance, addTransaction, isHydrated: isWalletHydrated } = useWallet();
   
   const [buses, setBuses] = useState(initialBusData);
   const [filteredBuses, setFilteredBuses] = useState<BusData[]>([]);
@@ -163,13 +165,28 @@ export default function SearchPage() {
   }
 
   const handleBoard = (stop: {name: string, fare: number, eta: number}) => {
-    if(!selectedBus || selectedSeats.length === 0) return;
+    if(!selectedBus || selectedSeats.length === 0 || !isWalletHydrated) return;
     
-    let farePerSeat = stop.fare;
-    const totalFare = farePerSeat * selectedSeats.length;
+    const totalFare = stop.fare * selectedSeats.length;
+
+    if (balance < totalFare) {
+        toast({
+            variant: "destructive",
+            title: t('insufficientBalanceToastTitle'),
+            description: t('insufficientBalanceToastDescription'),
+        });
+        return;
+    }
 
     setIsBoarding(true);
     setTimeout(() => {
+        addTransaction({
+            type: 'payment',
+            amount: -totalFare,
+            description: `Bus ticket to ${selectedBus.finalDestination.name}`,
+            plate: selectedBus.plate,
+        });
+
         const tripId = uuidv4();
         setIsBoarding(false);
         
@@ -486,6 +503,8 @@ export default function SearchPage() {
     </div>
   );
 }
+
+    
 
     
 
