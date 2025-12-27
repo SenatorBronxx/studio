@@ -71,40 +71,40 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     };
 
     const addTransaction = useCallback((transaction: Omit<Transaction, 'id' | 'timestamp'>) => {
-        const newTransaction: Transaction = {
-            ...transaction,
-            id: uuidv4(),
-            timestamp: new Date().toISOString(),
-        };
-
-        const newBalance = balance + newTransaction.amount;
-        const newTransactions = [newTransaction, ...transactions];
-
-        setBalance(newBalance);
-        setTransactions(newTransactions);
-        updateLocalStorage(newBalance, newTransactions);
-
-        if (newBalance < 20 && newBalance > 0) {
-            toast({
-                variant: 'destructive',
-                title: "Low Balance Warning",
-                description: 'Your wallet balance is getting low. Please top-up.',
+        setBalance(prevBalance => {
+            const newTransaction: Transaction = {
+                ...transaction,
+                id: uuidv4(),
+                timestamp: new Date().toISOString(),
+            };
+            
+            const newBalance = prevBalance + newTransaction.amount;
+            
+            setTransactions(prevTransactions => {
+                const newTransactions = [newTransaction, ...prevTransactions];
+                updateLocalStorage(newBalance, newTransactions);
+                return newTransactions;
             });
-        }
-    }, [balance, transactions, toast]);
+
+            if (newBalance < 20 && newBalance > 0) {
+                toast({
+                    variant: 'destructive',
+                    title: "Low Balance Warning",
+                    description: 'Your wallet balance is getting low. Please top-up.',
+                });
+            }
+            return newBalance;
+        });
+    }, [toast]);
 
     const clearTransactions = useCallback(() => {
         setTransactions([]);
-        try {
-            localStorage.setItem('walletTransactions', JSON.stringify([]));
-            toast({
-                title: "History Cleared",
-                description: "Your transaction history has been cleared.",
-            });
-        } catch (error) {
-            console.error("Failed to clear transactions from localStorage", error);
-        }
-    }, [toast]);
+        updateLocalStorage(balance, []);
+        toast({
+            title: "History Cleared",
+            description: "Your transaction history has been cleared.",
+        });
+    }, [balance, toast]);
 
     const value = { balance, transactions, addTransaction, clearTransactions, isHydrated };
 
