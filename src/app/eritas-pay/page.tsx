@@ -2,7 +2,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { ArrowRight, CreditCard, Loader2, MoreVertical, Wallet, Bell, Trash2 } from 'lucide-react';
+import { ArrowRight, CreditCard, Loader2, MoreVertical, Wallet, Bell, Trash2, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useWallet, Transaction } from '@/context/wallet-context';
@@ -35,6 +35,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import Image from 'next/image';
 import { CardIconBackground } from '@/components/card--background';
+import { Badge } from '@/components/ui/badge';
 
 type Notification = {
     id: number;
@@ -147,17 +148,23 @@ export default function EritasPayPage() {
             <Card className="shadow-lg relative overflow-hidden">
                  <CardIconBackground />
                 <CardContent className="p-6 relative">
-                    <div>
-                        <p className="text-sm text-muted-foreground mb-1">{t('eritasPayBalance')}</p>
-                        <div className="flex justify-between items-center">
-                            {isHydrated ? 
-                                <p className="text-4xl font-bold">GH₵ {balance.toFixed(2)}</p>
-                                : <Loader2 className="h-8 w-8 animate-spin" />
-                            }
-                            <Link href="/top-up">
-                                <Button size="lg">{t('topUp')}</Button>
-                            </Link>
+                    <div className='space-y-2'>
+                        <div>
+                            <p className="text-sm text-muted-foreground mb-1">{t('eritasPayBalance')}</p>
+                            <div className="flex justify-between items-center">
+                                {isHydrated ? 
+                                    <p className="text-4xl font-bold">GH₵ {balance.toFixed(2)}</p>
+                                    : <Loader2 className="h-8 w-8 animate-spin" />
+                                }
+                                <Link href="/top-up">
+                                    <Button size="lg">{t('topUp')}</Button>
+                                </Link>
+                            </div>
                         </div>
+                         <Badge variant="secondary" className='border-green-500/20 bg-green-500/10 text-green-700 dark:text-green-400'>
+                            <Shield className="mr-1 h-3 w-3" />
+                            Secured
+                        </Badge>
                     </div>
                 </CardContent>
             </Card>
