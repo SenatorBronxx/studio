@@ -58,6 +58,7 @@ import {
 import { useBusArrivalNotification } from '@/hooks/use-bus-arrival-notification';
 import { TripRating } from '@/components/trip-rating';
 import { useWallet } from '@/context/wallet-context';
+import { useNotification, Notification } from '@/context/notification-context';
 
 const initialBusData = [
     {
@@ -98,13 +99,6 @@ const initialBusData = [
 
 type BusData = typeof initialBusData[0];
 type StopInfo = { name: string; fare: number; eta: number; };
-type Notification = {
-    id: number;
-    title: string;
-    description: string;
-    tripId?: string;
-    action?: React.ReactNode;
-};
 type PassedBusInfo = {
     nextStop: StopInfo;
     walkingTime: number;
@@ -122,6 +116,7 @@ export default function HomePage() {
   const { toast } = useToast();
   const { t } = useLanguage();
   const { balance, addTransaction, isHydrated: isWalletHydrated } = useWallet();
+  const { notifications, addNotification, clearNotifications } = useNotification();
   
   const [fromLocation, setFromLocation] = useState('Your Current Location');
   const [toLocation, setToLocation] = useState('');
@@ -135,7 +130,6 @@ export default function HomePage() {
   const [isSeatSheetOpen, setIsSeatSheetOpen] = useState(false);
   const [isQrSheetOpen, setIsQrSheetOpen] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [busHasArrived, setBusHasArrived] = useState(false);
   const [passedBusInfo, setPassedBusInfo] = useState<PassedBusInfo | null>(null);
   const [isBusArriving, setIsBusArriving] = useState(false);
@@ -211,8 +205,7 @@ export default function HomePage() {
             action: (<Button variant="outline" size="sm" onClick={() => setIsQrSheetOpen(true)}><QrCode className="mr-2 h-4 w-4" />View QR Code</Button>)
         });
 
-         const qrNotification: Notification = {
-            id: Date.now(),
+         addNotification({
             title: "Your Boarding Pass",
             description: `Show this QR code to the driver for verification. (${selectedBus.plate} - Seat: ${primarySeat})`,
             tripId: tripId,
@@ -221,12 +214,10 @@ export default function HomePage() {
                     <Image src={newQrCodeUrl} alt="Boarding QR Code" width={150} height={150} />
                 </div>
             )
-        };
-        setNotifications(prev => [qrNotification, ...prev]);
+        });
 
         if (selectedSeats.length > 1) {
-            const reservedSeatsNotification: Notification = {
-                id: Date.now() + 1,
+            addNotification({
                 title: "Seats Reserved for Others",
                 description: "You have reserved multiple seats. You can share the trip details with the recipients.",
                 action: (
@@ -235,8 +226,7 @@ export default function HomePage() {
                         Send to Recipient
                     </Button>
                 )
-            }
-            setNotifications(prev => [reservedSeatsNotification, ...prev]);
+            });
         }
     
         setIsBoarding(false);
@@ -349,7 +339,7 @@ export default function HomePage() {
                                         <AlertDialogFooter>
                                         <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
                                         <AlertDialogAction
-                                            onClick={() => setNotifications([])}
+                                            onClick={clearNotifications}
                                         >
                                             {t('confirmClear')}
                                         </AlertDialogAction>

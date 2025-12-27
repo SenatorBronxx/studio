@@ -35,6 +35,7 @@ import {
 import { useBusArrivalNotification } from '@/hooks/use-bus-arrival-notification';
 import { TripRating } from '@/components/trip-rating';
 import { useWallet } from '@/context/wallet-context';
+import { useNotification, Notification } from '@/context/notification-context';
 
 const initialBusData = [
     {
@@ -75,13 +76,6 @@ const initialBusData = [
 
 type BusData = typeof initialBusData[0];
 type StopInfo = { name: string; fare: number; eta: number };
-type Notification = {
-    id: number;
-    title: string;
-    description: string;
-    tripId?: string;
-    action?: React.ReactNode;
-};
 type PassedBusInfo = {
     nextStop: StopInfo;
     walkingTime: number;
@@ -101,6 +95,7 @@ export default function SearchPage() {
   const { toast } = useToast();
   const { t } = useLanguage();
   const { balance, addTransaction, isHydrated: isWalletHydrated } = useWallet();
+  const { addNotification } = useNotification();
   
   const [buses, setBuses] = useState(initialBusData);
   const [filteredBuses, setFilteredBuses] = useState<BusData[]>([]);
@@ -110,7 +105,6 @@ export default function SearchPage() {
   const [isSeatSheetOpen, setIsSeatSheetOpen] = useState(false);
   const [isQrSheetOpen, setIsQrSheetOpen] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [busHasArrived, setBusHasArrived] = useState(false);
   const [passedBusInfo, setPassedBusInfo] = useState<PassedBusInfo | null>(null);
@@ -209,8 +203,7 @@ export default function SearchPage() {
             )
         });
 
-        const qrNotification: Notification = {
-            id: Date.now(),
+        addNotification({
             title: t('yourBoardingPass'),
             description: `${t('showQrToDriver')} (${selectedBus.plate} - ${t('seat')}: ${primarySeat})`,
             tripId: tripId,
@@ -219,12 +212,10 @@ export default function SearchPage() {
                     <Image src={newQrCodeUrl} alt={t('boardingQrCode')} width={150} height={150} />
                 </div>
             )
-        };
-        setNotifications(prev => [qrNotification, ...prev]);
+        });
 
         if (selectedSeats.length > 1) {
-            const reservedSeatsNotification: Notification = {
-                id: Date.now() + 1,
+            addNotification({
                 title: t('seatsReservedForOthers'),
                 description: t('seatsReservedForOthersDescription'),
                 action: (
@@ -233,8 +224,7 @@ export default function SearchPage() {
                         {t('sendToRecipient')}
                     </Button>
                 )
-            }
-            setNotifications(prev => [reservedSeatsNotification, ...prev]);
+            });
         }
         clearSelectedBus();
     }, 1500);

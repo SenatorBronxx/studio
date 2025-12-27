@@ -37,20 +37,14 @@ import {
 import Image from 'next/image';
 import { CardIconBackground } from '@/components/card--background';
 import { Badge } from '@/components/ui/badge';
+import { useNotification, Notification } from '@/context/notification-context';
 
-type Notification = {
-    id: number;
-    title: string;
-    description: string;
-    tripId?: string;
-    action?: React.ReactNode;
-};
 
 export default function EritasPayPage() {
   const router = useRouter();
   const { balance, transactions, isHydrated, clearTransactions } = useWallet();
   const { t } = useLanguage();
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const { notifications, clearNotifications } = useNotification();
 
 
   const getTransactionIcon = (transaction: Transaction) => {
@@ -124,7 +118,7 @@ export default function EritasPayPage() {
                                             <AlertDialogFooter>
                                             <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
                                             <AlertDialogAction
-                                                onClick={() => setNotifications([])}
+                                                onClick={clearNotifications}
                                             >
                                                 {t('confirmClear')}
                                             </AlertDialogAction>
