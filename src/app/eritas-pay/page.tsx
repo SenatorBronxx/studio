@@ -144,7 +144,7 @@ export default function EritasPayPage() {
 
       <main className="flex-grow p-4 pb-24">
         <div className="max-w-md mx-auto space-y-6">
-            <Card className="text-primary-foreground shadow-lg overflow-hidden border-primary/20">
+            <Card className="text-foreground shadow-lg overflow-hidden border-primary/20">
                 <CardContent className="p-6 relative">
                     <CardIconBackground />
                     <div className='relative z-10'>

@@ -24,7 +24,7 @@ export const CardIconBackground = () => {
                 }}
             >
                 <Icon 
-                    className={cn("h-8 w-8 text-primary/10")} 
+                    className={cn("h-8 w-8 text-primary/20")} 
                 />
             </div>
         );
@@ -32,7 +32,7 @@ export const CardIconBackground = () => {
 
     return (
         <div className="absolute inset-0 w-full h-full overflow-hidden">
-            <div className="relative w-full h-full -rotate-12 scale-150 opacity-70">
+            <div className="relative w-full h-full -rotate-12 scale-150 opacity-80">
                  {pattern}
             </div>
         </div>
