@@ -16,7 +16,6 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { AppleIcon } from './icons/apple';
 import { GoogleIcon } from './icons/google';
 import { Loader2 } from 'lucide-react';
 import { Separator } from './ui/separator';
@@ -48,7 +47,7 @@ export function AuthForm({ mode, onSignInSuccess, onSignUpSuccess }: AuthFormPro
   const { toast } = useToast();
   const { t } = useLanguage();
   const [isLoading, setIsLoading] = useState(false);
-  const [isSocialLoading, setIsSocialLoading] = useState<null | 'google' | 'apple'>(null);
+  const [isSocialLoading, setIsSocialLoading] = useState<null | 'google'>(null);
 
   const form = useForm({
     resolver: zodResolver(mode === 'signin' ? signInSchema : signUpSchema),
@@ -98,7 +97,7 @@ export function AuthForm({ mode, onSignInSuccess, onSignUpSuccess }: AuthFormPro
   };
   
   // Mock social sign-in
-  const handleSocialSignIn = (provider: 'google' | 'apple') => {
+  const handleSocialSignIn = (provider: 'google') => {
     setIsSocialLoading(provider);
     setTimeout(() => {
         setIsSocialLoading(null);
@@ -197,14 +196,10 @@ export function AuthForm({ mode, onSignInSuccess, onSignUpSuccess }: AuthFormPro
           {t('orContinueWith')}
         </div>
       </div>
-       <div className="grid grid-cols-2 gap-4">
+       <div className="grid grid-cols-1 gap-4">
         <Button variant="outline" onClick={() => handleSocialSignIn('google')} disabled={!!isSocialLoading}>
           {isSocialLoading === 'google' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon className="mr-2 h-4 w-4" />}
           Google
-        </Button>
-        <Button variant="outline" onClick={() => handleSocialSignIn('apple')} disabled={!!isSocialLoading}>
-          {isSocialLoading === 'apple' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <AppleIcon className="mr-2 h-4 w-4" />}
-          Apple
         </Button>
       </div>
     </>
