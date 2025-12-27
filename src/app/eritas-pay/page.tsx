@@ -2,7 +2,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { ArrowRight, CreditCard, Loader2, MoreVertical, Wallet } from 'lucide-react';
+import { ArrowRight, CreditCard, Loader2, MoreVertical, Wallet, Bell, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useWallet, Transaction } from '@/context/wallet-context';
@@ -20,11 +20,35 @@ import Link from 'next/link';
 import { BottomNav } from '@/components/bottom-nav';
 import { cn } from '@/lib/utils';
 import { BusTicketIcon } from '@/components/icons/bus-ticket-icon';
+import { ProfileSidebar } from '@/components/profile-sidebar';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { useState } from 'react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import Image from 'next/image';
+
+type Notification = {
+    id: number;
+    title: string;
+    description: string;
+    tripId?: string;
+    action?: React.ReactNode;
+};
 
 export default function EritasPayPage() {
   const router = useRouter();
   const { balance, transactions, isHydrated } = useWallet();
   const { t } = useLanguage();
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+
 
   const getTransactionIcon = (transaction: Transaction) => {
     switch (transaction.type) {
@@ -39,8 +63,82 @@ export default function EritasPayPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-        <header className="sticky top-0 z-10 bg-background/75 backdrop-blur-sm p-4 text-center">
-            <h1 className="text-lg font-semibold">{t('eritasPay')}</h1>
+        <header className="sticky top-0 z-10 bg-background/75 backdrop-blur-sm p-4 flex items-center justify-between">
+            <div className="w-10"></div>
+            <h1 className="text-lg font-semibold text-center flex-grow">{t('eritasPay')}</h1>
+            <div className="flex items-center gap-2">
+                <ProfileSidebar />
+                <Sheet>
+                    <SheetTrigger asChild>
+                        <Button
+                            variant="default"
+                            size="icon"
+                            className="bg-background/75 backdrop-blur-sm rounded-full shadow-md hover:bg-card text-foreground"
+                        >
+                            <Bell className="h-5 w-5" />
+                            {notifications.length > 0 && (
+                                <span className="absolute -top-1 -right-1 flex h-4 w-4">
+                                    <span className={cn("animate-ping absolute inline-flex h-full w-full rounded-full opacity-75", "bg-primary")}></span>
+                                    <span className={cn("relative inline-flex rounded-full h-4 w-4 text-primary-foreground text-xs items-center justify-center", "bg-primary")}>
+                                        {notifications.length}
+                                    </span>
+                                </span>
+                            )}
+                        </Button>
+                    </SheetTrigger>
+                    <SheetContent>
+                        <SheetHeader>
+                            <SheetTitle>{t('notifications')}</SheetTitle>
+                        </SheetHeader>
+                        <div className="py-4 h-full flex flex-col">
+                            {notifications.length > 0 ? (
+                                <>
+                                    <div className="flex-grow space-y-4 overflow-y-auto no-scrollbar">
+                                        {notifications.map(notification => (
+                                            <Card key={notification.id} className={cn(notification.id === -1 && "bg-destructive/10 border-destructive")}>
+                                                <CardContent className='p-4 space-y-2'>
+                                                    <h3 className="font-semibold">{notification.title}</h3>
+                                                    <p className="text-sm text-muted-foreground">{notification.description}</p>
+                                                    {notification.action && <div className='pt-2'>{notification.action}</div>}
+                                                </CardContent>
+                                            </Card>
+                                        ))}
+                                    </div>
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button variant="outline" className="mt-4">
+                                                <Trash2 className="mr-2 h-4 w-4" />
+                                                {t('clearAll')}
+                                            </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                            <AlertDialogTitle>{t('clearNotificationsTitle')}</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                {t('clearNotificationsDescription')}
+                                            </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                            <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                                            <AlertDialogAction
+                                                onClick={() => setNotifications([])}
+                                            >
+                                                {t('confirmClear')}
+                                            </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                </>
+                            ) : (
+                                <div className="flex flex-col items-center justify-center text-center h-full text-muted-foreground">
+                                    <Bell className="h-12 w-12 mb-4" />
+                                    <p>{t('noNewNotifications')}</p>
+                                </div>
+                            )}
+                        </div>
+                    </SheetContent>
+                </Sheet>
+            </div>
         </header>
 
       <main className="flex-grow p-4 pb-24">
