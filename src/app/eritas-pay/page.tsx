@@ -34,6 +34,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import Image from 'next/image';
+import { CardIconBackground } from '@/components/card-icon-background';
 
 type Notification = {
     id: number;
@@ -145,17 +146,18 @@ export default function EritasPayPage() {
         <div className="max-w-md mx-auto space-y-6">
             <Card className="bg-primary text-primary-foreground shadow-lg overflow-hidden">
                 <CardContent className="p-6 relative">
-                    <div className="absolute -right-10 -top-10 w-32 h-32 bg-primary-foreground/10 rounded-full"></div>
-                    <div className="absolute -left-12 bottom-0 w-24 h-24 bg-primary-foreground/10 rounded-full"></div>
-                    <p className="text-sm opacity-80 mb-1">{t('eritasPayBalance')}</p>
-                    <div className="flex justify-between items-center">
-                        {isHydrated ? 
-                            <p className="text-4xl font-bold">GH₵ {balance.toFixed(2)}</p>
-                            : <Loader2 className="h-8 w-8 animate-spin" />
-                        }
-                        <Link href="/top-up">
-                            <Button variant="secondary" size="lg">{t('topUp')}</Button>
-                        </Link>
+                    <CardIconBackground />
+                    <div className='relative z-10'>
+                        <p className="text-sm opacity-80 mb-1">{t('eritasPayBalance')}</p>
+                        <div className="flex justify-between items-center">
+                            {isHydrated ? 
+                                <p className="text-4xl font-bold">GH₵ {balance.toFixed(2)}</p>
+                                : <Loader2 className="h-8 w-8 animate-spin" />
+                            }
+                            <Link href="/top-up">
+                                <Button variant="secondary" size="lg">{t('topUp')}</Button>
+                            </Link>
+                        </div>
                     </div>
                 </CardContent>
             </Card>
