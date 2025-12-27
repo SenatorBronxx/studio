@@ -4,7 +4,7 @@
 import { useRouter } from 'next/navigation';
 import { useSavedSongs } from '@/context/saved-songs-context';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Music, Heart, Plus } from 'lucide-react';
+import { ArrowLeft, Music, Heart, Plus, Trash2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -12,10 +12,21 @@ import { useMusic, Track } from '@/context/music-context';
 import { useTrip } from '@/context/trip-context';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/context/language-context';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 export default function SavedSongsPage() {
     const router = useRouter();
-    const { savedSongs, unsaveSong } = useSavedSongs();
+    const { savedSongs, unsaveSong, isHydrated } = useSavedSongs();
     const { playlist, nowPlaying, addSong } = useMusic();
     const { activeTrip } = useTrip();
     const { toast } = useToast();
@@ -45,6 +56,10 @@ export default function SavedSongsPage() {
         });
     };
 
+    if (!isHydrated) {
+        return null;
+    }
+
     return (
         <div className="flex flex-col min-h-screen bg-background">
              <header className="sticky top-0 z-10 bg-background/75 backdrop-blur-sm p-4 flex items-center gap-4">
@@ -71,12 +86,30 @@ export default function SavedSongsPage() {
                                                     <p className='font-semibold truncate'>{track.title}</p>
                                                     <p className='text-sm text-muted-foreground'>{track.artist}</p>
                                                 </div>
-                                                <Button size="icon" variant="ghost" onClick={() => handleAddSong(track)}>
+                                                <Button size="icon" variant="ghost" onClick={() => handleAddSong(track)} disabled={!activeTrip}>
                                                     <Plus className='h-5 w-5' />
                                                 </Button>
-                                                <Button size="icon" variant="ghost" onClick={() => unsaveSong(track.id)}>
-                                                    <Heart className='h-5 w-5 text-primary fill-primary' />
-                                                </Button>
+                                                <AlertDialog>
+                                                    <AlertDialogTrigger asChild>
+                                                        <Button size="icon" variant="ghost">
+                                                            <Trash2 className='h-5 w-5 text-destructive' />
+                                                        </Button>
+                                                    </AlertDialogTrigger>
+                                                    <AlertDialogContent>
+                                                        <AlertDialogHeader>
+                                                            <AlertDialogTitle>Unsave Song?</AlertDialogTitle>
+                                                            <AlertDialogDescription>
+                                                                Are you sure you want to remove "{track.title}" from your saved songs?
+                                                            </AlertDialogDescription>
+                                                        </AlertDialogHeader>
+                                                        <AlertDialogFooter>
+                                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                            <AlertDialogAction onClick={() => unsaveSong(track.id)} className="bg-destructive hover:bg-destructive/90">
+                                                                Unsave
+                                                            </AlertDialogAction>
+                                                        </AlertDialogFooter>
+                                                    </AlertDialogContent>
+                                                </AlertDialog>
                                             </div>
                                         ))}
                                     </div>
@@ -96,4 +129,3 @@ export default function SavedSongsPage() {
         </div>
     );
 }
-

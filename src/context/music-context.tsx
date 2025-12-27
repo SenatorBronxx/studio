@@ -19,12 +19,15 @@ type PlaylistEntry = {
 
 type MusicContextType = {
   playlist: Track[];
+  playedSongs: Track[]; // Keep track of songs that have finished
   nowPlaying: Track | null;
   isPlaying: boolean;
   progress: number; // 0 to 100
   addSong: (song: Track, userId: string) => void;
   removeSong: (songId: string, userId: string) => boolean;
   togglePlay: () => void;
+  playNext: () => void;
+  playPrevious: () => void;
 };
 
 const MusicContext = createContext<MusicContextType | undefined>(undefined);
@@ -32,30 +35,45 @@ const MusicContext = createContext<MusicContextType | undefined>(undefined);
 export function MusicProvider({ children }: { children: ReactNode }) {
     const { activeTrip } = useTrip();
     const [playlist, setPlaylist] = useState<PlaylistEntry[]>([]);
+    const [playedSongs, setPlayedSongs] = useState<PlaylistEntry[]>([]);
     const [nowPlaying, setNowPlaying] = useState<PlaylistEntry | null>(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [progress, setProgress] = useState(0);
 
-    // Clear playlist when trip ends
+    const playNextSong = useCallback(() => {
+        if (nowPlaying) {
+            setPlayedSongs(prev => [nowPlaying, ...prev]);
+        }
+
+        if (playlist.length > 0) {
+            const nextSong = playlist[0];
+            setNowPlaying(nextSong);
+            setPlaylist(prev => prev.slice(1));
+            setProgress(0);
+            setIsPlaying(true);
+        } else {
+            setNowPlaying(null);
+            setIsPlaying(false);
+            setProgress(0);
+        }
+    }, [playlist, nowPlaying]);
+
+
     useEffect(() => {
         if (!activeTrip) {
             setPlaylist([]);
+            setPlayedSongs([]);
             setNowPlaying(null);
             setIsPlaying(false);
             setProgress(0);
         }
     }, [activeTrip]);
 
-    // Playlist logic: play next song when current one ends
     useEffect(() => {
         if (!activeTrip) return;
 
         if (!nowPlaying && playlist.length > 0) {
-            // Start playing the first song
-            setNowPlaying(playlist[0]);
-            setPlaylist(prev => prev.slice(1));
-            setIsPlaying(true);
-            setProgress(0);
+           playNextSong();
         }
 
         if (nowPlaying && isPlaying) {
@@ -63,18 +81,9 @@ export function MusicProvider({ children }: { children: ReactNode }) {
                 setProgress(prev => {
                     const newProgress = prev + (100 / (nowPlaying.track.duration / 1000));
                     if (newProgress >= 100) {
-                        // Song finished, play next
-                        if (playlist.length > 0) {
-                            setNowPlaying(playlist[0]);
-                            setPlaylist(prev => prev.slice(1));
-                            return 0; // Reset progress
-                        } else {
-                            // Playlist finished
-                            setNowPlaying(null);
-                            setIsPlaying(false);
-                            clearInterval(interval);
-                            return 0;
-                        }
+                        clearInterval(interval);
+                        playNextSong();
+                        return 0;
                     }
                     return newProgress;
                 });
@@ -82,27 +91,20 @@ export function MusicProvider({ children }: { children: ReactNode }) {
             return () => clearInterval(interval);
         }
 
-    }, [nowPlaying, playlist, isPlaying, activeTrip]);
+    }, [nowPlaying, isPlaying, activeTrip, playNextSong, playlist.length]);
     
 
     const addSong = useCallback((track: Track, userId: string) => {
-        if (!activeTrip) return; // Can only add songs during a trip
+        if (!activeTrip) return;
         const newEntry: PlaylistEntry = { track, addedBy: userId };
         setPlaylist(prev => [...prev, newEntry]);
     }, [activeTrip]);
 
     const removeSong = useCallback((trackId: string, userId: string): boolean => {
-        let canRemove = false;
-        setPlaylist(prev => {
-            const entryToRemove = prev.find(entry => entry.track.id === trackId);
-            // Simple logic: allow removal only if the user added it.
-            // In a real app, you might have more complex permissions (e.g., driver can remove any).
-            if (entryToRemove && entryToRemove.addedBy === userId) {
-                canRemove = true;
-                return prev.filter(entry => entry.track.id !== trackId);
-            }
-            return prev;
-        });
+        let canRemove = true; // For demo, anyone can remove
+        if(canRemove) {
+            setPlaylist(prev => prev.filter(entry => entry.track.id !== trackId));
+        }
         return canRemove;
     }, []);
 
@@ -112,14 +114,34 @@ export function MusicProvider({ children }: { children: ReactNode }) {
         }
     }, [nowPlaying]);
 
+    const playNext = useCallback(() => {
+        playNextSong();
+    }, [playNextSong]);
+    
+    const playPrevious = useCallback(() => {
+        if (playedSongs.length > 0) {
+            const lastPlayedSong = playedSongs[0];
+            setPlayedSongs(prev => prev.slice(1));
+            if (nowPlaying) {
+                setPlaylist(prev => [nowPlaying, ...prev]);
+            }
+            setNowPlaying(lastPlayedSong);
+            setProgress(0);
+            setIsPlaying(true);
+        }
+    }, [playedSongs, nowPlaying]);
+
     const value = {
         playlist: playlist.map(p => p.track),
+        playedSongs: playedSongs.map(p => p.track),
         nowPlaying: nowPlaying?.track || null,
         isPlaying,
         progress,
         addSong,
         removeSong,
         togglePlay,
+        playNext,
+        playPrevious,
     };
 
     return (

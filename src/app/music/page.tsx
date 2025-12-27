@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { Loader2, Music, Search, Heart, Mic, ListMusic, Plus, Play, Pause, X } from 'lucide-react';
+import { Loader2, Music, Search, Heart, Mic, ListMusic, Plus, Play, Pause, X, SkipForward, SkipBack } from 'lucide-react';
 import { BottomNav } from '@/components/bottom-nav';
 import { useLanguage } from '@/context/language-context';
 import { useDebounce } from '@/hooks/use-debounce';
@@ -46,7 +46,7 @@ export default function MusicPage() {
     const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
     const { activeTrip } = useTrip();
-    const { playlist, nowPlaying, addSong, removeSong, isPlaying, togglePlay } = useMusic();
+    const { playlist, nowPlaying, addSong, removeSong, isPlaying, togglePlay, playNext, playPrevious } = useMusic();
     const { toast } = useToast();
     const { preferences } = useUserPreferences();
 
@@ -158,7 +158,7 @@ export default function MusicPage() {
                 <p className='text-sm text-muted-foreground'>{track.artist}</p>
             </div>
             <p className='text-sm text-muted-foreground font-mono'>{formatDuration(track.duration)}</p>
-            <Button size="icon" variant="ghost" onClick={() => handleAddSong(track)}>
+            <Button size="icon" variant="ghost" onClick={() => handleAddSong(track)} disabled={!activeTrip}>
                 <Plus className='h-5 w-5' />
             </Button>
         </div>
@@ -299,21 +299,30 @@ export default function MusicPage() {
        {nowPlaying && activeTrip && (
             <div className="fixed bottom-[80px] left-0 right-0 z-20 p-2 pointer-events-none">
                 <Card 
-                    className="max-w-md mx-auto bg-background/80 backdrop-blur-sm shadow-lg pointer-events-auto cursor-pointer"
-                    onClick={() => router.push('/music/now-playing')}
+                    className="max-w-md mx-auto bg-background/80 backdrop-blur-sm shadow-lg pointer-events-auto"
                 >
                     <CardContent className="p-2 flex items-center gap-4">
-                        <Avatar className='h-10 w-10 rounded-md'>
-                            {nowPlaying.albumArt && <AvatarImage src={nowPlaying.albumArt} alt={nowPlaying.title} />}
-                            <AvatarFallback className='rounded-md'><Music /></AvatarFallback>
-                        </Avatar>
-                        <div className='flex-grow'>
-                            <p className='font-semibold truncate text-primary'>{nowPlaying.title}</p>
-                            <p className='text-sm text-muted-foreground'>{nowPlaying.artist}</p>
+                        <div className='flex-grow flex items-center gap-4 cursor-pointer' onClick={() => router.push('/music/now-playing')}>
+                            <Avatar className='h-10 w-10 rounded-md'>
+                                {nowPlaying.albumArt && <AvatarImage src={nowPlaying.albumArt} alt={nowPlaying.title} />}
+                                <AvatarFallback className='rounded-md'><Music /></AvatarFallback>
+                            </Avatar>
+                            <div className='flex-grow'>
+                                <p className='font-semibold truncate text-primary'>{nowPlaying.title}</p>
+                                <p className='text-sm text-muted-foreground'>{nowPlaying.artist}</p>
+                            </div>
                         </div>
-                        <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); togglePlay(); }}>
-                            {isPlaying ? <Pause className='h-6 w-6' /> : <Play className='h-6 w-6' />}
-                        </Button>
+                        <div className='flex items-center'>
+                             <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); playPrevious(); }}>
+                                <SkipBack className='h-6 w-6' />
+                            </Button>
+                            <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); togglePlay(); }}>
+                                {isPlaying ? <Pause className='h-6 w-6' /> : <Play className='h-6 w-6' />}
+                            </Button>
+                             <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); playNext(); }}>
+                                <SkipForward className='h-6 w-6' />
+                            </Button>
+                        </div>
                     </CardContent>
                 </Card>
             </div>
@@ -325,4 +334,3 @@ export default function MusicPage() {
     </div>
   );
 }
-

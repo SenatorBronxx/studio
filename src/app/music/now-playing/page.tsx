@@ -6,13 +6,13 @@ import { useMusic } from '@/context/music-context';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, Music, Pause, Play, Heart, Share2, ListMusic } from 'lucide-react';
+import { ArrowLeft, Music, Pause, Play, Heart, Share2, ListMusic, SkipBack, SkipForward } from 'lucide-react';
 import { useSavedSongs } from '@/context/saved-songs-context';
 import { useLanguage } from '@/context/language-context';
 
 export default function NowPlayingPage() {
     const router = useRouter();
-    const { nowPlaying, isPlaying, progress, togglePlay, playlist } = useMusic();
+    const { nowPlaying, isPlaying, progress, togglePlay, playlist, playNext, playPrevious } = useMusic();
     const { isSongSaved, saveSong, unsaveSong } = useSavedSongs();
     const { t } = useLanguage();
 
@@ -88,9 +88,12 @@ export default function NowPlayingPage() {
                     </div>
                 </div>
 
-                <div className="flex items-center justify-center gap-6">
-                     <Button variant="ghost" size="icon" className="h-16 w-16" onClick={handleSaveToggle}>
+                <div className="flex items-center justify-center gap-6 w-full max-w-sm">
+                    <Button variant="ghost" size="icon" className="h-16 w-16" onClick={handleSaveToggle}>
                         <Heart className={isSongSaved(nowPlaying.id) ? 'h-7 w-7 text-primary fill-primary' : 'h-7 w-7'} />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-16 w-16" onClick={playPrevious}>
+                        <SkipBack className="h-8 w-8" />
                     </Button>
                     <Button
                         size="icon"
@@ -98,6 +101,9 @@ export default function NowPlayingPage() {
                         onClick={togglePlay}
                     >
                         {isPlaying ? <Pause className="h-10 w-10" /> : <Play className="h-10 w-10 pl-1" />}
+                    </Button>
+                     <Button variant="ghost" size="icon" className="h-16 w-16" onClick={playNext}>
+                        <SkipForward className="h-8 w-8" />
                     </Button>
                     <Button variant="ghost" size="icon" className="h-16 w-16" disabled>
                          <ListMusic className="h-7 w-7" />

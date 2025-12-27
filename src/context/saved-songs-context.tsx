@@ -4,21 +4,21 @@
 import { createContext, useContext, ReactNode, useState, useCallback, useEffect } from 'react';
 import { Track } from './music-context';
 import { useToast } from '@/hooks/use-toast';
-import { useLanguage } from './language-context';
 
 type SavedSongsContextType = {
   savedSongs: Track[];
   saveSong: (song: Track) => void;
   unsaveSong: (songId: string) => void;
   isSongSaved: (songId: string) => boolean;
+  isHydrated: boolean;
 };
 
 const SavedSongsContext = createContext<SavedSongsContextType | undefined>(undefined);
 
 export function SavedSongsProvider({ children }: { children: ReactNode }) {
   const [savedSongs, setSavedSongs] = useState<Track[]>([]);
+  const [isHydrated, setIsHydrated] = useState(false);
   const { toast } = useToast();
-  const { t } = useLanguage();
 
   useEffect(() => {
     try {
@@ -29,6 +29,7 @@ export function SavedSongsProvider({ children }: { children: ReactNode }) {
     } catch (error) {
         console.error("Failed to load saved songs from localStorage", error);
     }
+    setIsHydrated(true);
   }, []);
   
   const updateLocalStorage = (songs: Track[]) => {
@@ -44,7 +45,7 @@ export function SavedSongsProvider({ children }: { children: ReactNode }) {
         if (prev.some(s => s.id === song.id)) {
             return prev; // Already saved
         }
-        const newSongs = [...prev, song];
+        const newSongs = [song, ...prev];
         updateLocalStorage(newSongs);
         toast({ title: "Song Saved", description: `${song.title} has been added to your saved songs.` });
         return newSongs;
@@ -67,7 +68,7 @@ export function SavedSongsProvider({ children }: { children: ReactNode }) {
     return savedSongs.some(s => s.id === songId);
   }, [savedSongs]);
 
-  const value = { savedSongs, saveSong, unsaveSong, isSongSaved };
+  const value = { savedSongs, saveSong, unsaveSong, isSongSaved, isHydrated };
 
   return (
     <SavedSongsContext.Provider value={value}>
