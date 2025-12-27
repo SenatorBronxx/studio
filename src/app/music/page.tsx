@@ -44,7 +44,6 @@ const genres = [
     { name: "Hiplife", color: "bg-blue-500", imageId: "music-art-2" },
     { name: "Afrobeats", color: "bg-purple-500", imageId: "music-art-3" },
     { name: "Gospel", color: "bg-green-500", imageId: "music-art-4" },
-    { name: "Synthwave", color: "bg-pink-500", imageId: "music-art-5" },
 ];
 
 export default function MusicPage() {
@@ -286,7 +285,7 @@ export default function MusicPage() {
                             {nowPlaying ? (
                                 <div className='space-y-4'>
                                     <div className="flex items-center gap-4 p-2 rounded-lg bg-muted">
-                                        <div className='flex-grow flex items-center gap-4 overflow-hidden'>
+                                        <div className='flex-grow flex items-center gap-4 cursor-pointer overflow-hidden' onClick={() => router.push('/music/now-playing')}>
                                             <Avatar className='h-12 w-12 rounded-md'>
                                                 {nowPlaying.albumArt && <AvatarImage src={nowPlaying.albumArt} alt={nowPlaying.title} />}
                                                 <AvatarFallback className='rounded-md'><Music /></AvatarFallback>
