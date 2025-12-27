@@ -172,11 +172,9 @@ export default function MusicPage() {
             <div className="flex items-center justify-between">
                 <h1 className="text-3xl font-bold">{t('music')}</h1>
                 <div className='flex items-center gap-2'>
-                    <Link href="/music/saved">
-                        <Button variant="outline" size="icon">
-                            <Heart className="h-5 w-5" />
-                        </Button>
-                    </Link>
+                    <Button variant="outline" size="icon" disabled>
+                        <Heart className="h-5 w-5" />
+                    </Button>
                 </div>
             </div>
 

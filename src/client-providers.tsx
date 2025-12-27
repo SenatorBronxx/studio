@@ -7,7 +7,6 @@ import { SecuritySettingsProvider } from "@/context/security-settings-context";
 import { ReactNode } from "react";
 import { LanguageProvider } from "@/context/language-context";
 import { TripProvider } from "@/context/trip-context";
-import { SavedSongsProvider } from "@/context/saved-songs-context";
 import { UserProvider } from "@/context/user-context";
 import { UserPreferencesProvider } from "@/context/user-preferences-context";
 import { NotificationProvider } from "@/context/notification-context";
@@ -23,13 +22,11 @@ export function ClientProviders({ children }: { children: ReactNode }) {
                         <NotificationProvider>
                             <TripProvider>
                                 <MusicProvider>
-                                    <SavedSongsProvider>
-                                        <NotificationSettingsProvider>
-                                            <SecuritySettingsProvider>
-                                                {children}
-                                            </SecuritySettingsProvider>
-                                        </NotificationSettingsProvider>
-                                    </SavedSongsProvider>
+                                    <NotificationSettingsProvider>
+                                        <SecuritySettingsProvider>
+                                            {children}
+                                        </SecuritySettingsProvider>
+                                    </NotificationSettingsProvider>
                                 </MusicProvider>
                             </TripProvider>
                         </NotificationProvider>
