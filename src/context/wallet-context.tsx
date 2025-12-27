@@ -25,23 +25,7 @@ const WalletContext = createContext<WalletContextType | undefined>(undefined);
 
 const initialBalance = 200.00; // Starting balance for the local-only version
 
-const initialTransactions: Transaction[] = [
-    {
-        id: uuidv4(),
-        type: 'top-up',
-        amount: 50.00,
-        description: 'Initial balance load',
-        timestamp: new Date().toISOString(),
-    },
-    {
-        id: uuidv4(),
-        type: 'payment',
-        amount: -12.00,
-        description: 'Trip on bus GT 4589-23',
-        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-        plate: 'GT 4589-23',
-    }
-];
+const initialTransactions: Transaction[] = [];
 
 export function WalletProvider({ children }: { children: ReactNode }) {
   const [balance, setBalance] = useState(0);
