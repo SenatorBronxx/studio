@@ -59,6 +59,7 @@ import { useBusArrivalNotification } from '@/hooks/use-bus-arrival-notification'
 import { TripRating } from '@/components/trip-rating';
 import { useWallet } from '@/context/wallet-context';
 import { useNotification, Notification } from '@/context/notification-context';
+import { useTrip } from '@/context/trip-context';
 
 const initialBusData = [
     {
@@ -117,6 +118,7 @@ export default function HomePage() {
   const { t } = useLanguage();
   const { balance, addTransaction, isHydrated: isWalletHydrated } = useWallet();
   const { notifications, addNotification, clearNotifications } = useNotification();
+  const { activeTrip, tripStatus, currentEta, startTrip, endTrip, submitRating, cancelTrip, isHydrated: isTripHydrated } = useTrip();
   
   const [fromLocation, setFromLocation] = useState('Your Current Location');
   const [toLocation, setToLocation] = useState('');
@@ -130,11 +132,10 @@ export default function HomePage() {
   const [isSeatSheetOpen, setIsSeatSheetOpen] = useState(false);
   const [isQrSheetOpen, setIsQrSheetOpen] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
-  const [busHasArrived, setBusHasArrived] = useState(false);
   const [passedBusInfo, setPassedBusInfo] = useState<PassedBusInfo | null>(null);
   const [isBusArriving, setIsBusArriving] = useState(false);
 
-
+  const busHasArrived = tripStatus === 'bus_arrived';
   useBusArrivalNotification(busHasArrived);
   
   useEffect(() => {
@@ -147,6 +148,7 @@ export default function HomePage() {
   };
 
   const handleBusSelect = (bus: BusData) => {
+    if (activeTrip) return;
     setSelectedBus(bus);
     setSelectedSeats([]); 
     setPassedBusInfo(null); // Reset passed bus info
@@ -165,8 +167,8 @@ export default function HomePage() {
     setPassedBusInfo(null);
   }
 
-  const handleBoard = async (stop: {name: string, fare: number, eta: number}) => {
-    if (!selectedBus || selectedSeats.length === 0 || !isWalletHydrated) return;
+  const handleBoard = async (bus: BusData, stop: StopInfo) => {
+    if (selectedSeats.length === 0 || !isWalletHydrated) return;
 
     const totalFare = stop.fare * selectedSeats.length;
 
@@ -186,13 +188,13 @@ export default function HomePage() {
         addTransaction({
             type: 'payment',
             amount: -totalFare,
-            description: `Bus ticket to ${selectedBus.finalDestination.name}`,
-            plate: selectedBus.plate,
+            description: `Bus ticket to ${bus.finalDestination.name}`,
+            plate: bus.plate,
         });
 
         const tripId = uuidv4();
         const primarySeat = selectedSeats[0];
-        const qrData = { tripId: tripId, bus: selectedBus.plate, seat: primarySeat, from: stop.name, to: selectedBus.finalDestination.name, fare: totalFare / selectedSeats.length, timestamp: new Date().toISOString() };
+        const qrData = { tripId: tripId, bus: bus.plate, seat: primarySeat, from: stop.name, to: bus.finalDestination.name, fare: totalFare / selectedSeats.length, timestamp: new Date().toISOString() };
         const encodedQrData = encodeURIComponent(JSON.stringify(qrData));
         const newQrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodedQrData}`;
         setQrCodeUrl(newQrCodeUrl);
@@ -204,10 +206,17 @@ export default function HomePage() {
             description: toastDescription,
             action: (<Button variant="outline" size="sm" onClick={() => setIsQrSheetOpen(true)}><QrCode className="mr-2 h-4 w-4" />View QR Code</Button>)
         });
+        
+        startTrip({
+            bus: bus,
+            boardingStop: stop,
+            seats: selectedSeats,
+            tripId: tripId,
+        });
 
          addNotification({
             title: "Your Boarding Pass",
-            description: `Show this QR code to the driver for verification. (${selectedBus.plate} - Seat: ${primarySeat})`,
+            description: `Show this QR code to the driver for verification. (${bus.plate} - Seat: ${primarySeat})`,
             tripId: tripId,
             action: (
                 <div className="mt-2 flex justify-center">
@@ -230,7 +239,6 @@ export default function HomePage() {
         }
     
         setIsBoarding(false);
-        // We are no longer setting an active trip, just closing the selection UI
         clearSelectedBus();
     }, 1500);
   }
@@ -253,18 +261,50 @@ export default function HomePage() {
   const handleConfirmSeat = () => {
     setIsSeatSheetOpen(false);
   }
+  
+  const handleTripRatingSubmit = (rating: number, complaint?: string) => {
+      // Here you would typically send the rating to your backend
+      toast({
+          title: "Rating Submitted",
+          description: "Thank you for your feedback!",
+      });
+      submitRating();
+  };
+
+  const handleCancelTrip = () => {
+    const { fare, seats } = cancelTrip();
+    if (fare > 0) {
+      addTransaction({
+        type: 'top-up', // Refund is a form of top-up
+        amount: fare,
+        description: 'Trip cancellation refund',
+      });
+      toast({
+        title: t('tripCancelled'),
+        description: t('tripCancelledDescription', { fare: fare.toFixed(2) }),
+      });
+    }
+  };
 
   const displayedBus = selectedBus;
   const primarySeat = (Array.isArray(selectedSeats) && selectedSeats.length > 0 ? selectedSeats[0] : null);
 
   const allStops = displayedBus ? [...displayedBus.stops, displayedBus.finalDestination] : [];
  
-  if (isLoadingBuses && !buses) {
+  if ((isLoadingBuses && !buses) || !isTripHydrated) {
       return (
         <div className="flex flex-col min-h-screen bg-background items-center justify-center">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />
         </div>
     );
+  }
+  
+  if (isTripHydrated && tripStatus === 'rating' && activeTrip) {
+      return (
+        <div className="flex flex-col min-h-screen bg-background items-center justify-center p-4">
+            <TripRating trip={activeTrip} onSubmit={handleTripRatingSubmit} />
+        </div>
+      )
   }
 
   return (
@@ -274,7 +314,6 @@ export default function HomePage() {
             <div className="absolute inset-0 bg-background/20 pointer-events-none" />
         </div>
       
-
       <header className="absolute top-0 left-0 right-0 py-2 px-4 flex justify-between items-center z-20">
         <Image
             src="https://i.postimg.cc/htqrt1Dn/Screenshot-2025-11-06-192038-removebg-preview-(1).png"
@@ -359,7 +398,7 @@ export default function HomePage() {
         </div>
       </header>
       
-       {buses && buses.map((bus, index) => (
+       {!activeTrip && buses && buses.map((bus, index) => (
             <div 
                 key={bus.id}
                 className="absolute z-10 animate-float cursor-pointer"
@@ -381,7 +420,49 @@ export default function HomePage() {
       <div className="fixed bottom-0 left-0 right-0 z-20 pointer-events-none pb-[80px]">
         <div className="p-2 sm:p-4 pointer-events-auto">
             <div className="bg-background/75 backdrop-blur-sm rounded-t-2xl max-w-md mx-auto p-4 flex flex-col gap-4 shadow-lg">
-                {displayedBus ? (
+                {activeTrip && isTripHydrated ? (
+                    <div className="space-y-3">
+                        <div className="flex items-center gap-4">
+                            <Avatar className="h-16 w-16">
+                                {activeTrip.bus.driverImage && <AvatarImage src={activeTrip.bus.driverImage} alt={activeTrip.bus.driver} />}
+                                <AvatarFallback>{activeTrip.bus.driver.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <div>
+                                <h2 className="text-xl font-bold text-foreground">{activeTrip.bus.driver}</h2>
+                                <p className="text-sm text-muted-foreground font-mono">{activeTrip.bus.plate}</p>
+                            </div>
+                        </div>
+                        <Card className="text-center">
+                            <CardContent className="p-4">
+                                <p className="text-sm text-muted-foreground">
+                                    {tripStatus === 'en_route_to_pickup' && t('busArrivingAtYourLocation')}
+                                    {tripStatus === 'bus_arrived' && t('busHasArrived')}
+                                    {(tripStatus === 'en_route_to_destination' || tripStatus === 'trip_ended') && `${t('arrivingAt')} ${activeTrip.bus.finalDestination.name}`}
+                                </p>
+                                <p className="text-3xl font-bold text-primary">
+                                    {currentEta > 0 ? t('minutesAbbr', { minutes: currentEta }) : tripStatus === 'bus_arrived' ? 'Now' : '...'}
+                                </p>
+                            </CardContent>
+                        </Card>
+                         <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="destructive" className="w-full">
+                                    <X className="mr-2 h-4 w-4" /> Cancel Trip
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>{t('cancelTripConfirmationTitle')}</AlertDialogTitle>
+                                    <AlertDialogDescription>{t('cancelTripConfirmationDescription')}</AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>{t('goBack')}</AlertDialogCancel>
+                                    <AlertDialogAction onClick={handleCancelTrip}>{t('confirmCancellation')}</AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    </div>
+                ) : displayedBus ? (
                 <div className="space-y-3">
                     <div className="flex justify-between items-start">
                         <div className="flex items-center gap-3">
@@ -410,7 +491,7 @@ export default function HomePage() {
                                         <span className='flex items-center gap-1'><Footprints className='h-3 w-3' /> Your ETA: {passedBusInfo.walkingTime} min</span>
                                     </div>
                                 </div>
-                                <Button className='w-full' onClick={() => handleBoard(passedBusInfo.nextStop)} disabled={selectedSeats.length === 0}>
+                                <Button className='w-full' onClick={() => handleBoard(displayedBus, passedBusInfo.nextStop)} disabled={selectedSeats.length === 0}>
                                     {selectedSeats.length > 0 ? `Reserve Seat for ${passedBusInfo.nextStop.name}` : "Select a seat first"}
                                 </Button>
                             </CardContent>
@@ -478,7 +559,7 @@ export default function HomePage() {
                                         ) : (
                                             <Button 
                                                 className='w-full' 
-                                                onClick={() => handleBoard(stop)} 
+                                                onClick={() => handleBoard(displayedBus, stop)} 
                                                 disabled={isBoarding || selectedSeats.length === 0}
                                             >
                                                 {isBoarding ? (
@@ -557,7 +638,7 @@ export default function HomePage() {
                     <div className="text-center space-y-1">
                         <p className="text-sm text-muted-foreground">{t('showQrToDriver')}</p>
                         <div className="flex items-center gap-4 justify-center">
-                            <Badge variant="outline">{displayedBus?.plate}</Badge>
+                            <Badge variant="outline">{activeTrip?.bus.plate || displayedBus?.plate}</Badge>
                            {primarySeat && <Badge>{t('seat')}: {primarySeat}</Badge>}
                         </div>
                     </div>
@@ -567,3 +648,5 @@ export default function HomePage() {
     </div>
   );
 }
+
+    

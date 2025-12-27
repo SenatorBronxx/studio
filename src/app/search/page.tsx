@@ -36,6 +36,7 @@ import { useBusArrivalNotification } from '@/hooks/use-bus-arrival-notification'
 import { TripRating } from '@/components/trip-rating';
 import { useWallet } from '@/context/wallet-context';
 import { useNotification, Notification } from '@/context/notification-context';
+import { useTrip } from '@/context/trip-context';
 
 const initialBusData = [
     {
@@ -96,6 +97,7 @@ export default function SearchPage() {
   const { t } = useLanguage();
   const { balance, addTransaction, isHydrated: isWalletHydrated } = useWallet();
   const { addNotification } = useNotification();
+  const { activeTrip, startTrip, isHydrated: isTripHydrated } = useTrip();
   
   const [buses, setBuses] = useState(initialBusData);
   const [filteredBuses, setFilteredBuses] = useState<BusData[]>([]);
@@ -106,14 +108,14 @@ export default function SearchPage() {
   const [isQrSheetOpen, setIsQrSheetOpen] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [busHasArrived, setBusHasArrived] = useState(false);
   const [passedBusInfo, setPassedBusInfo] = useState<PassedBusInfo | null>(null);
-
-  useBusArrivalNotification(busHasArrived);
 
   useEffect(() => {
     setIsHydrated(true);
-  }, []);
+    if(activeTrip) {
+        router.push('/home');
+    }
+  }, [activeTrip, router]);
 
   useEffect(() => {
     if (isHydrated) {
@@ -158,8 +160,8 @@ export default function SearchPage() {
     setPassedBusInfo(null);
   }
 
-  const handleBoard = (stop: {name: string, fare: number, eta: number}) => {
-    if(!selectedBus || selectedSeats.length === 0 || !isWalletHydrated) return;
+  const handleBoard = (bus: BusData, stop: StopInfo) => {
+    if(!selectedSeats.length || !isWalletHydrated) return;
     
     const totalFare = stop.fare * selectedSeats.length;
 
@@ -177,15 +179,13 @@ export default function SearchPage() {
         addTransaction({
             type: 'payment',
             amount: -totalFare,
-            description: `Bus ticket to ${selectedBus.finalDestination.name}`,
-            plate: selectedBus.plate,
+            description: `Bus ticket to ${bus.finalDestination.name}`,
+            plate: bus.plate,
         });
 
         const tripId = uuidv4();
-        setIsBoarding(false);
-        
         const primarySeat = selectedSeats[0];
-        const qrData = { tripId: tripId, bus: selectedBus.plate, seat: primarySeat, from: stop.name, to: selectedBus.finalDestination.name, fare: totalFare / selectedSeats.length, timestamp: new Date().toISOString() };
+        const qrData = { tripId: tripId, bus: bus.plate, seat: primarySeat, from: stop.name, to: bus.finalDestination.name, fare: totalFare / selectedSeats.length, timestamp: new Date().toISOString() };
         const encodedQrData = encodeURIComponent(JSON.stringify(qrData));
         const newQrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodedQrData}`;
         setQrCodeUrl(newQrCodeUrl);
@@ -205,13 +205,20 @@ export default function SearchPage() {
 
         addNotification({
             title: t('yourBoardingPass'),
-            description: `${t('showQrToDriver')} (${selectedBus.plate} - ${t('seat')}: ${primarySeat})`,
+            description: `${t('showQrToDriver')} (${bus.plate} - ${t('seat')}: ${primarySeat})`,
             tripId: tripId,
             action: (
                 <div className="mt-2 flex justify-center">
                     <Image src={newQrCodeUrl} alt={t('boardingQrCode')} width={150} height={150} />
                 </div>
             )
+        });
+        
+        startTrip({
+            bus: bus,
+            boardingStop: stop,
+            seats: selectedSeats,
+            tripId: tripId,
         });
 
         if (selectedSeats.length > 1) {
@@ -226,7 +233,9 @@ export default function SearchPage() {
                 )
             });
         }
+        setIsBoarding(false);
         clearSelectedBus();
+        router.push('/home'); // Redirect to home to see the active trip
     }, 1500);
   }
 
@@ -249,7 +258,7 @@ export default function SearchPage() {
     setIsSeatSheetOpen(false);
   }
   
-  if (!isHydrated) {
+  if (!isHydrated || !isTripHydrated) {
     return (
         <div className="flex flex-col min-h-screen bg-background items-center justify-center">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -340,7 +349,7 @@ export default function SearchPage() {
                                                 <span className='flex items-center gap-1'><Footprints className='h-3 w-3' /> Your ETA: {passedBusInfo.walkingTime} min</span>
                                             </div>
                                         </div>
-                                        <Button className='w-full' onClick={() => handleBoard(passedBusInfo.nextStop)} disabled={selectedSeats.length === 0}>
+                                        <Button className='w-full' onClick={() => handleBoard(displayedBus, passedBusInfo.nextStop)} disabled={selectedSeats.length === 0}>
                                             {selectedSeats.length > 0 ? `Reserve Seat for ${passedBusInfo.nextStop.name}` : "Select a seat first"}
                                         </Button>
                                     </CardContent>
@@ -403,7 +412,7 @@ export default function SearchPage() {
                                                     ) : displayedBus.capacity.current + selectedSeats.length > displayedBus.capacity.max ? (
                                                         <p className="text-sm text-destructive font-medium p-2 bg-destructive/10 rounded-md">{t('notEnoughSeats')}</p>
                                                     ) : (
-                                                        <Button className='w-full' onClick={() => handleBoard(stop)} disabled={isBoarding || selectedSeats.length === 0}>
+                                                        <Button className='w-full' onClick={() => handleBoard(displayedBus, stop)} disabled={isBoarding || selectedSeats.length === 0}>
                                                             {isBoarding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : selectedSeats.length === 0 ? t('selectBusSeatFirst') : t('board')}
                                                         </Button>
                                                     )}
@@ -493,3 +502,5 @@ export default function SearchPage() {
     </div>
   );
 }
+
+    

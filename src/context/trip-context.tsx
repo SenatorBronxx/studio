@@ -33,7 +33,6 @@ type TripContextType = {
   endTrip: () => void;
   submitRating: () => void;
   cancelTrip: () => { fare: number, seats: number };
-  setTripStatus: (status: TripStatus) => void;
   isHydrated: boolean;
 };
 
@@ -135,7 +134,11 @@ export function TripProvider({ children }: { children: ReactNode }) {
       // Simulate boarding time
       const timer = setTimeout(() => {
         setTripStatus('en_route_to_destination');
-        setCurrentEta(activeTrip.bus.finalDestination.eta - activeTrip.boardingStop.eta);
+        const destinationEta = activeTrip.bus.finalDestination.eta;
+        const boardingStopEta = activeTrip.boardingStop.eta;
+        // Calculate remaining trip time
+        const remainingTime = destinationEta > boardingStopEta ? destinationEta - boardingStopEta : destinationEta;
+        setCurrentEta(remainingTime);
       }, 10 * 1000); // 10-second boarding time
       return () => clearTimeout(timer);
     }
@@ -159,7 +162,6 @@ export function TripProvider({ children }: { children: ReactNode }) {
     endTrip,
     submitRating,
     cancelTrip,
-    setTripStatus,
     isHydrated,
   };
 
@@ -177,3 +179,5 @@ export function useTrip() {
   }
   return context;
 }
+
+    
