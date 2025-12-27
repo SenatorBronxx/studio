@@ -34,6 +34,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import Image from 'next/image';
+import { CardIconBackground } from '@/components/card--background';
 
 type Notification = {
     id: number;
@@ -143,8 +144,9 @@ export default function EritasPayPage() {
 
       <main className="flex-grow p-4 pb-24">
         <div className="max-w-md mx-auto space-y-6">
-            <Card className="shadow-lg">
-                <CardContent className="p-6">
+            <Card className="shadow-lg relative overflow-hidden">
+                 <CardIconBackground />
+                <CardContent className="p-6 relative">
                     <div>
                         <p className="text-sm text-muted-foreground mb-1">{t('eritasPayBalance')}</p>
                         <div className="flex justify-between items-center">
