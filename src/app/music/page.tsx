@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { Loader2, Music, Search, Heart, Mic, ListMusic, Plus, Play, Pause, X, SkipForward, SkipBack } from 'lucide-react';
+import { Loader2, Music, Search, Heart, Mic, ListMusic, Plus, Play, Pause, X, SkipForward, SkipBack, Trash2 } from 'lucide-react';
 import { BottomNav } from '@/components/bottom-nav';
 import { useLanguage } from '@/context/language-context';
 import { useDebounce } from '@/hooks/use-debounce';
@@ -24,6 +24,19 @@ import Link from 'next/link';
 
 import { getRecommendations } from '@/ai/flows/get-recommendations-flow';
 import { useUserPreferences } from '@/context/user-preferences-context';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { useSavedSongs } from '@/context/saved-songs-context';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 
 const genres = [
@@ -47,6 +60,7 @@ export default function MusicPage() {
 
     const { activeTrip } = useTrip();
     const { playlist, nowPlaying, addSong, removeSong, isPlaying, togglePlay, playNext, playPrevious } = useMusic();
+    const { savedSongs, unsaveSong, isHydrated: isSavedSongsHydrated } = useSavedSongs();
     const { toast } = useToast();
     const { preferences } = useUserPreferences();
 
@@ -172,9 +186,68 @@ export default function MusicPage() {
             <div className="flex items-center justify-between">
                 <h1 className="text-3xl font-bold">{t('music')}</h1>
                 <div className='flex items-center gap-2'>
-                    <Button variant="outline" size="icon" onClick={() => router.push('/music/saved')}>
-                        <Heart className="h-5 w-5" />
-                    </Button>
+                    <Sheet>
+                        <SheetTrigger asChild>
+                            <Button variant="outline" size="icon">
+                                <Heart className="h-5 w-5" />
+                            </Button>
+                        </SheetTrigger>
+                        <SheetContent>
+                            <SheetHeader>
+                                <SheetTitle>Saved Songs</SheetTitle>
+                            </SheetHeader>
+                            <div className="py-4 h-full">
+                                {isSavedSongsHydrated && savedSongs.length > 0 ? (
+                                    <ScrollArea className="h-[85vh]">
+                                        <div className="space-y-2 pr-4">
+                                            {savedSongs.map(track => (
+                                                 <div key={track.id} className="flex items-center gap-4 p-2 rounded-lg hover:bg-muted/50">
+                                                    <Avatar className='h-12 w-12 rounded-md'>
+                                                        {track.albumArt && <AvatarImage src={track.albumArt} alt={track.title} />}
+                                                        <AvatarFallback className='rounded-md'><Music /></AvatarFallback>
+                                                    </Avatar>
+                                                    <div className='flex-grow overflow-hidden'>
+                                                        <p className='font-semibold truncate'>{track.title}</p>
+                                                        <p className='text-sm text-muted-foreground truncate'>{track.artist}</p>
+                                                    </div>
+                                                    <Button size="icon" variant="ghost" onClick={() => handleAddSong(track)} disabled={!activeTrip}>
+                                                        <Plus className='h-5 w-5' />
+                                                    </Button>
+                                                    <AlertDialog>
+                                                        <AlertDialogTrigger asChild>
+                                                            <Button size="icon" variant="ghost">
+                                                                <Trash2 className='h-5 w-5 text-destructive' />
+                                                            </Button>
+                                                        </AlertDialogTrigger>
+                                                        <AlertDialogContent>
+                                                            <AlertDialogHeader>
+                                                                <AlertDialogTitle>Unsave Song?</AlertDialogTitle>
+                                                                <AlertDialogDescription>
+                                                                    Are you sure you want to remove "{track.title}" from your saved songs?
+                                                                </AlertDialogDescription>
+                                                            </AlertDialogHeader>
+                                                            <AlertDialogFooter>
+                                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                                <AlertDialogAction onClick={() => unsaveSong(track.id)} className="bg-destructive hover:bg-destructive/90">
+                                                                    Unsave
+                                                                </AlertDialogAction>
+                                                            </AlertDialogFooter>
+                                                        </AlertDialogContent>
+                                                    </AlertDialog>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </ScrollArea>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center text-center h-[70vh] text-muted-foreground">
+                                        <Heart className="h-16 w-16 mb-4" />
+                                        <h2 className="text-xl font-semibold">No Saved Songs</h2>
+                                        <p className="mt-2">Tap the heart icon on a song to save it here.</p>
+                                    </div>
+                                )}
+                            </div>
+                        </SheetContent>
+                    </Sheet>
                 </div>
             </div>
 
