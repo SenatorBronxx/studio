@@ -8,11 +8,14 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { ArrowLeft, Music, Pause, Play, Heart, Share2, ListMusic, SkipBack, SkipForward } from 'lucide-react';
 import { useLanguage } from '@/context/language-context';
+import { useSavedSongs } from '@/context/saved-songs-context';
+import { cn } from '@/lib/utils';
 
 export default function NowPlayingPage() {
     const router = useRouter();
     const { nowPlaying, isPlaying, progress, togglePlay, playlist, playNext, playPrevious } = useMusic();
     const { t } = useLanguage();
+    const { saveSong, unsaveSong, isSongSaved } = useSavedSongs();
 
     if (!nowPlaying) {
         return (
@@ -47,6 +50,14 @@ export default function NowPlayingPage() {
 
     const { currentTime, totalTime } = formatDuration(nowPlaying.duration, progress);
 
+    const handleSaveToggle = () => {
+        if (isSongSaved(nowPlaying.id)) {
+            unsaveSong(nowPlaying.id);
+        } else {
+            saveSong(nowPlaying);
+        }
+    };
+
     return (
         <div className="flex flex-col h-screen bg-gradient-to-b from-primary/10 to-background">
              <header className="p-4 flex items-center justify-between">
@@ -79,8 +90,8 @@ export default function NowPlayingPage() {
                 </div>
 
                 <div className="flex items-center justify-center gap-6 w-full max-w-sm">
-                    <Button variant="ghost" size="icon" className="h-16 w-16" disabled>
-                        <Heart className={'h-7 w-7'} />
+                    <Button variant="ghost" size="icon" className="h-16 w-16" onClick={handleSaveToggle}>
+                        <Heart className={cn('h-7 w-7', isSongSaved(nowPlaying.id) && 'fill-red-500 text-red-500')} />
                     </Button>
                     <Button variant="ghost" size="icon" className="h-16 w-16" onClick={playPrevious}>
                         <SkipBack className="h-8 w-8" />
