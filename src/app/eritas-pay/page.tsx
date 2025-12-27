@@ -2,7 +2,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { ArrowRight, CreditCard, Loader2, MoreVertical, Wallet, Bell, Trash2, Shield, CircleDollarSign } from 'lucide-react';
+import { ArrowRight, CreditCard, Loader2, MoreVertical, Wallet, Bell, Trash2, Shield, CircleDollarSign, ArrowUpRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useWallet, Transaction } from '@/context/wallet-context';
@@ -169,9 +169,17 @@ export default function EritasPayPage() {
                         </div>
                     </CardContent>
                 </Card>
-                <Link href="/top-up" className="block">
-                    <Button size="lg" className="w-full">{t('topUp')}</Button>
-                </Link>
+                <div className="grid grid-cols-2 gap-4">
+                    <Link href="/top-up" className="block">
+                        <Button size="lg" className="w-full">{t('topUp')}</Button>
+                    </Link>
+                    <Link href="/withdraw" className="block">
+                        <Button size="lg" variant="outline" className="w-full">
+                             <ArrowUpRight className="mr-2 h-4 w-4" />
+                            Withdraw
+                        </Button>
+                    </Link>
+                </div>
             </div>
 
             <Card>
