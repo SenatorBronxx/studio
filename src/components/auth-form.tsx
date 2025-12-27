@@ -22,9 +22,20 @@ import { Loader2 } from 'lucide-react';
 import { Separator } from './ui/separator';
 import { useLanguage } from '@/context/language-context';
 
-const formSchema = z.object({
+const signInSchema = z.object({
   email: z.string().email('Please enter a valid email.'),
   password: z.string().min(8, 'Password must be at least 8 characters.'),
+});
+
+const signUpSchema = z.object({
+    firstName: z.string().min(1, 'First name is required'),
+    lastName: z.string().min(1, 'Last name is required'),
+    email: z.string().email('Please enter a valid email.'),
+    password: z.string().min(8, 'Password must be at least 8 characters.'),
+    confirmPassword: z.string(),
+}).refine(data => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ['confirmPassword'],
 });
 
 type AuthFormProps = {
@@ -39,24 +50,27 @@ export function AuthForm({ mode, onSignInSuccess, onSignUpSuccess }: AuthFormPro
   const [isLoading, setIsLoading] = useState(false);
   const [isSocialLoading, setIsSocialLoading] = useState<null | 'google' | 'apple'>(null);
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm({
+    resolver: zodResolver(mode === 'signin' ? signInSchema : signUpSchema),
     defaultValues: {
+      firstName: '',
+      lastName: '',
       email: '',
       password: '',
+      confirmPassword: '',
     },
   });
 
-  const handleSubmit = (values: z.infer<typeof formSchema>) => {
+  const handleSubmit = (values: z.infer<typeof signInSchema> | z.infer<typeof signUpSchema>) => {
     if (mode === 'signin') {
-      handleSignIn(values);
+      handleSignIn(values as z.infer<typeof signInSchema>);
     } else {
-      handleSignUp(values);
+      handleSignUp(values as z.infer<typeof signUpSchema>);
     }
   };
   
   // Mock sign-in function
-  const handleSignIn = async (values: z.infer<typeof formSchema>) => {
+  const handleSignIn = async (values: z.infer<typeof signInSchema>) => {
     setIsLoading(true);
     // Simulate API call
     setTimeout(() => {
@@ -70,7 +84,7 @@ export function AuthForm({ mode, onSignInSuccess, onSignUpSuccess }: AuthFormPro
   };
   
   // Mock sign-up function
-  const handleSignUp = async (values: z.infer<typeof formSchema>) => {
+  const handleSignUp = async (values: z.infer<typeof signUpSchema>) => {
     setIsLoading(true);
     // Simulate API call
     setTimeout(() => {
@@ -100,6 +114,36 @@ export function AuthForm({ mode, onSignInSuccess, onSignUpSuccess }: AuthFormPro
     <>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          {mode === 'signup' && (
+            <div className='grid grid-cols-2 gap-4'>
+                <FormField
+                    control={form.control}
+                    name="firstName"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>{t('firstNameLabel')}</FormLabel>
+                        <FormControl>
+                        <Input placeholder={t('firstNamePlaceholder')} {...field} />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="lastName"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>{t('lastNameLabel')}</FormLabel>
+                        <FormControl>
+                        <Input placeholder={t('lastNamePlaceholder')} {...field} />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+            </div>
+          )}
           <FormField
             control={form.control}
             name="email"
@@ -126,6 +170,21 @@ export function AuthForm({ mode, onSignInSuccess, onSignUpSuccess }: AuthFormPro
               </FormItem>
             )}
           />
+          {mode === 'signup' && (
+            <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                <FormItem>
+                    <FormLabel>{t('confirmPasswordLabel')}</FormLabel>
+                    <FormControl>
+                    <Input type="password" placeholder="••••••••" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                </FormItem>
+                )}
+            />
+          )}
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {mode === 'signin' ? t('signIn') : t('signUp')}
