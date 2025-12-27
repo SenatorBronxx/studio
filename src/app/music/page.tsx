@@ -201,7 +201,7 @@ export default function MusicPage() {
                                     <ScrollArea className="h-[85vh]">
                                         <div className="space-y-2 pr-4">
                                             {savedSongs.map(track => (
-                                                 <div key={track.id} className="flex items-center gap-4 p-2 rounded-lg hover:bg-muted/50">
+                                                 <div key={track.id} className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50">
                                                     <Avatar className='h-12 w-12 rounded-md'>
                                                         {track.albumArt && <AvatarImage src={track.albumArt} alt={track.title} />}
                                                         <AvatarFallback className='rounded-md'><Music /></AvatarFallback>
