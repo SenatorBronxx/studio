@@ -351,7 +351,7 @@ export default function MusicPage() {
                             {genres.map(genre => {
                                 const image = PlaceHolderImages.find(p => p.id === genre.imageId);
                                 return (
-                                <Card key={genre.name} className={`relative overflow-hidden text-white cursor-pointer hover:scale-105 transition-transform`}>
+                                <Card key={genre.name} className={`relative overflow-hidden text-white cursor-pointer h-24 hover:scale-105 transition-transform`}>
                                     {image && <img src={image.imageUrl} alt={genre.name} className='absolute inset-0 w-full h-full object-cover'/>}
                                     <div className='absolute inset-0 bg-black/40'></div>
                                     <CardContent className="p-4 relative">
