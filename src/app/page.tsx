@@ -8,9 +8,12 @@ import { useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { SignupSlideshow } from '@/components/signup-slideshow';
 import { IconMosaicBackground } from '@/components/icon-mosaic-background';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useLanguage } from '@/context/language-context';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [showSlideshow, setShowSlideshow] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -64,9 +67,22 @@ export default function LoginPage() {
             Sign in or create an account to continue
           </p>
         </div>
-        <div className="rounded-lg border bg-background/80 backdrop-blur-sm p-6 shadow-sm">
-            <AuthForm onSignInSuccess={handleSignInSuccess} onSignUpSuccess={handleSignUpSuccess} />
-        </div>
+        <Tabs defaultValue="signin" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="signin">{t('signIn')}</TabsTrigger>
+                <TabsTrigger value="signup">{t('signUp')}</TabsTrigger>
+            </TabsList>
+            <TabsContent value="signin">
+                <div className="rounded-lg border bg-background/80 backdrop-blur-sm p-6 shadow-sm mt-4">
+                    <AuthForm mode="signin" onSignInSuccess={handleSignInSuccess} onSignUpSuccess={handleSignUpSuccess} />
+                </div>
+            </TabsContent>
+            <TabsContent value="signup">
+                <div className="rounded-lg border bg-background/80 backdrop-blur-sm p-6 shadow-sm mt-4">
+                    <AuthForm mode="signup" onSignInSuccess={handleSignInSuccess} onSignUpSuccess={handleSignUpSuccess} />
+                </div>
+            </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

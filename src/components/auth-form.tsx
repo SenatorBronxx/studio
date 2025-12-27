@@ -28,11 +28,12 @@ const formSchema = z.object({
 });
 
 type AuthFormProps = {
+  mode: 'signin' | 'signup';
   onSignInSuccess: () => void;
   onSignUpSuccess: () => void;
 };
 
-export function AuthForm({ onSignInSuccess, onSignUpSuccess }: AuthFormProps) {
+export function AuthForm({ mode, onSignInSuccess, onSignUpSuccess }: AuthFormProps) {
   const { toast } = useToast();
   const { t } = useLanguage();
   const [isLoading, setIsLoading] = useState(false);
@@ -46,6 +47,14 @@ export function AuthForm({ onSignInSuccess, onSignUpSuccess }: AuthFormProps) {
     },
   });
 
+  const handleSubmit = (values: z.infer<typeof formSchema>) => {
+    if (mode === 'signin') {
+      handleSignIn(values);
+    } else {
+      handleSignUp(values);
+    }
+  };
+  
   // Mock sign-in function
   const handleSignIn = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
@@ -106,7 +115,7 @@ export function AuthForm({ onSignInSuccess, onSignUpSuccess }: AuthFormProps) {
         </div>
       </div>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleSignIn)} className="space-y-4">
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
           <FormField
             control={form.control}
             name="email"
@@ -133,15 +142,10 @@ export function AuthForm({ onSignInSuccess, onSignUpSuccess }: AuthFormProps) {
               </FormItem>
             )}
           />
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {t('signIn')}
-            </Button>
-            <Button type="button" variant="secondary" onClick={form.handleSubmit(handleSignUp)} className="w-full" disabled={isLoading}>
-              {t('signUp')}
-            </Button>
-          </div>
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {mode === 'signin' ? t('signIn') : t('signUp')}
+          </Button>
         </form>
       </Form>
     </>
