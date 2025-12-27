@@ -82,9 +82,9 @@ export default function SavedSongsPage() {
                                                     {track.albumArt && <AvatarImage src={track.albumArt} alt={track.title} />}
                                                     <AvatarFallback className='rounded-md'><Music /></AvatarFallback>
                                                 </Avatar>
-                                                <div className='flex-grow'>
+                                                <div className='flex-grow overflow-hidden'>
                                                     <p className='font-semibold truncate'>{track.title}</p>
-                                                    <p className='text-sm text-muted-foreground'>{track.artist}</p>
+                                                    <p className='text-sm text-muted-foreground truncate'>{track.artist}</p>
                                                 </div>
                                                 <Button size="icon" variant="ghost" onClick={() => handleAddSong(track)} disabled={!activeTrip}>
                                                     <Plus className='h-5 w-5' />

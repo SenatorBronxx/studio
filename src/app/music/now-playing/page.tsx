@@ -77,8 +77,8 @@ export default function NowPlayingPage() {
                 </Avatar>
 
                 <div className="text-center">
-                    <h2 className="text-3xl font-bold">{nowPlaying.title}</h2>
-                    <p className="text-lg text-muted-foreground">{nowPlaying.artist}</p>
+                    <h2 className="text-3xl font-bold truncate">{nowPlaying.title}</h2>
+                    <p className="text-lg text-muted-foreground truncate">{nowPlaying.artist}</p>
                 </div>
 
                 <div className="w-full max-w-sm space-y-2">

@@ -153,9 +153,9 @@ export default function MusicPage() {
                 {track.albumArt && <AvatarImage src={track.albumArt} alt={track.title} />}
                 <AvatarFallback className='rounded-md'><Music /></AvatarFallback>
             </Avatar>
-            <div className='flex-grow'>
+            <div className='flex-grow overflow-hidden'>
                 <p className='font-semibold truncate'>{track.title}</p>
-                <p className='text-sm text-muted-foreground'>{track.artist}</p>
+                <p className='text-sm text-muted-foreground truncate'>{track.artist}</p>
             </div>
             <p className='text-sm text-muted-foreground font-mono'>{formatDuration(track.duration)}</p>
             <Button size="icon" variant="ghost" onClick={() => handleAddSong(track)} disabled={!activeTrip}>
@@ -213,14 +213,14 @@ export default function MusicPage() {
                             {nowPlaying ? (
                                 <div className='space-y-4'>
                                     <div className="flex items-center gap-4 p-2 rounded-lg bg-muted">
-                                        <div className='flex-grow flex items-center gap-4'>
+                                        <div className='flex-grow flex items-center gap-4 overflow-hidden'>
                                             <Avatar className='h-12 w-12 rounded-md'>
                                                 {nowPlaying.albumArt && <AvatarImage src={nowPlaying.albumArt} alt={nowPlaying.title} />}
                                                 <AvatarFallback className='rounded-md'><Music /></AvatarFallback>
                                             </Avatar>
-                                            <div>
+                                            <div className="overflow-hidden">
                                                 <p className='font-semibold truncate text-primary'>{nowPlaying.title}</p>
-                                                <p className='text-sm text-muted-foreground'>{nowPlaying.artist}</p>
+                                                <p className='text-sm text-muted-foreground truncate'>{nowPlaying.artist}</p>
                                             </div>
                                         </div>
                                         <NowPlayingIcon />
@@ -234,9 +234,9 @@ export default function MusicPage() {
                                                     {playlist.map((track, index) => (
                                                         <div key={track.id} className="flex items-center gap-4 p-2 rounded-lg hover:bg-muted/50">
                                                             <span className='font-mono text-muted-foreground text-sm w-4 text-center'>{index + 1}</span>
-                                                            <div className='flex-grow'>
+                                                            <div className='flex-grow overflow-hidden'>
                                                                 <p className='font-medium text-sm truncate'>{track.title}</p>
-                                                                <p className='text-xs text-muted-foreground'>{track.artist}</p>
+                                                                <p className='text-xs text-muted-foreground truncate'>{track.artist}</p>
                                                             </div>
                                                             <Button size="icon" variant="ghost" className='h-8 w-8' onClick={() => handleRemoveSong(track.id)}>
                                                                 <X className='h-4 w-4' />
@@ -300,14 +300,14 @@ export default function MusicPage() {
                     className="max-w-md mx-auto bg-background/80 backdrop-blur-sm shadow-lg pointer-events-auto"
                 >
                     <CardContent className="p-2 flex items-center gap-4">
-                        <div className='flex-grow flex items-center gap-4 cursor-pointer' onClick={() => router.push('/music/now-playing')}>
-                            <Avatar className='h-10 w-10 rounded-md'>
+                        <div className='flex-grow flex items-center gap-4 cursor-pointer overflow-hidden' onClick={() => router.push('/music/now-playing')}>
+                            <Avatar className='h-10 w-10 rounded-md flex-shrink-0'>
                                 {nowPlaying.albumArt && <AvatarImage src={nowPlaying.albumArt} alt={nowPlaying.title} />}
                                 <AvatarFallback className='rounded-md'><Music /></AvatarFallback>
                             </Avatar>
-                            <div className='flex-grow'>
+                            <div className='flex-grow overflow-hidden'>
                                 <p className='font-semibold truncate text-primary'>{nowPlaying.title}</p>
-                                <p className='text-sm text-muted-foreground'>{nowPlaying.artist}</p>
+                                <p className='text-sm text-muted-foreground truncate'>{nowPlaying.artist}</p>
                             </div>
                         </div>
                         <div className='flex items-center'>

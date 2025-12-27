@@ -120,7 +120,7 @@ function ArtistDetailsPage() {
                     </Avatar>
                     <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
                     <div className="absolute bottom-4 left-4">
-                        <h2 className="text-4xl font-bold text-foreground">{artist.name}</h2>
+                        <h2 className="text-4xl font-bold text-foreground truncate">{artist.name}</h2>
                         <p className="text-muted-foreground">{artist.followers.toLocaleString()} followers</p>
                     </div>
                 </div>
@@ -149,9 +149,9 @@ function ArtistDetailsPage() {
                                 <CardContent className="p-2">
                                      {selectedAlbumTracks.map((track) => (
                                         <div key={track.id} className="flex items-center gap-4 p-2 rounded-lg hover:bg-muted/50">
-                                            <div className='flex-grow'>
+                                            <div className='flex-grow overflow-hidden'>
                                                 <p className='font-semibold truncate'>{track.name}</p>
-                                                <p className='text-sm text-muted-foreground'>{track.artists.map((a: any) => a.name).join(', ')}</p>
+                                                <p className='text-sm text-muted-foreground truncate'>{track.artists.map((a: any) => a.name).join(', ')}</p>
                                             </div>
                                             <p className='text-sm text-muted-foreground font-mono'>{formatDuration(track.duration_ms)}</p>
                                             <Button size="icon" variant="ghost" onClick={() => handleAddSong(track)}>
