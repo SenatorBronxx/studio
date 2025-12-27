@@ -19,8 +19,8 @@ async function getAccessToken(): Promise<string> {
         return accessToken.value;
     }
 
-    const client_id = process.env.SPOTIFY_CLIENT_ID;
-    const client_secret = process.env.SPOTIFY_CLIENT_SECRET;
+    const client_id = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID;
+    const client_secret = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_SECRET;
 
     if (!client_id || !client_secret) {
         throw new Error("Spotify client ID or secret not configured in .env file");
