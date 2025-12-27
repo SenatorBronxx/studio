@@ -28,7 +28,9 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     try {
       const storedNotifications = localStorage.getItem('notifications');
       if (storedNotifications) {
-        setNotifications(JSON.parse(storedNotifications));
+        // We only load the non-component data. Actions will be lost on reload, which is acceptable.
+        const loadedNotifications = JSON.parse(storedNotifications).map((n: any) => ({...n, action: undefined}));
+        setNotifications(loadedNotifications);
       }
     } catch (error) {
       console.error("Failed to load notifications from localStorage", error);
@@ -36,9 +38,11 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     setIsHydrated(true);
   }, []);
 
-  const persistNotifications = (notifications: Notification[]) => {
+  const persistNotifications = (notificationsToPersist: Notification[]) => {
     try {
-      localStorage.setItem('notifications', JSON.stringify(notifications));
+      // Create a version of notifications for storage without React components
+      const storableNotifications = notificationsToPersist.map(({ action, ...rest }) => rest);
+      localStorage.setItem('notifications', JSON.stringify(storableNotifications));
     } catch (error) {
       console.error("Failed to save notifications to localStorage", error);
     }
