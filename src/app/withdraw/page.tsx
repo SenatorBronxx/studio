@@ -45,7 +45,7 @@ export default function WithdrawPage() {
 
         if (!isHydrated) return;
 
-        const ghanaPhoneRegex = /^(?:\+233|0)\d{9}$/;
+        const ghanaPhoneRegex = /^(?:(?:\+233|0)[235][0-9]{8})$/;
         if (!ghanaPhoneRegex.test(phone)) {
             toast({
                 variant: 'destructive',
