@@ -24,71 +24,65 @@ type WalletContextType = {
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
 
-const initialBalance = 200.00; // Starting balance for the local-only version
-
-const initialTransactions: Transaction[] = [];
+const initialBalance = 200.00;
 
 export function WalletProvider({ children }: { children: ReactNode }) {
-  const [balance, setBalance] = useState(0);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [isHydrated, setIsHydrated] = useState(false);
-  const { toast } = useToast();
+    const [balance, setBalance] = useState(initialBalance);
+    const [transactions, setTransactions] = useState<Transaction[]>([]);
+    const [isHydrated, setIsHydrated] = useState(false);
+    const { toast } = useToast();
 
-  useEffect(() => {
-    try {
-        const storedBalance = localStorage.getItem('walletBalance');
-        const storedTransactions = localStorage.getItem('walletTransactions');
-        
-        if (storedBalance) {
-            setBalance(JSON.parse(storedBalance));
-        } else {
+    useEffect(() => {
+        try {
+            const storedBalance = localStorage.getItem('walletBalance');
+            const storedTransactions = localStorage.getItem('walletTransactions');
+
+            if (storedBalance) {
+                setBalance(JSON.parse(storedBalance));
+            } else {
+                localStorage.setItem('walletBalance', JSON.stringify(initialBalance));
+            }
+
+            if (storedTransactions) {
+                setTransactions(JSON.parse(storedTransactions));
+            } else {
+                localStorage.setItem('walletTransactions', JSON.stringify([]));
+            }
+        } catch (error) {
+            console.error("Failed to load wallet data from localStorage", error);
             setBalance(initialBalance);
-            localStorage.setItem('walletBalance', JSON.stringify(initialBalance));
+            setTransactions([]);
         }
+        setIsHydrated(true);
+    }, []);
 
-        if (storedTransactions) {
-            setTransactions(JSON.parse(storedTransactions));
-        } else {
-            setTransactions(initialTransactions);
-            localStorage.setItem('walletTransactions', JSON.stringify(initialTransactions));
+    const updateLocalStorage = (newBalance: number, newTransactions: Transaction[]) => {
+        try {
+            localStorage.setItem('walletBalance', JSON.stringify(newBalance));
+            localStorage.setItem('walletTransactions', JSON.stringify(newTransactions));
+        } catch (error) {
+            console.error("Failed to save wallet data to localStorage", error);
+            toast({
+                variant: 'destructive',
+                title: 'Uh oh! Something went wrong.',
+                description: 'Could not save wallet data.',
+            });
         }
-    } catch (error) {
-        console.error("Failed to load wallet data from localStorage", error);
-        setBalance(initialBalance);
-        setTransactions(initialTransactions);
-    }
-    setIsHydrated(true);
-  }, []);
-
-  const updateLocalStorage = (newBalance: number, newTransactions: Transaction[]) => {
-      try {
-          localStorage.setItem('walletBalance', JSON.stringify(newBalance));
-          localStorage.setItem('walletTransactions', JSON.stringify(newTransactions));
-      } catch (error) {
-           console.error("Failed to save wallet data to localStorage", error);
-           toast({
-              variant: 'destructive',
-              title: 'Uh oh! Something went wrong.',
-              description: 'Could not save wallet data.',
-           });
-      }
-  };
-
-  const addTransaction = useCallback((transaction: Omit<Transaction, 'id' | 'timestamp'>) => {
-    const newTransaction: Transaction = {
-        ...transaction,
-        id: uuidv4(),
-        timestamp: new Date().toISOString(),
     };
 
-    setBalance(prevBalance => {
-        const newBalance = prevBalance + newTransaction.amount;
-        
-        setTransactions(prevTransactions => {
-            const newTransactions = [newTransaction, ...prevTransactions];
-            updateLocalStorage(newBalance, newTransactions);
-            return newTransactions;
-        });
+    const addTransaction = useCallback((transaction: Omit<Transaction, 'id' | 'timestamp'>) => {
+        const newTransaction: Transaction = {
+            ...transaction,
+            id: uuidv4(),
+            timestamp: new Date().toISOString(),
+        };
+
+        const newBalance = balance + newTransaction.amount;
+        const newTransactions = [newTransaction, ...transactions];
+
+        setBalance(newBalance);
+        setTransactions(newTransactions);
+        updateLocalStorage(newBalance, newTransactions);
 
         if (newBalance < 20 && newBalance > 0) {
             toast({
@@ -97,30 +91,28 @@ export function WalletProvider({ children }: { children: ReactNode }) {
                 description: 'Your wallet balance is getting low. Please top-up.',
             });
         }
-        return newBalance;
-    });
-  }, [toast]);
+    }, [balance, transactions, toast]);
 
-  const clearTransactions = useCallback(() => {
-    setTransactions([]);
-    try {
-        localStorage.setItem('walletTransactions', JSON.stringify([]));
-        toast({
-            title: "History Cleared",
-            description: "Your transaction history has been cleared.",
-        });
-    } catch (error) {
-        console.error("Failed to clear transactions from localStorage", error);
-    }
-  }, [toast]);
-  
-  const value = { balance, transactions, addTransaction, clearTransactions, isHydrated };
+    const clearTransactions = useCallback(() => {
+        setTransactions([]);
+        try {
+            localStorage.setItem('walletTransactions', JSON.stringify([]));
+            toast({
+                title: "History Cleared",
+                description: "Your transaction history has been cleared.",
+            });
+        } catch (error) {
+            console.error("Failed to clear transactions from localStorage", error);
+        }
+    }, [toast]);
 
-  return (
-    <WalletContext.Provider value={value}>
-      {children}
-    </WalletContext.Provider>
-  );
+    const value = { balance, transactions, addTransaction, clearTransactions, isHydrated };
+
+    return (
+        <WalletContext.Provider value={value}>
+            {children}
+        </WalletContext.Provider>
+    );
 }
 
 export function useWallet() {
