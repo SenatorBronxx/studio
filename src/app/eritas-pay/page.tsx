@@ -149,7 +149,7 @@ export default function EritasPayPage() {
                 <Card className="shadow-lg relative overflow-hidden">
                     <CardIconBackground />
                     <div className="absolute top-3 right-3 p-2 bg-primary/10 rounded-full">
-                        <CircleDollarSign className="h-5 w-5 text-primary" />
+                        <Wallet className="h-5 w-5 text-primary" />
                     </div>
                     <CardContent className="p-6 relative">
                         <div className='space-y-2'>
