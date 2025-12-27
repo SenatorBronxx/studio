@@ -32,11 +32,28 @@ export default function WithdrawPage() {
     const { t } = useLanguage();
     const { balance, addTransaction, isHydrated } = useWallet();
 
+    const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        // Allow only digits and the '+' symbol at the start
+        const sanitizedValue = value.replace(/[^0-9+]/g, '');
+        setPhone(sanitizedValue);
+    };
+
     const handleWithdraw = (e: React.FormEvent) => {
         e.preventDefault();
         const withdrawAmount = parseFloat(amount);
 
         if (!isHydrated) return;
+
+        const ghanaPhoneRegex = /^(?:\+233|0)\d{9}$/;
+        if (!ghanaPhoneRegex.test(phone)) {
+            toast({
+                variant: 'destructive',
+                title: 'Invalid Phone Number',
+                description: 'Please enter a valid Ghanaian mobile number (e.g., 0241234567 or +233241234567).',
+            });
+            return;
+        }
 
         if (!withdrawAmount || withdrawAmount <= 0) {
             toast({
@@ -132,7 +149,7 @@ export default function WithdrawPage() {
                                 type="tel" 
                                 placeholder="+233 24 123 4567" 
                                 value={phone} 
-                                onChange={(e) => setPhone(e.target.value)}
+                                onChange={handlePhoneChange}
                                 required
                             />
                         </div>
