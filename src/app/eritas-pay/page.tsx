@@ -2,7 +2,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { ArrowRight, CreditCard, Loader2, MoreVertical, Wallet, Bell, Trash2, Shield, CircleDollarSign, ArrowUpRight } from 'lucide-react';
+import { ArrowRight, CreditCard, Loader2, MoreVertical, Wallet, Bell, Trash2, Shield, CircleDollarSign, ArrowUpRight, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useWallet, Transaction } from '@/context/wallet-context';
@@ -38,6 +38,7 @@ import Image from 'next/image';
 import { CardIconBackground } from '@/components/card--background';
 import { Badge } from '@/components/ui/badge';
 import { useNotification, Notification } from '@/context/notification-context';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 
 export default function EritasPayPage() {
@@ -47,6 +48,7 @@ export default function EritasPayPage() {
   const { notifications, clearNotifications } = useNotification();
 
   const WALLET_THRESHOLD = 400;
+  const LOW_BALANCE_THRESHOLD = 20;
 
   const getTransactionIcon = (transaction: Transaction) => {
     switch (transaction.type) {
@@ -156,6 +158,21 @@ export default function EritasPayPage() {
                                 <p className="text-4xl font-bold">GH₵ {balance.toFixed(2)}</p>
                                 : <Loader2 className="h-8 w-8 animate-spin" />
                             }
+                            {isHydrated && balance < LOW_BALANCE_THRESHOLD && (
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="text-destructive animate-pulse">
+                                            <AlertCircle className="h-6 w-6" />
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-60">
+                                        <div className="space-y-2 text-sm">
+                                            <h4 className="font-semibold">Low Balance Warning</h4>
+                                            <p className="text-muted-foreground">Your balance is below GH₵{LOW_BALANCE_THRESHOLD.toFixed(2)}. Please top up to avoid service interruptions.</p>
+                                        </div>
+                                    </PopoverContent>
+                                </Popover>
+                            )}
                         </div>
                         <div className="space-y-2">
                             <Progress value={isHydrated ? (balance / WALLET_THRESHOLD) * 100 : 0} className="h-2" />
@@ -245,3 +262,5 @@ export default function EritasPayPage() {
     </div>
   );
 }
+
+    
