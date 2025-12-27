@@ -230,8 +230,8 @@ export default function EritasPayPage() {
                     {isHydrated ? (
                         transactions.length > 0 ? (
                              <div className="space-y-4">
-                                {transactions.slice(0, 5).map((transaction, index) => (
-                                    <div key={`${transaction.id}-${index}`} className="flex items-center gap-4">
+                                {transactions.slice(0, 5).map((transaction) => (
+                                    <div key={transaction.id} className="flex items-center gap-4">
                                         {getTransactionIcon(transaction)}
                                         <div className="flex-grow">
                                             <p className="font-semibold">{transaction.description}</p>
@@ -262,5 +262,7 @@ export default function EritasPayPage() {
     </div>
   );
 }
+
+    
 
     
