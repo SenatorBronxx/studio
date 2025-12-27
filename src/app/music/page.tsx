@@ -311,15 +311,7 @@ export default function MusicPage() {
                             </div>
                         </div>
                         <div className='flex items-center'>
-                             <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); playPrevious(); }}>
-                                <SkipBack className='h-6 w-6' />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); togglePlay(); }}>
-                                {isPlaying ? <Pause className='h-6 w-6' /> : <Play className='h-6 w-6' />}
-                            </Button>
-                             <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); playNext(); }}>
-                                <SkipForward className='h-6 w-6' />
-                            </Button>
+                           <NowPlayingIcon />
                         </div>
                     </CardContent>
                 </Card>

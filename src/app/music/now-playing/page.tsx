@@ -93,19 +93,9 @@ export default function NowPlayingPage() {
                     <Button variant="ghost" size="icon" className="h-16 w-16" onClick={handleSaveToggle}>
                         <Heart className={cn('h-7 w-7', isSongSaved(nowPlaying.id) && 'fill-red-500 text-red-500')} />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-16 w-16" onClick={playPrevious}>
-                        <SkipBack className="h-8 w-8" />
-                    </Button>
-                    <Button
-                        size="icon"
-                        className="h-20 w-20 rounded-full shadow-lg"
-                        onClick={togglePlay}
-                    >
-                        {isPlaying ? <Pause className="h-10 w-10" /> : <Play className="h-10 w-10 pl-1" />}
-                    </Button>
-                     <Button variant="ghost" size="icon" className="h-16 w-16" onClick={playNext}>
-                        <SkipForward className="h-8 w-8" />
-                    </Button>
+                    <div className="w-16 h-16"></div>
+                    <div className="w-20 h-20"></div>
+                     <div className="w-16 h-16"></div>
                     <Button variant="ghost" size="icon" className="h-16 w-16" disabled>
                          <ListMusic className="h-7 w-7" />
                     </Button>
