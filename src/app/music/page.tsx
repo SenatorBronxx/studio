@@ -37,6 +37,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { cn } from '@/lib/utils';
 
 
 const genres = [
@@ -59,7 +60,7 @@ export default function MusicPage() {
 
     const { activeTrip } = useTrip();
     const { playlist, nowPlaying, addSong, removeSong } = useMusic();
-    const { savedSongs, unsaveSong, isHydrated: isSavedSongsHydrated } = useSavedSongs();
+    const { savedSongs, saveSong, unsaveSong, isSongSaved, isHydrated: isSavedSongsHydrated } = useSavedSongs();
     const { toast } = useToast();
     const { preferences } = useUserPreferences();
 
@@ -153,6 +154,14 @@ export default function MusicPage() {
             });
         }
     };
+
+    const handleSaveToggle = (track: Track) => {
+        if (isSongSaved(track.id)) {
+            unsaveSong(track.id);
+        } else {
+            saveSong(track);
+        }
+    };
     
     const formatDuration = (ms: number) => {
         const minutes = Math.floor(ms / 60000);
@@ -171,9 +180,14 @@ export default function MusicPage() {
                 <p className='text-sm text-muted-foreground truncate'>{track.artist}</p>
             </div>
             <p className='text-sm text-muted-foreground font-mono'>{formatDuration(track.duration)}</p>
-            <Button size="icon" variant="ghost" onClick={() => handleAddSong(track)} disabled={!activeTrip}>
-                <Plus className='h-5 w-5' />
-            </Button>
+            <div className='flex items-center'>
+                 <Button size="icon" variant="ghost" onClick={() => handleSaveToggle(track)}>
+                    <Heart className={cn('h-5 w-5', isSongSaved(track.id) ? 'fill-red-500 text-red-500' : 'text-muted-foreground')} />
+                </Button>
+                <Button size="icon" variant="ghost" onClick={() => handleAddSong(track)} disabled={!activeTrip}>
+                    <Plus className='h-5 w-5' />
+                </Button>
+            </div>
         </div>
     );
     
