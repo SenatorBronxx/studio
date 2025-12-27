@@ -23,8 +23,10 @@ function ArtistDetailsPage() {
 
     const [artist, setArtist] = useState<any>(null);
     const [albums, setAlbums] = useState<any[]>([]);
+    const [selectedAlbum, setSelectedAlbum] = useState<any | null>(null);
     const [selectedAlbumTracks, setSelectedAlbumTracks] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isLoadingTracks, setIsLoadingTracks] = useState(false);
 
     const { playlist, nowPlaying, addSong } = useMusic();
     const { activeTrip } = useTrip();
@@ -51,9 +53,12 @@ function ArtistDetailsPage() {
         }
     }, [artistId]);
 
-    const handleAlbumClick = async (albumId: string) => {
-        const tracks = await getAlbumTracks(albumId);
+    const handleAlbumClick = async (album: any) => {
+        setSelectedAlbum(album);
+        setIsLoadingTracks(true);
+        const tracks = await getAlbumTracks(album.id);
         setSelectedAlbumTracks(tracks);
+        setIsLoadingTracks(false);
     }
     
     const handleAddSong = (track: any) => {
@@ -70,7 +75,7 @@ function ArtistDetailsPage() {
             id: track.id,
             title: track.name,
             artist: track.artists[0].name,
-            albumArt: artist.images[0]?.url, // Use artist image as fallback
+            albumArt: selectedAlbum?.images[0]?.url || artist.images[0]?.url,
             duration: track.duration_ms,
         };
 
@@ -130,7 +135,7 @@ function ArtistDetailsPage() {
                     <ScrollArea className="w-full">
                         <div className="flex space-x-4 pb-4">
                             {albums.map(album => (
-                                <div key={album.id} className="w-36 flex-shrink-0 cursor-pointer" onClick={() => handleAlbumClick(album.id)}>
+                                <div key={album.id} className="w-36 flex-shrink-0 cursor-pointer" onClick={() => handleAlbumClick(album)}>
                                     <Avatar className="h-36 w-36 rounded-md border">
                                         <AvatarImage src={album.images[0]?.url} alt={album.name} />
                                         <AvatarFallback className="rounded-md"><Music /></AvatarFallback>
@@ -142,19 +147,23 @@ function ArtistDetailsPage() {
                         </div>
                     </ScrollArea>
 
-                    {selectedAlbumTracks.length > 0 && (
+                    {selectedAlbum && (
                         <div className="space-y-4">
-                            <h3 className="text-xl font-bold">Tracks</h3>
+                            <h3 className="text-xl font-bold">{selectedAlbum.name}</h3>
                             <Card>
                                 <CardContent className="p-2">
-                                     {selectedAlbumTracks.map((track) => (
+                                     {isLoadingTracks ? (
+                                        <div className="flex justify-center items-center py-8">
+                                            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                                        </div>
+                                     ) : selectedAlbumTracks.map((track) => (
                                         <div key={track.id} className="flex items-center gap-4 p-2 rounded-lg hover:bg-muted/50">
                                             <div className='flex-grow overflow-hidden'>
                                                 <p className='font-semibold truncate'>{track.name}</p>
                                                 <p className='text-sm text-muted-foreground truncate'>{track.artists.map((a: any) => a.name).join(', ')}</p>
                                             </div>
                                             <p className='text-sm text-muted-foreground font-mono'>{formatDuration(track.duration_ms)}</p>
-                                            <Button size="icon" variant="ghost" onClick={() => handleAddSong(track)}>
+                                            <Button size="icon" variant="ghost" onClick={() => handleAddSong(track)} disabled={!activeTrip}>
                                                 <Plus className='h-5 w-5' />
                                             </Button>
                                         </div>

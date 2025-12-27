@@ -9,6 +9,8 @@ let accessToken: {
     expiresAt: number;
 } | null = null;
 
+let tokenPromise: Promise<string> | null = null;
+
 /**
  * Gets a Spotify API access token using the Client Credentials Flow.
  * It caches the token in memory to avoid requesting a new one on every call.
@@ -18,37 +20,49 @@ async function getAccessToken(): Promise<string> {
     if (accessToken && accessToken.expiresAt > Date.now()) {
         return accessToken.value;
     }
-
-    const client_id = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID;
-    const client_secret = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_SECRET;
-
-    if (!client_id || !client_secret) {
-        throw new Error("Spotify client ID or secret not configured in .env file");
+    
+    // If a token request is already in flight, wait for it to complete
+    if (tokenPromise) {
+        return tokenPromise;
     }
 
-    const response = await fetch("https://accounts.spotify.com/api/token", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-            "Authorization": "Basic " + Buffer.from(client_id + ":" + client_secret).toString("base64"),
-        },
-        body: "grant_type=client_credentials",
-    });
+    tokenPromise = (async () => {
+        const client_id = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID;
+        const client_secret = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_SECRET;
 
-    if (!response.ok) {
-        throw new Error(`Failed to fetch Spotify access token: ${response.statusText}`);
-    }
+        if (!client_id || !client_secret) {
+            throw new Error("Spotify client ID or secret not configured in .env file");
+        }
 
-    const data = await response.json();
-    const expiresIn = data.expires_in * 1000; // Convert to milliseconds
+        const response = await fetch("https://accounts.spotify.com/api/token", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "Authorization": "Basic " + Buffer.from(client_id + ":" + client_secret).toString("base64"),
+            },
+            body: "grant_type=client_credentials",
+        });
 
-    accessToken = {
-        value: data.access_token,
-        expiresAt: Date.now() + expiresIn,
-    };
+        if (!response.ok) {
+            tokenPromise = null; // Clear the promise on failure
+            throw new Error(`Failed to fetch Spotify access token: ${response.statusText}`);
+        }
 
-    return accessToken.value;
+        const data = await response.json();
+        const expiresIn = data.expires_in * 1000; // Convert to milliseconds
+
+        accessToken = {
+            value: data.access_token,
+            expiresAt: Date.now() + expiresIn,
+        };
+        
+        tokenPromise = null; // Clear the promise on success
+        return accessToken.value;
+    })();
+
+    return tokenPromise;
 }
+
 
 /**
  * Searches for tracks on Spotify.
