@@ -4,7 +4,7 @@
 import { createContext, useContext, ReactNode, useState, useCallback, useEffect } from 'react';
 
 export type Notification = {
-    id: number;
+    id: string; // Changed to string to accommodate more complex unique IDs
     title: string;
     description: string;
     tripId?: string;
@@ -49,7 +49,8 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   };
 
   const addNotification = useCallback((notification: Omit<Notification, 'id'>) => {
-    const newNotification = { ...notification, id: Date.now() };
+    // Generate a more unique key to prevent collisions
+    const newNotification = { ...notification, id: `${Date.now()}-${Math.random()}` };
     setNotifications(prev => {
         const newNotifications = [newNotification, ...prev];
         persistNotifications(newNotifications);
