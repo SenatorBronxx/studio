@@ -59,7 +59,7 @@ export default function MusicPage() {
     const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
     const { activeTrip } = useTrip();
-    const { playlist, nowPlaying, addSong, removeSong, isPlaying, togglePlay, playNext, playPrevious } = useMusic();
+    const { playlist, nowPlaying, addSong, removeSong } = useMusic();
     const { savedSongs, unsaveSong, isHydrated: isSavedSongsHydrated } = useSavedSongs();
     const { toast } = useToast();
     const { preferences } = useUserPreferences();
