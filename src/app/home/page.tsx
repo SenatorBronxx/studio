@@ -437,7 +437,7 @@ export default function HomePage() {
                                 <p className="text-sm text-muted-foreground">
                                     {tripStatus === 'en_route_to_pickup' && t('busArrivingAtYourLocation')}
                                     {tripStatus === 'bus_arrived' && t('busHasArrived')}
-                                    {(tripStatus === 'en_route_to_destination' || tripStatus === 'trip_ended') && `${t('arrivingAt')} ${activeTrip.bus.finalDestination.name}`}
+                                    {(tripStatus === 'en_route_to_destination' || tripStatus === 'trip_ended') && `${t('arrivingAt')} ${activeTrip.boardingStop.name}`}
                                 </p>
                                 <p className="text-3xl font-bold text-primary">
                                     {currentEta > 0 ? t('minutesAbbr', { minutes: currentEta }) : tripStatus === 'bus_arrived' ? 'Now' : '...'}
@@ -446,7 +446,11 @@ export default function HomePage() {
                         </Card>
                          <AlertDialog>
                             <AlertDialogTrigger asChild>
-                                <Button variant="destructive" className="w-full">
+                                <Button 
+                                    variant="destructive" 
+                                    className="w-full"
+                                    disabled={tripStatus !== 'en_route_to_pickup'}
+                                >
                                     <X className="mr-2 h-4 w-4" /> Cancel Trip
                                 </Button>
                             </AlertDialogTrigger>
@@ -648,5 +652,7 @@ export default function HomePage() {
     </div>
   );
 }
+
+    
 
     
