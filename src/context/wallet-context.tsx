@@ -18,6 +18,7 @@ type WalletContextType = {
   balance: number;
   transactions: Transaction[];
   addTransaction: (transaction: Omit<Transaction, 'id' | 'timestamp'>) => void;
+  clearTransactions: () => void;
   isHydrated: boolean;
 };
 
@@ -99,8 +100,21 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         return newBalance;
     });
   }, [toast]);
+
+  const clearTransactions = useCallback(() => {
+    setTransactions([]);
+    try {
+        localStorage.setItem('walletTransactions', JSON.stringify([]));
+        toast({
+            title: "History Cleared",
+            description: "Your transaction history has been cleared.",
+        });
+    } catch (error) {
+        console.error("Failed to clear transactions from localStorage", error);
+    }
+  }, [toast]);
   
-  const value = { balance, transactions, addTransaction, isHydrated };
+  const value = { balance, transactions, addTransaction, clearTransactions, isHydrated };
 
   return (
     <WalletContext.Provider value={value}>

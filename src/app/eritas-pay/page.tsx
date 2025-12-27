@@ -47,7 +47,7 @@ type Notification = {
 
 export default function EritasPayPage() {
   const router = useRouter();
-  const { balance, transactions, isHydrated } = useWallet();
+  const { balance, transactions, isHydrated, clearTransactions } = useWallet();
   const { t } = useLanguage();
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
@@ -183,8 +183,34 @@ export default function EritasPayPage() {
             </div>
 
             <Card>
-                <CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle>{t('recentActivity')}</CardTitle>
+                    {transactions.length > 0 && (
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="ghost" size="sm">
+                                    <Trash2 className="mr-2 h-4 w-4" /> Clear
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                <AlertDialogTitle>Clear Transaction History?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This will permanently delete all your transaction records. This action cannot be undone.
+                                </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                                <AlertDialogAction
+                                    onClick={clearTransactions}
+                                    className="bg-destructive hover:bg-destructive/90"
+                                >
+                                    Yes, Clear
+                                </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    )}
                 </CardHeader>
                 <CardContent>
                     {isHydrated ? (
