@@ -145,29 +145,31 @@ export default function EritasPayPage() {
 
       <main className="flex-grow p-4 pb-24">
         <div className="max-w-md mx-auto space-y-6">
-            <Card className="shadow-lg relative overflow-hidden">
-                 <CardIconBackground />
-                <CardContent className="p-6 relative">
-                    <div className='space-y-2'>
-                        <div>
-                            <p className="text-sm text-muted-foreground mb-1">{t('eritasPayBalance')}</p>
-                            <div className="flex justify-between items-center">
-                                {isHydrated ? 
-                                    <p className="text-4xl font-bold">GH₵ {balance.toFixed(2)}</p>
-                                    : <Loader2 className="h-8 w-8 animate-spin" />
-                                }
-                                <Link href="/top-up">
-                                    <Button size="lg">{t('topUp')}</Button>
-                                </Link>
+            <div className="space-y-4">
+                <Card className="shadow-lg relative overflow-hidden">
+                    <CardIconBackground />
+                    <CardContent className="p-6 relative">
+                        <div className='space-y-2'>
+                            <div>
+                                <p className="text-sm text-muted-foreground mb-1">{t('eritasPayBalance')}</p>
+                                <div className="flex justify-between items-center">
+                                    {isHydrated ? 
+                                        <p className="text-4xl font-bold">GH₵ {balance.toFixed(2)}</p>
+                                        : <Loader2 className="h-8 w-8 animate-spin" />
+                                    }
+                                </div>
                             </div>
+                            <Badge variant="secondary" className='border-green-500/20 bg-green-500/10 text-green-700 dark:text-green-400'>
+                                <Shield className="mr-1 h-3 w-3" />
+                                Secured
+                            </Badge>
                         </div>
-                         <Badge variant="secondary" className='border-green-500/20 bg-green-500/10 text-green-700 dark:text-green-400'>
-                            <Shield className="mr-1 h-3 w-3" />
-                            Secured
-                        </Badge>
-                    </div>
-                </CardContent>
-            </Card>
+                    </CardContent>
+                </Card>
+                <Link href="/top-up" className="block">
+                    <Button size="lg" className="w-full">{t('topUp')}</Button>
+                </Link>
+            </div>
 
             <Card>
                 <CardHeader>
