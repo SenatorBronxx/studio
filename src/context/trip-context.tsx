@@ -122,7 +122,7 @@ export function TripProvider({ children }: { children: ReactNode }) {
           }
           return newEta;
         });
-      }, 60 * 1000); // Update every minute
+      }, 1000); // Update every second for testing
 
       return () => clearInterval(timer);
     }
