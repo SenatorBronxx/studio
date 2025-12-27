@@ -98,22 +98,6 @@ export function AuthForm({ mode, onSignInSuccess, onSignUpSuccess }: AuthFormPro
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-4">
-        <Button variant="outline" onClick={() => handleSocialSignIn('google')} disabled={!!isSocialLoading}>
-          {isSocialLoading === 'google' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon className="mr-2 h-4 w-4" />}
-          Google
-        </Button>
-        <Button variant="outline" onClick={() => handleSocialSignIn('apple')} disabled={!!isSocialLoading}>
-          {isSocialLoading === 'apple' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <AppleIcon className="mr-2 h-4 w-4" />}
-          Apple
-        </Button>
-      </div>
-      <div className="relative my-4">
-        <Separator />
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-2 text-xs text-muted-foreground">
-          {t('orContinueWith')}
-        </div>
-      </div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
           <FormField
@@ -148,6 +132,22 @@ export function AuthForm({ mode, onSignInSuccess, onSignUpSuccess }: AuthFormPro
           </Button>
         </form>
       </Form>
+      <div className="relative my-4">
+        <Separator />
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-2 text-xs text-muted-foreground">
+          {t('orContinueWith')}
+        </div>
+      </div>
+       <div className="grid grid-cols-2 gap-4">
+        <Button variant="outline" onClick={() => handleSocialSignIn('google')} disabled={!!isSocialLoading}>
+          {isSocialLoading === 'google' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon className="mr-2 h-4 w-4" />}
+          Google
+        </Button>
+        <Button variant="outline" onClick={() => handleSocialSignIn('apple')} disabled={!!isSocialLoading}>
+          {isSocialLoading === 'apple' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <AppleIcon className="mr-2 h-4 w-4" />}
+          Apple
+        </Button>
+      </div>
     </>
   );
 }
