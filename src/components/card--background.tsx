@@ -8,7 +8,7 @@ import { BusTicketIcon } from './icons/bus-ticket-icon';
 export const CardIconBackground = () => {
     const icons = [Music, MapPin, Flag, Check, BusTicketIcon, Bus];
 
-    const pattern = Array.from({ length: 50 }).map((_, i) => {
+    const pattern = Array.from({ length: 30 }).map((_, i) => {
         const Icon = icons[i % icons.length];
         const rotation = (i % 12) * 30;
         const scale = 0.8 + ((i % 5) / 10); 
@@ -18,8 +18,8 @@ export const CardIconBackground = () => {
                 key={i} 
                 className="absolute"
                 style={{
-                    top: `${(i % 9) * 12}%`,
-                    left: `${Math.floor(i / 9) * 12}%`,
+                    top: `${(i % 6) * 20}%`,
+                    left: `${Math.floor(i / 6) * 20}%`,
                     transform: `rotate(${rotation}deg) scale(${scale})`,
                 }}
             >
