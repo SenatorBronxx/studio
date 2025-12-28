@@ -31,7 +31,7 @@ export function SavedSongsProvider({ children }: { children: ReactNode }) {
     }
     setIsHydrated(true);
   }, []);
-  
+
   const updateLocalStorage = (songs: Track[]) => {
       try {
           localStorage.setItem('savedSongs', JSON.stringify(songs));
@@ -41,28 +41,24 @@ export function SavedSongsProvider({ children }: { children: ReactNode }) {
   };
 
   const saveSong = useCallback((song: Track) => {
-    setSavedSongs(prev => {
-        if (prev.some(s => s.id === song.id)) {
-            return prev; // Already saved
-        }
-        const newSongs = [song, ...prev];
-        updateLocalStorage(newSongs);
-        toast({ title: "Song Saved", description: `${song.title} has been added to your saved songs.` });
-        return newSongs;
-    });
-  }, [toast]);
+    if (savedSongs.some(s => s.id === song.id)) {
+        return; // Already saved
+    }
+    const newSongs = [song, ...savedSongs];
+    setSavedSongs(newSongs);
+    updateLocalStorage(newSongs);
+    toast({ title: "Song Saved", description: `${song.title} has been added to your saved songs.` });
+  }, [savedSongs, toast]);
 
   const unsaveSong = useCallback((songId: string) => {
-    setSavedSongs(prev => {
-        const songToRemove = prev.find(s => s.id === songId);
-        const newSongs = prev.filter(s => s.id !== songId);
-        updateLocalStorage(newSongs);
-        if (songToRemove) {
-            toast({ title: "Song Unsaved", description: `${songToRemove.title} has been removed.` });
-        }
-        return newSongs;
-    });
-  }, [toast]);
+    const songToRemove = savedSongs.find(s => s.id === songId);
+    if (!songToRemove) return;
+
+    const newSongs = savedSongs.filter(s => s.id !== songId);
+    setSavedSongs(newSongs);
+    updateLocalStorage(newSongs);
+    toast({ title: "Song Unsaved", description: `${songToRemove.title} has been removed.` });
+  }, [savedSongs, toast]);
 
   const isSongSaved = useCallback((songId: string) => {
     return savedSongs.some(s => s.id === songId);
