@@ -199,6 +199,67 @@ export default function MusicPage() {
             <div className="flex items-center justify-between">
                 <h1 className="text-3xl font-bold">{t('music')}</h1>
                 <div className='flex items-center gap-2'>
+                    {activeTrip && (
+                        <Sheet>
+                            <SheetTrigger asChild>
+                                <Button variant="outline" size="icon">
+                                    <ListMusic className="h-5 w-5" />
+                                </Button>
+                            </SheetTrigger>
+                            <SheetContent>
+                                <SheetHeader>
+                                    <SheetTitle>{t('busPlaylist')}</SheetTitle>
+                                </SheetHeader>
+                                <div className="py-4 h-full">
+                                {nowPlaying ? (
+                                    <div className='space-y-4'>
+                                        <div className="flex items-center gap-4 p-2 rounded-lg bg-muted">
+                                            <div className='flex-grow flex items-center gap-4 cursor-pointer overflow-hidden' onClick={() => router.push('/music/now-playing')}>
+                                                <Avatar className='h-12 w-12 rounded-md'>
+                                                    {nowPlaying.albumArt && <AvatarImage src={nowPlaying.albumArt} alt={nowPlaying.title} />}
+                                                    <AvatarFallback className='rounded-md'><Music /></AvatarFallback>
+                                                </Avatar>
+                                                <div className="overflow-hidden">
+                                                    <p className='font-semibold truncate text-primary'>{nowPlaying.title}</p>
+                                                    <p className='text-sm text-muted-foreground truncate'>{nowPlaying.artist}</p>
+                                                </div>
+                                            </div>
+                                            <NowPlayingIcon />
+                                        </div>
+
+                                        {playlist.length > 0 && (
+                                            <div className='space-y-2'>
+                                                 <h3 className="text-md font-semibold">{t('upNext')}</h3>
+                                                 <ScrollArea className='h-[60vh]'>
+                                                    <div className='space-y-2 pr-4'>
+                                                        {playlist.map((track, index) => (
+                                                            <div key={track.id} className="flex items-center gap-4 p-2 rounded-lg hover:bg-muted/50">
+                                                                <span className='font-mono text-muted-foreground text-sm w-4 text-center'>{index + 1}</span>
+                                                                <div className='flex-grow overflow-hidden'>
+                                                                    <p className='font-medium text-sm truncate'>{track.title}</p>
+                                                                    <p className='text-xs text-muted-foreground truncate'>{track.artist}</p>
+                                                                </div>
+                                                                <Button size="icon" variant="ghost" className='h-8 w-8' onClick={() => handleRemoveSong(track.id)}>
+                                                                    <X className='h-4 w-4' />
+                                                                </Button>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                 </ScrollArea>
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center text-center h-[70vh] text-muted-foreground">
+                                        <Music className="h-16 w-16 mb-4" />
+                                        <h2 className="text-xl font-semibold">{t('noSongsAdded')}</h2>
+                                        <p className="mt-2">{t('browseAndAddSongs')}</p>
+                                    </div>
+                                )}
+                                </div>
+                            </SheetContent>
+                        </Sheet>
+                    )}
                     <Sheet>
                         <SheetTrigger asChild>
                             <Button variant="outline" size="icon">
@@ -292,68 +353,6 @@ export default function MusicPage() {
                  </div>
             ) : (
                 <div className="space-y-6">
-                    {activeTrip && (
-                        <Sheet>
-                            <SheetTrigger asChild>
-                                <Button variant="outline" className="w-full">
-                                    <ListMusic className="mr-2 h-5 w-5" />
-                                    {t('busPlaylist')}
-                                </Button>
-                            </SheetTrigger>
-                            <SheetContent>
-                                <SheetHeader>
-                                    <SheetTitle>{t('busPlaylist')}</SheetTitle>
-                                </SheetHeader>
-                                <div className="py-4 h-full">
-                                {nowPlaying ? (
-                                    <div className='space-y-4'>
-                                        <div className="flex items-center gap-4 p-2 rounded-lg bg-muted">
-                                            <div className='flex-grow flex items-center gap-4 cursor-pointer overflow-hidden' onClick={() => router.push('/music/now-playing')}>
-                                                <Avatar className='h-12 w-12 rounded-md'>
-                                                    {nowPlaying.albumArt && <AvatarImage src={nowPlaying.albumArt} alt={nowPlaying.title} />}
-                                                    <AvatarFallback className='rounded-md'><Music /></AvatarFallback>
-                                                </Avatar>
-                                                <div className="overflow-hidden">
-                                                    <p className='font-semibold truncate text-primary'>{nowPlaying.title}</p>
-                                                    <p className='text-sm text-muted-foreground truncate'>{nowPlaying.artist}</p>
-                                                </div>
-                                            </div>
-                                            <NowPlayingIcon />
-                                        </div>
-
-                                        {playlist.length > 0 && (
-                                            <div className='space-y-2'>
-                                                 <h3 className="text-md font-semibold">{t('upNext')}</h3>
-                                                 <ScrollArea className='h-[60vh]'>
-                                                    <div className='space-y-2 pr-4'>
-                                                        {playlist.map((track, index) => (
-                                                            <div key={track.id} className="flex items-center gap-4 p-2 rounded-lg hover:bg-muted/50">
-                                                                <span className='font-mono text-muted-foreground text-sm w-4 text-center'>{index + 1}</span>
-                                                                <div className='flex-grow overflow-hidden'>
-                                                                    <p className='font-medium text-sm truncate'>{track.title}</p>
-                                                                    <p className='text-xs text-muted-foreground truncate'>{track.artist}</p>
-                                                                </div>
-                                                                <Button size="icon" variant="ghost" className='h-8 w-8' onClick={() => handleRemoveSong(track.id)}>
-                                                                    <X className='h-4 w-4' />
-                                                                </Button>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                 </ScrollArea>
-                                            </div>
-                                        )}
-                                    </div>
-                                ) : (
-                                    <div className="flex flex-col items-center justify-center text-center h-[70vh] text-muted-foreground">
-                                        <Music className="h-16 w-16 mb-4" />
-                                        <h2 className="text-xl font-semibold">{t('noSongsAdded')}</h2>
-                                        <p className="mt-2">{t('browseAndAddSongs')}</p>
-                                    </div>
-                                )}
-                                </div>
-                            </SheetContent>
-                        </Sheet>
-                    )}
                     
                     {recommendations.length > 0 && (
                         <div>
@@ -421,3 +420,5 @@ export default function MusicPage() {
     </div>
   );
 }
+
+    
