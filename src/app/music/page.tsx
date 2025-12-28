@@ -445,7 +445,7 @@ export default function MusicPage() {
                             {popularArtists.map(artist => {
                                 const image = PlaceHolderImages.find(p => p.id === artist.imageId);
                                 return (
-                                <Link key={artist.name} href={`/music/details?artistName=${artist.name}`}>
+                                <Link key={artist.name} href={`/music/details?artistName=${encodeURIComponent(artist.name)}`}>
                                     <div className="flex flex-col items-center gap-2 cursor-pointer">
                                         <Avatar className="h-16 w-16">
                                             {image && <AvatarImage src={image.imageUrl} alt={artist.name} />}
@@ -492,3 +492,5 @@ export default function MusicPage() {
     </div>
   );
 }
+
+    
