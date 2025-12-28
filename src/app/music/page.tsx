@@ -7,7 +7,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Loader2, Music, Mic, ListMusic, Plus, X, Heart, ArrowLeft } from 'lucide-react';
 import { BottomNav } from '@/components/bottom-nav';
 import { useLanguage } from '@/context/language-context';
@@ -443,8 +442,8 @@ export default function MusicPage() {
                                         {playlist.length > 0 && (
                                             <div className='space-y-2'>
                                                  <h3 className="text-md font-semibold">{t('upNext')}</h3>
-                                                 <ScrollArea className='h-[60vh]'>
-                                                    <div className='space-y-2 pr-4'>
+                                                 <div className='h-[60vh] overflow-y-auto pr-4 no-scrollbar'>
+                                                    <div className='space-y-2'>
                                                         {playlist.map((track, index) => (
                                                             <div key={track.id} className="flex items-center gap-4 p-2 rounded-lg hover:bg-muted/50">
                                                                 <span className='font-mono text-muted-foreground text-sm w-4 text-center'>{index + 1}</span>
@@ -458,7 +457,7 @@ export default function MusicPage() {
                                                             </div>
                                                         ))}
                                                     </div>
-                                                 </ScrollArea>
+                                                 </div>
                                             </div>
                                         )}
                                     </div>
@@ -485,7 +484,7 @@ export default function MusicPage() {
                             </SheetHeader>
                             <div className="py-4 h-full">
                                 {isSavedSongsHydrated && savedSongs.length > 0 ? (
-                                    <ScrollArea className="h-[85vh]">
+                                    <div className="h-[85vh] overflow-y-auto no-scrollbar">
                                         <div className="space-y-2">
                                             {savedSongs.map(track => (
                                                  <div key={track.id} className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50">
@@ -526,7 +525,7 @@ export default function MusicPage() {
                                                 </div>
                                             ))}
                                         </div>
-                                    </ScrollArea>
+                                    </div>
                                 ) : (
                                     <div className="flex flex-col items-center justify-center text-center h-[70vh] text-muted-foreground">
                                         <Heart className="h-16 w-16 mb-4" />
@@ -677,4 +676,5 @@ export default function MusicPage() {
     </div>
   );
 }
+
 
