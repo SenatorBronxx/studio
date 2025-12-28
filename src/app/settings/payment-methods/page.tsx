@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, CreditCard, Plus, Trash2, Wallet, Smartphone, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { MastercardIcon } from '@/components/icons/mastercard';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,6 +23,8 @@ import { useWallet } from '@/context/wallet-context';
 import { CashIcon } from '@/components/icons/cash-icon';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 const mobileMoneyAccounts = [
     { id: 1, provider: 'mtn', number: '+233 24 *** 4567' },
@@ -34,14 +35,6 @@ export default function PaymentMethodsPage() {
   const { t } = useLanguage();
   const { balance, isHydrated } = useWallet();
 
-  const getCardIcon = (type: string) => {
-    switch (type) {
-      case 'mastercard':
-        return <div className="w-12"><MastercardIcon /></div>;
-      default:
-        return <CreditCard className="h-8 w-8 text-muted-foreground" />;
-    }
-  };
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -89,25 +82,30 @@ export default function PaymentMethodsPage() {
           </Card>
 
           {/* Cash Payment */}
-          <Card>
-             <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                    <CashIcon className="h-6 w-6" />
-                    {t('cashPayment')}
-                </CardTitle>
-                <CardDescription>{t('cashPaymentDescription')}</CardDescription>
-            </CardHeader>
-            <CardContent>
-                 <RadioGroup defaultValue="cash" className="space-y-4">
-                    <Label htmlFor="cash-payment" className="flex items-center justify-between p-4 border rounded-lg cursor-pointer has-[:checked]:bg-primary/10 has-[:checked]:border-primary">
-                        <div className="flex items-center gap-4">
-                            <CashIcon className="h-6 w-6 text-primary" />
-                            <span className="font-medium">{t('payWithCash')}</span>
-                        </div>
-                        <RadioGroupItem value="cash" id="cash-payment" />
-                    </Label>
-                </RadioGroup>
-            </CardContent>
+          <Card className={cn("relative overflow-hidden")}>
+             <div className="absolute inset-0 bg-background/20 backdrop-blur-sm z-10 flex items-center justify-center pointer-events-none">
+                <Badge variant="destructive">Unavailable</Badge>
+             </div>
+             <div className="opacity-50 pointer-events-none">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <CashIcon className="h-6 w-6" />
+                        {t('cashPayment')}
+                    </CardTitle>
+                    <CardDescription>{t('cashPaymentDescription')}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <RadioGroup defaultValue="cash" className="space-y-4">
+                        <Label htmlFor="cash-payment" className="flex items-center justify-between p-4 border rounded-lg cursor-not-allowed has-[:checked]:bg-primary/10 has-[:checked]:border-primary">
+                            <div className="flex items-center gap-4">
+                                <CashIcon className="h-6 w-6 text-primary" />
+                                <span className="font-medium">{t('payWithCash')}</span>
+                            </div>
+                            <RadioGroupItem value="cash" id="cash-payment" disabled />
+                        </Label>
+                    </RadioGroup>
+                </CardContent>
+             </div>
           </Card>
 
            {/* Mobile Money */}
