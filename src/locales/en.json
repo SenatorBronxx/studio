@@ -344,5 +344,10 @@
     "clearNotificationsTitle": "Clear all notifications?",
     "clearNotificationsDescription": "Are you sure you want to clear all your notifications? This action cannot be undone.",
     "confirmClear": "Clear",
-    "noRecentActivity": "No recent activity to show."
+    "noRecentActivity": "No recent activity to show.",
+    "myPlaces": "My Places",
+    "myPlacesDescription": "Quickly access your frequent destinations.",
+    "edit": "Edit",
+    "removePlaceTitle": "Remove Place?",
+    "removePlaceDescription": "Are you sure you want to remove {{placeName}} from your saved places?"
 }

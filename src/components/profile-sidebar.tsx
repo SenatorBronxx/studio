@@ -56,6 +56,7 @@ import { useState } from 'react';
 const menuItems = [
     { id: 'settings', icon: Settings, labelKey: 'profileSettings', href: '/settings' },
     { id: 'trips', icon: History, labelKey: 'recentTrips', href: '/settings/recent-trips' },
+    { id: 'places', icon: MapPin, labelKey: 'savedPlaces', href: '/settings/saved-places' },
     { id: 'share', icon: Share2, labelKey: 'shareMyTrip' },
     { id: 'qr', icon: QrCode, labelKey: 'tripQrCodes', href: '/settings/trip-qrs' },
     { id: 'loyalty', icon: Award, labelKey: 'loyaltyPoints', href: '/loyalty' },
@@ -245,5 +246,3 @@ export function ProfileSidebar() {
         </>
     );
 }
-
-    

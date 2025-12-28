@@ -343,7 +343,10 @@
     "finalDestination": "Awiei Gyinabea",
     "clearNotificationsTitle": "Popa nkaebɔ nyinaa anaa?",
     "clearNotificationsDescription": "Wopɛ sɛ wopopa wo nkaebɔ nyinaa? Wei deɛ worentumi nsan anyɛ.",
-    "confirmClear": "Popa"
+    "confirmClear": "Popa",
+    "myPlaces": "Me Mmeaɛ",
+    "myPlacesDescription": "Kɔ mmeaɛ a wokɔ hɔ daa no ntɛm.",
+    "edit": "Siesie",
+    "removePlaceTitle": "Yi Beae no?",
+    "removePlaceDescription": "Woawie pɛyɛ sɛ wopɛ sɛ wuyi {{placeName}} fi wo mmea a woakora no mu?"
 }
-
-    
