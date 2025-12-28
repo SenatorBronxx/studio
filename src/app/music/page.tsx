@@ -170,8 +170,8 @@ export default function MusicPage() {
     };
 
     const renderTrackItem = (track: Track) => (
-        <div key={track.id} className="flex items-center gap-4 p-2 rounded-lg hover:bg-muted/50">
-            <Avatar className='h-12 w-12 rounded-md'>
+        <div key={track.id} className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50">
+            <Avatar className='h-12 w-12 rounded-md flex-shrink-0'>
                 {track.albumArt && <AvatarImage src={track.albumArt} alt={track.title} />}
                 <AvatarFallback className='rounded-md'><Music /></AvatarFallback>
             </Avatar>
@@ -179,7 +179,7 @@ export default function MusicPage() {
                 <p className='font-semibold truncate'>{track.title}</p>
                 <p className='text-sm text-muted-foreground truncate'>{track.artist}</p>
             </div>
-            <p className='text-sm text-muted-foreground font-mono'>{formatDuration(track.duration)}</p>
+            <p className='text-sm text-muted-foreground font-mono hidden sm:block'>{formatDuration(track.duration)}</p>
             <div className='flex items-center'>
                  <Button size="icon" variant="ghost" onClick={() => handleSaveToggle(track)}>
                     <Heart className={cn('h-5 w-5', isSongSaved(track.id) ? 'fill-red-500 text-red-500' : 'text-muted-foreground')} />
@@ -276,7 +276,7 @@ export default function MusicPage() {
                                         <div className="space-y-2 pr-4">
                                             {savedSongs.map(track => (
                                                  <div key={track.id} className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50">
-                                                    <Avatar className='h-12 w-12 rounded-md'>
+                                                    <Avatar className='h-12 w-12 rounded-md flex-shrink-0'>
                                                         {track.albumArt && <AvatarImage src={track.albumArt} alt={track.title} />}
                                                         <AvatarFallback className='rounded-md'><Music /></AvatarFallback>
                                                     </Avatar>
