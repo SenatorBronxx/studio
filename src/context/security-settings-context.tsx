@@ -6,8 +6,6 @@ import { createContext, useContext, ReactNode, useState, useCallback, useEffect 
 type SecuritySettingsContextType = {
   isPinEnabled: boolean;
   setIsPinEnabled: (value: boolean) => void;
-  isBiometricEnabled: boolean;
-  setIsBiometricEnabled: (value: boolean) => void;
   is2faEnabled: boolean;
   setIs2faEnabled: (value: boolean) => void;
   isHydrated: boolean;
@@ -17,7 +15,6 @@ const SecuritySettingsContext = createContext<SecuritySettingsContextType | unde
 
 export function SecuritySettingsProvider({ children }: { children: ReactNode }) {
   const [isPinEnabled, setIsPinEnabledState] = useState(false);
-  const [isBiometricEnabled, setIsBiometricEnabledState] = useState(false);
   const [is2faEnabled, setIs2faEnabledState] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
 
@@ -25,9 +22,8 @@ export function SecuritySettingsProvider({ children }: { children: ReactNode }) 
     try {
       const storedSettings = localStorage.getItem('securitySettings');
       if (storedSettings) {
-        const { isPinEnabled, isBiometricEnabled, is2faEnabled } = JSON.parse(storedSettings);
+        const { isPinEnabled, is2faEnabled } = JSON.parse(storedSettings);
         setIsPinEnabledState(isPinEnabled ?? false);
-        setIsBiometricEnabledState(isBiometricEnabled ?? false);
         setIs2faEnabledState(is2faEnabled ?? false);
       }
     } catch (error) {
@@ -46,24 +42,17 @@ export function SecuritySettingsProvider({ children }: { children: ReactNode }) 
 
   const setIsPinEnabled = useCallback((value: boolean) => {
     setIsPinEnabledState(value);
-    persistSettings({ isPinEnabled: value, isBiometricEnabled, is2faEnabled });
-  }, [isBiometricEnabled, is2faEnabled]);
-
-  const setIsBiometricEnabled = useCallback((value: boolean) => {
-    setIsBiometricEnabledState(value);
-    persistSettings({ isPinEnabled, isBiometricEnabled: value, is2faEnabled });
-  }, [isPinEnabled, is2faEnabled]);
+    persistSettings({ isPinEnabled: value, is2faEnabled });
+  }, [is2faEnabled]);
 
   const setIs2faEnabled = useCallback((value: boolean) => {
     setIs2faEnabledState(value);
-    persistSettings({ isPinEnabled, isBiometricEnabled, is2faEnabled: value });
-  }, [isPinEnabled, isBiometricEnabled]);
+    persistSettings({ isPinEnabled, is2faEnabled: value });
+  }, [isPinEnabled]);
 
   const value = {
     isPinEnabled,
     setIsPinEnabled,
-    isBiometricEnabled,
-    setIsBiometricEnabled,
     is2faEnabled,
     setIs2faEnabled,
     isHydrated,

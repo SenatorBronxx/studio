@@ -15,8 +15,6 @@ export default function SecurityPage() {
   const {
     isPinEnabled,
     setIsPinEnabled,
-    isBiometricEnabled,
-    setIsBiometricEnabled,
     is2faEnabled,
     setIs2faEnabled,
   } = useSecuritySettings();
@@ -69,25 +67,6 @@ export default function SecurityPage() {
                    )}
                 </div>
                 
-                <div className="flex items-center justify-between p-4">
-                  <Label htmlFor="biometric-login" className="flex items-center gap-4 cursor-pointer">
-                    <div className="p-2 bg-muted rounded-full">
-                        <Fingerprint className="h-5 w-5 text-muted-foreground" />
-                    </div>
-                    <div className="flex-grow">
-                        <p className="font-semibold">{t('biometricLogin')}</p>
-                        <p className="text-sm text-muted-foreground">
-                            {t('biometricLoginDescription')}
-                        </p>
-                    </div>
-                   </Label>
-                   <Switch
-                    id="biometric-login"
-                    checked={isBiometricEnabled}
-                    onCheckedChange={setIsBiometricEnabled}
-                  />
-                </div>
-
                 <div className="flex items-center justify-between p-4">
                    <Label htmlFor="2fa" className="flex items-center gap-4 cursor-pointer">
                     <div className="p-2 bg-muted rounded-full">
