@@ -12,6 +12,7 @@ import { UserPreferencesProvider } from "@/context/user-preferences-context";
 import { NotificationProvider } from "@/context/notification-context";
 import { MusicProvider } from "@/context/music-context";
 import { SavedSongsProvider } from "@/context/saved-songs-context";
+import { SavedPlacesProvider } from "@/context/saved-places-context";
 
 
 export function ClientProviders({ children }: { children: ReactNode }) {
@@ -24,11 +25,13 @@ export function ClientProviders({ children }: { children: ReactNode }) {
                             <TripProvider>
                                 <MusicProvider>
                                     <SavedSongsProvider>
-                                        <NotificationSettingsProvider>
-                                            <SecuritySettingsProvider>
-                                                {children}
-                                            </SecuritySettingsProvider>
-                                        </NotificationSettingsProvider>
+                                        <SavedPlacesProvider>
+                                            <NotificationSettingsProvider>
+                                                <SecuritySettingsProvider>
+                                                    {children}
+                                                </SecuritySettingsProvider>
+                                            </NotificationSettingsProvider>
+                                        </SavedPlacesProvider>
                                     </SavedSongsProvider>
                                 </MusicProvider>
                             </TripProvider>

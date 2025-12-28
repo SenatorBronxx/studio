@@ -23,20 +23,31 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useLanguage } from '@/context/language-context';
-import { useState } from 'react';
-
-const initialSavedPlaces = [
-    { id: 1, name: 'Home', address: '123 Adenta Street, Accra', icon: Home },
-    { id: 2, name: 'Work', address: '456 Circle Avenue, Accra', icon: Briefcase },
-];
+import { useSavedPlaces } from '@/context/saved-places-context';
+import Link from 'next/link';
 
 export default function SavedPlacesPage() {
   const router = useRouter();
   const { t } = useLanguage();
-  const [places, setPlaces] = useState(initialSavedPlaces);
+  const { places, removePlace, isHydrated } = useSavedPlaces();
 
-  const handleRemovePlace = (placeId: number) => {
-      setPlaces(prev => prev.filter(p => p.id !== placeId));
+  const getIcon = (iconName: 'Home' | 'Briefcase' | string) => {
+    switch (iconName) {
+        case 'Home':
+            return Home;
+        case 'Briefcase':
+            return Briefcase;
+        default:
+            return MapPin;
+    }
+  }
+
+  if (!isHydrated) {
+    return (
+        <div className="flex h-screen w-full items-center justify-center bg-background">
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        </div>
+    );
   }
 
   return (
@@ -64,7 +75,7 @@ export default function SavedPlacesPage() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                     {places.map((place) => {
-                        const Icon = place.icon;
+                        const Icon = getIcon(place.icon);
                         return (
                         <div key={place.id} className="flex items-center gap-4 p-3 border rounded-lg">
                             <div className="p-2 bg-muted rounded-full">
@@ -81,9 +92,11 @@ export default function SavedPlacesPage() {
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                    <DropdownMenuItem>
-                                        <Edit className="mr-2 h-4 w-4" />
-                                        <span>{t('edit')}</span>
+                                    <DropdownMenuItem asChild>
+                                        <Link href={`/settings/saved-places/edit?id=${place.id}`}>
+                                            <Edit className="mr-2 h-4 w-4" />
+                                            <span>{t('edit')}</span>
+                                        </Link>
                                     </DropdownMenuItem>
                                     <AlertDialog>
                                         <AlertDialogTrigger asChild>
@@ -102,7 +115,7 @@ export default function SavedPlacesPage() {
                                             <AlertDialogFooter>
                                                 <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
                                                 <AlertDialogAction
-                                                    onClick={() => handleRemovePlace(place.id)}
+                                                    onClick={() => removePlace(place.id)}
                                                     className="bg-destructive hover:bg-destructive/90"
                                                 >
                                                     {t('remove')}
@@ -115,10 +128,12 @@ export default function SavedPlacesPage() {
                         </div>
                         )
                     })}
-                    <Button variant="outline" className="w-full">
-                        <Plus className="mr-2 h-4 w-4" />
-                        {t('addPlace')}
-                    </Button>
+                    <Link href="/settings/saved-places/edit" passHref>
+                        <Button variant="outline" className="w-full">
+                            <Plus className="mr-2 h-4 w-4" />
+                            {t('addPlace')}
+                        </Button>
+                    </Link>
                 </CardContent>
             </Card>
         </div>
