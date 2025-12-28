@@ -83,7 +83,7 @@ export default function PaymentMethodsPage() {
 
           {/* Cash Payment */}
           <Card className={cn("relative overflow-hidden")}>
-             <div className="absolute inset-0 bg-background/20 backdrop-blur-sm z-10 flex items-center justify-center pointer-events-none">
+             <div className="absolute inset-0 bg-background/20 backdrop-blur-sm z-10 flex items-center justify-center">
                 <Badge variant="destructive">Unavailable</Badge>
              </div>
              <div className="opacity-50 pointer-events-none">
@@ -106,55 +106,6 @@ export default function PaymentMethodsPage() {
                     </RadioGroup>
                 </CardContent>
              </div>
-          </Card>
-
-           {/* Mobile Money */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Smartphone className="h-5 w-5" />
-                {t('mobileMoney')}
-              </CardTitle>
-              <CardDescription>{t('mobileMoneyDescription')}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-               {mobileMoneyAccounts.map((account) => (
-                    <div key={account.id} className="flex items-center gap-4 p-3 border rounded-lg">
-                        <Image src="https://momodeveloper.mtn.com/content/momo_mtnb.png" alt="MTN Mobile Money" width={80} height={40} className="object-contain" />
-                        <div className="flex-grow">
-                            <p className="font-semibold capitalize">{account.provider}</p>
-                            <p className="text-sm text-muted-foreground font-mono">{account.number}</p>
-                        </div>
-                         <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <Button variant="ghost" size="icon">
-                                    <Trash2 className="h-5 w-5 text-destructive" />
-                                </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                    <AlertDialogTitle>{t('removeAccountTitle')}</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                        {t('removeMomoAccountDescription')}
-                                    </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                    <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-                                    <AlertDialogAction className="bg-destructive hover:bg-destructive/90">
-                                        {t('remove')}
-                                    </AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
-                    </div>
-               ))}
-               <Link href="/top-up" passHref>
-                <Button variant="outline" className="w-full">
-                    <Plus className="mr-2 h-4 w-4" />
-                    {t('addMobileMoney')}
-                </Button>
-               </Link>
-            </CardContent>
           </Card>
         </div>
       </main>
