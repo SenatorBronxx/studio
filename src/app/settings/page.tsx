@@ -20,6 +20,8 @@ import { ThemeSwitcher } from '@/components/theme-switcher';
 import { Palette } from 'lucide-react';
 import { useLanguage } from '@/context/language-context';
 import { useState } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 const settingsOptions = [
   {
@@ -117,37 +119,45 @@ export default function SettingsPage() {
             <CardContent className="p-0">
               <div className="divide-y divide-border">
                 {settingsOptions.map((item) => {
+                  const content = (
+                      <div className="flex items-center gap-4 p-4">
+                        <div className="p-2 bg-muted rounded-full">
+                          <item.icon className="h-5 w-5 text-muted-foreground" />
+                        </div>
+                        <div className="flex-grow">
+                          <p className="font-semibold">{t(item.titleKey)}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {t(item.descriptionKey)}
+                          </p>
+                        </div>
+                        <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                      </div>
+                  );
+                  
+                  if (item.titleKey === 'linkedDevices') {
+                    return (
+                        <div key={item.titleKey} className="relative">
+                            <div className="absolute inset-0 bg-background/20 backdrop-blur-sm z-10 flex items-center justify-center">
+                                <Badge variant="destructive">Unavailable</Badge>
+                            </div>
+                            <div className="opacity-50 pointer-events-none">
+                                {content}
+                            </div>
+                        </div>
+                    )
+                  }
+
                   if (item.href) {
                     return (
-                      <Link href={item.href} key={item.titleKey}>
-                        <div className="flex items-center gap-4 p-4 cursor-pointer hover:bg-muted/50">
-                          <div className="p-2 bg-muted rounded-full">
-                            <item.icon className="h-5 w-5 text-muted-foreground" />
-                          </div>
-                          <div className="flex-grow">
-                            <p className="font-semibold">{t(item.titleKey)}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {t(item.descriptionKey)}
-                            </p>
-                          </div>
-                          <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                        </div>
+                      <Link href={item.href} key={item.titleKey} className="cursor-pointer hover:bg-muted/50 block">
+                        {content}
                       </Link>
                     );
                   }
                   
                   return (
-                    <div key={item.titleKey} className="flex items-center gap-4 p-4 cursor-pointer hover:bg-muted/50">
-                        <div className="p-2 bg-muted rounded-full">
-                            <item.icon className="h-5 w-5 text-muted-foreground" />
-                        </div>
-                        <div className="flex-grow">
-                            <p className="font-semibold">{t(item.titleKey)}</p>
-                            <p className="text-sm text-muted-foreground">
-                            {t(item.descriptionKey)}
-                            </p>
-                        </div>
-                        <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                    <div key={item.titleKey} className="cursor-pointer hover:bg-muted/50">
+                        {content}
                     </div>
                   );
                 })}
