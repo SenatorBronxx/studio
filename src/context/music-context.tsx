@@ -10,6 +10,7 @@ export type Track = {
   artist: string;
   albumArt: string;
   duration: number; // in ms
+  artistId?: string;
 };
 
 type PlaylistEntry = {

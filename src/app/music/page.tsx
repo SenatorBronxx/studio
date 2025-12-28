@@ -10,11 +10,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { Loader2, Music, Search, Heart, Mic, ListMusic, Plus, Play, Pause, X, SkipForward, SkipBack, Trash2 } from 'lucide-react';
+import { Loader2, Music, Search, Heart, Mic, ListMusic, Plus, Play, Pause, X, SkipForward, SkipBack, Trash2, UserSearch } from 'lucide-react';
 import { BottomNav } from '@/components/bottom-nav';
 import { useLanguage } from '@/context/language-context';
 import { useDebounce } from '@/hooks/use-debounce';
-import { searchTracks as searchSpotifyTracks } from '@/lib/spotify';
+import { searchTracks as searchSpotifyTracks, searchArtists } from '@/lib/spotify';
 import { useTrip } from '@/context/trip-context';
 import { useMusic, Track } from '@/context/music-context';
 import { NowPlayingIcon } from '@/components/icons/now-playing-icon';
@@ -47,14 +47,22 @@ const genres = [
     { name: "Gospel", color: "bg-green-500", imageId: "music-art-4" },
 ];
 
+const popularArtists = [
+    { name: "Sarkodie", imageId: "artist-sarkodie" },
+    { name: "Stonebwoy", imageId: "artist-stonebwoy" },
+    { name: "Shatta Wale", imageId: "artist-shatta-wale" },
+    { name: "E.L.", imageId: "artist-el" },
+];
+
 export default function MusicPage() {
     const router = useRouter();
     const { t } = useLanguage();
     const [searchTerm, setSearchTerm] = useState('');
-    const [searchResults, setSearchResults] = useState<Track[]>([]);
+    const [searchResults, setSearchResults] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [recommendations, setRecommendations] = useState<Track[]>([]);
     const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
+    const [searchType, setSearchType] = useState<'track' | 'artist'>('track');
 
     const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
@@ -78,6 +86,7 @@ export default function MusicPage() {
                         artist: item.artists[0].name,
                         albumArt: item.album.images[0]?.url,
                         duration: item.duration_ms,
+                        artistId: item.artists[0].id,
                     }));
 
                     setRecommendations(recommendedTracks);
@@ -100,13 +109,19 @@ export default function MusicPage() {
         const search = async () => {
             if (debouncedSearchTerm) {
                 setIsLoading(true);
-                const results = await searchSpotifyTracks(debouncedSearchTerm, 20);
+                const results = searchType === 'track' 
+                    ? await searchSpotifyTracks(debouncedSearchTerm, 20)
+                    : await searchArtists(debouncedSearchTerm, 20);
+
                 const formattedResults = results.map(item => ({
                     id: item.id,
                     title: item.name,
-                    artist: item.artists[0].name,
-                    albumArt: item.album.images[0]?.url,
-                    duration: item.duration_ms
+                    artist: item.artists?.[0]?.name,
+                    albumArt: item.album?.images[0]?.url || item.images?.[0]?.url,
+                    duration: item.duration_ms,
+                    type: item.type,
+                    followers: item.followers?.total,
+                    artistId: item.artists?.[0].id,
                 }));
                 setSearchResults(formattedResults);
                 setIsLoading(false);
@@ -115,7 +130,7 @@ export default function MusicPage() {
             }
         };
         search();
-    }, [debouncedSearchTerm]);
+    }, [debouncedSearchTerm, searchType]);
 
     const handleAddSong = (song: Track) => {
         if (!activeTrip) {
@@ -143,8 +158,6 @@ export default function MusicPage() {
     };
 
     const handleRemoveSong = (songId: string) => {
-        // In a real app, you'd check if the current user added the song.
-        // For this demo, we allow removing any song.
         const song = playlist.find(s => s.id === songId);
         if(song) {
             removeSong(songId, "user-id");
@@ -169,7 +182,7 @@ export default function MusicPage() {
         return `${minutes}:${parseInt(seconds) < 10 ? '0' : ''}${seconds}`;
     };
 
-    const renderTrackItem = (track: Track) => (
+    const renderTrackItem = (track: any) => (
         <div key={track.id} className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50">
             <Avatar className='h-12 w-12 rounded-md flex-shrink-0'>
                 {track.albumArt && <AvatarImage src={track.albumArt} alt={track.title} />}
@@ -177,9 +190,13 @@ export default function MusicPage() {
             </Avatar>
             <div className='flex-grow overflow-hidden'>
                 <p className='font-semibold truncate'>{track.title}</p>
-                <p className='text-sm text-muted-foreground truncate'>{track.artist}</p>
+                {track.artist && 
+                    <Link href={`/music/details?artistId=${track.artistId}`} className='text-sm text-muted-foreground truncate hover:underline'>
+                        {track.artist}
+                    </Link>
+                }
             </div>
-            <p className='text-sm text-muted-foreground font-mono hidden sm:block'>{formatDuration(track.duration)}</p>
+            {track.duration && <p className='text-sm text-muted-foreground font-mono hidden sm:block'>{formatDuration(track.duration)}</p>}
             <div className='flex items-center'>
                  <Button size="icon" variant="ghost" onClick={() => handleSaveToggle(track)}>
                     <Heart className={cn('h-5 w-5', isSongSaved(track.id) ? 'fill-red-500 text-red-500' : 'text-muted-foreground')} />
@@ -190,6 +207,22 @@ export default function MusicPage() {
             </div>
         </div>
     );
+    
+    const renderArtistItem = (artist: any) => (
+         <Link key={artist.id} href={`/music/details?artistId=${artist.id}`} className="block">
+            <div className="flex items-center gap-4 p-2 rounded-lg hover:bg-muted/50">
+                <Avatar className='h-12 w-12 rounded-full'>
+                    {artist.albumArt && <AvatarImage src={artist.albumArt} alt={artist.title} />}
+                    <AvatarFallback className='rounded-full'><Mic /></AvatarFallback>
+                </Avatar>
+                <div className='flex-grow overflow-hidden'>
+                    <p className='font-semibold truncate'>{artist.title}</p>
+                    {artist.followers && <p className='text-sm text-muted-foreground'>{artist.followers.toLocaleString()} followers</p>}
+                </div>
+            </div>
+        </Link>
+    );
+
     
     return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -328,18 +361,37 @@ export default function MusicPage() {
             </div>
 
             <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground">
+                    {searchType === 'track' ? <Music /> : <Mic />}
+                </div>
                 <Input
-                    placeholder={t('searchSongsPlaceholder')}
+                    placeholder={searchType === 'track' ? t('searchSongsPlaceholder') : "Search for artists"}
                     className="pl-10"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
+                 <div className='absolute right-1 top-1/2 -translate-y-1/2 flex items-center bg-background'>
+                    <Button 
+                        size="sm" 
+                        variant={searchType === 'track' ? 'secondary' : 'ghost'} 
+                        className="h-8"
+                        onClick={() => setSearchType('track')}
+                    >
+                        Tracks
+                    </Button>
+                    <Button 
+                        size="sm" 
+                        variant={searchType === 'artist' ? 'secondary' : 'ghost'}
+                        className="h-8"
+                        onClick={() => setSearchType('artist')}
+                    >
+                        Artists
+                    </Button>
+                </div>
             </div>
             
-            {/* Search results or Browsing UI */}
             {searchTerm ? (
-                 <div className="space-y-4">
+                 <div className="space-y-4 mt-4">
                     <h2 className="text-xl font-semibold">{t('searchResultsFor', { query: searchTerm })}</h2>
                      {isLoading ? (
                         <div className="flex justify-center items-center py-8">
@@ -347,7 +399,7 @@ export default function MusicPage() {
                         </div>
                     ) : searchResults.length > 0 ? (
                         <div className="space-y-2">
-                            {searchResults.map(renderTrackItem)}
+                            {searchResults.map(item => item.type === 'artist' ? renderArtistItem(item) : renderTrackItem(item))}
                         </div>
                     ) : (
                         <p className="text-muted-foreground text-center py-4">{t('noTracksFound')}</p>
@@ -372,7 +424,9 @@ export default function MusicPage() {
                     )}
 
                     <div>
-                        <h2 className="text-xl font-semibold mb-4">{t('genres')}</h2>
+                        <div className="flex items-center justify-between mb-4">
+                            <h2 className="text-xl font-semibold">{t('genres')}</h2>
+                        </div>
                         <div className="grid grid-cols-2 gap-4">
                             {genres.map(genre => {
                                 const image = PlaceHolderImages.find(p => p.id === genre.imageId);
@@ -384,6 +438,24 @@ export default function MusicPage() {
                                         <h3 className="font-bold">{genre.name}</h3>
                                     </CardContent>
                                 </Card>
+                            )})}
+                        </div>
+                    </div>
+                     <div>
+                        <h2 className="text-xl font-semibold mb-4">Popular Artists</h2>
+                        <div className="grid grid-cols-4 gap-4">
+                            {popularArtists.map(artist => {
+                                const image = PlaceHolderImages.find(p => p.id === artist.imageId);
+                                return (
+                                <Link key={artist.name} href={`/music/details?artistName=${artist.name}`}>
+                                    <div className="flex flex-col items-center gap-2 cursor-pointer">
+                                        <Avatar className="h-16 w-16">
+                                            {image && <AvatarImage src={image.imageUrl} alt={artist.name} />}
+                                            <AvatarFallback><Mic /></AvatarFallback>
+                                        </Avatar>
+                                        <p className="text-xs font-semibold text-center truncate w-full">{artist.name}</p>
+                                    </div>
+                                </Link>
                             )})}
                         </div>
                     </div>
@@ -422,5 +494,3 @@ export default function MusicPage() {
     </div>
   );
 }
-
-    

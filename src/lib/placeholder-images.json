@@ -85,33 +85,27 @@
       "imageHint": "gospel concert"
     },
     {
-      "id": "music-art-5",
-      "description": "Vibrant synthwave style artwork.",
-      "imageUrl": "https://images.unsplash.com/photo-1658232190602-be6cd5b976f1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHx2aWJyYW50JTIwc3ludGh3YXZlfGVufDB8fHx8MTc2MjczNDY5Nnww&ixlib.rb-4.1.0&q=80&w=1080",
-      "imageHint": "vibrant synthwave"
-    },
-    {
       "id": "artist-sarkodie",
       "description": "Image of the artist Sarkodie.",
-      "imageUrl": "https://images.unsplash.com/photo-1609193167194-9b5a353d7120?q=80&w=2535&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imageUrl": "https://i.scdn.co/image/ab6761610000e5eb8b809ac2ea8b54869eb9b977",
       "imageHint": "male artist"
     },
     {
       "id": "artist-stonebwoy",
       "description": "Image of the artist Stonebwoy.",
-      "imageUrl": "https://images.unsplash.com/photo-1619841819074-f8b1a37c0cad?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imageUrl": "https://i.scdn.co/image/ab6761610000e5ebf8541a4f3743c79c88a5563c",
       "imageHint": "male artist"
     },
     {
       "id": "artist-shatta-wale",
       "description": "Image of the artist Shatta Wale.",
-      "imageUrl": "https://images.unsplash.com/photo-1520330999036-628d08a5439a?q=80&w=2592&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imageUrl": "https://i.scdn.co/image/ab6761610000e5eb6c433367b6604a3e2646c243",
       "imageHint": "male artist"
     },
     {
       "id": "artist-el",
       "description": "Image of the artist E.L.",
-      "imageUrl": "https://images.unsplash.com/photo-1594241614769-6d8f8d95d13a?q=80&w=2574&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imageUrl": "https://i.scdn.co/image/ab6761610000e5ebe6b8026d246c4349da8b6151",
       "imageHint": "male artist"
     }
   ]

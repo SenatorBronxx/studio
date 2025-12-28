@@ -4,7 +4,7 @@
 import { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { getArtist, getArtistAlbums, getAlbumTracks } from '@/lib/spotify';
+import { getArtist, getArtistAlbums, getAlbumTracks, searchArtists } from '@/lib/spotify';
 import { Loader2, Music, ArrowLeft, Plus } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -19,7 +19,8 @@ import { useTrip } from '@/context/trip-context';
 function ArtistDetailsPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const artistId = searchParams.get('artistId');
+    const artistIdFromParam = searchParams.get('artistId');
+    const artistNameFromParam = searchParams.get('artistName');
 
     const [artist, setArtist] = useState<any>(null);
     const [albums, setAlbums] = useState<any[]>([]);
@@ -34,24 +35,46 @@ function ArtistDetailsPage() {
     const { t } = useLanguage();
 
     useEffect(() => {
-        if (artistId) {
-            const fetchData = async () => {
-                setIsLoading(true);
-                try {
-                    const [artistData, albumsData] = await Promise.all([
-                        getArtist(artistId),
-                        getArtistAlbums(artistId, 20)
-                    ]);
-                    setArtist(artistData);
-                    setAlbums(albumsData);
-                } catch (error) {
-                    console.error("Failed to fetch artist details", error);
+        const fetchData = async (artistId: string) => {
+            setIsLoading(true);
+            try {
+                const [artistData, albumsData] = await Promise.all([
+                    getArtist(artistId),
+                    getArtistAlbums(artistId, 20)
+                ]);
+                setArtist(artistData);
+                setAlbums(albumsData);
+            } catch (error) {
+                console.error("Failed to fetch artist details", error);
+                toast({ variant: 'destructive', title: "Error", description: "Could not load artist details." });
+            }
+            setIsLoading(false);
+        };
+        
+        const findAndFetchArtist = async (name: string) => {
+             setIsLoading(true);
+             try {
+                const artists = await searchArtists(name, 1);
+                if (artists.length > 0) {
+                    fetchData(artists[0].id);
+                } else {
+                    toast({ variant: 'destructive', title: "Not Found", description: `Artist '${name}' not found.` });
+                    setIsLoading(false);
                 }
-                setIsLoading(false);
-            };
-            fetchData();
+             } catch (error) {
+                 console.error("Failed to search artist", error);
+                 setIsLoading(false);
+             }
         }
-    }, [artistId]);
+
+        if (artistIdFromParam) {
+            fetchData(artistIdFromParam);
+        } else if (artistNameFromParam) {
+            findAndFetchArtist(artistNameFromParam);
+        } else {
+            setIsLoading(false);
+        }
+    }, [artistIdFromParam, artistNameFromParam, toast]);
 
     const handleAlbumClick = async (album: any) => {
         setSelectedAlbum(album);
