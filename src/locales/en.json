@@ -349,5 +349,8 @@
     "myPlacesDescription": "Quickly access your frequent destinations.",
     "edit": "Edit",
     "removePlaceTitle": "Remove Place?",
-    "removePlaceDescription": "Are you sure you want to remove {{placeName}} from your saved places?"
+    "removePlaceDescription": "Are you sure you want to remove {{placeName}} from your saved places?",
+    "cashPayment": "Cash",
+    "cashPaymentDescription": "Select cash as your preferred payment method.",
+    "payWithCash": "Pay with Cash"
 }

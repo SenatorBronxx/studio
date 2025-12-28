@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, CreditCard, Plus, Trash2, Wallet, Smartphone, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { VisaIcon } from '@/components/icons/visa';
 import { MastercardIcon } from '@/components/icons/mastercard';
 import {
   AlertDialog,
@@ -22,11 +21,9 @@ import Link from 'next/link';
 import { useLanguage } from '@/context/language-context';
 import Image from 'next/image';
 import { useWallet } from '@/context/wallet-context';
-
-const linkedCards = [
-    { id: 1, type: 'visa', last4: '4589', expiry: '08/26' },
-    { id: 2, type: 'mastercard', last4: '8923', expiry: '11/25' },
-];
+import { CashIcon } from '@/components/icons/cash-icon';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 
 const mobileMoneyAccounts = [
     { id: 1, provider: 'mtn', number: '+233 24 *** 4567' },
@@ -39,8 +36,6 @@ export default function PaymentMethodsPage() {
 
   const getCardIcon = (type: string) => {
     switch (type) {
-      case 'visa':
-        return <div className="w-12"><Image src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa Logo" width={48} height={16} /></div>;
       case 'mastercard':
         return <div className="w-12"><MastercardIcon /></div>;
       default:
@@ -93,54 +88,25 @@ export default function PaymentMethodsPage() {
             </CardContent>
           </Card>
 
-          {/* Linked Cards */}
+          {/* Cash Payment */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CreditCard className="h-5 w-5" />
-                {t('linkedCards')}
-              </CardTitle>
-              <CardDescription>{t('linkedCardsDescription')}</CardDescription>
+             <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                    <CashIcon className="h-6 w-6" />
+                    {t('cashPayment')}
+                </CardTitle>
+                <CardDescription>{t('cashPaymentDescription')}</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {linkedCards.map((card) => (
-                <div key={card.id} className="flex items-center gap-4 p-3 border rounded-lg">
-                  {getCardIcon(card.type)}
-                  <div className="flex-grow">
-                    <p className="font-semibold capitalize">{t('cardEndingIn', { type: card.type, last4: card.last4 })}</p>
-                    <p className="text-sm text-muted-foreground">{t('expires')} {card.expiry}</p>
-                  </div>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <Trash2 className="h-5 w-5 text-destructive" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>{t('removeCardTitle')}</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          {t('removeCardDescription', { last4: card.last4 })}
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-                        <AlertDialogAction
-                          className="bg-destructive hover:bg-destructive/90"
-                        >
-                          {t('remove')}
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
-              ))}
-               <Link href="/link-card" passHref>
-                <Button variant="outline" className="w-full">
-                    <Plus className="mr-2 h-4 w-4" />
-                    {t('addNewCard')}
-                </Button>
-               </Link>
+            <CardContent>
+                 <RadioGroup defaultValue="cash" className="space-y-4">
+                    <Label htmlFor="cash-payment" className="flex items-center justify-between p-4 border rounded-lg cursor-pointer has-[:checked]:bg-primary/10 has-[:checked]:border-primary">
+                        <div className="flex items-center gap-4">
+                            <CashIcon className="h-6 w-6 text-primary" />
+                            <span className="font-medium">{t('payWithCash')}</span>
+                        </div>
+                        <RadioGroupItem value="cash" id="cash-payment" />
+                    </Label>
+                </RadioGroup>
             </CardContent>
           </Card>
 
