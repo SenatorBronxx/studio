@@ -183,7 +183,7 @@ export default function MusicPage() {
     };
 
     const renderTrackItem = (track: any) => (
-        <div key={track.id} className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50">
+        <div key={track.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50">
             <Avatar className='h-12 w-12 rounded-md flex-shrink-0'>
                 {track.albumArt && <AvatarImage src={track.albumArt} alt={track.title} />}
                 <AvatarFallback className='rounded-md'><Music /></AvatarFallback>
@@ -196,8 +196,8 @@ export default function MusicPage() {
                     </Link>
                 }
             </div>
-            {track.duration && <p className='text-sm text-muted-foreground font-mono hidden sm:block'>{formatDuration(track.duration)}</p>}
-            <div className='flex items-center'>
+            {track.duration && <p className='text-sm text-muted-foreground font-mono hidden sm:block mx-2'>{formatDuration(track.duration)}</p>}
+            <div className='flex items-center flex-shrink-0'>
                  <Button size="icon" variant="ghost" onClick={() => handleSaveToggle(track)}>
                     <Heart className={cn('h-5 w-5', isSongSaved(track.id) ? 'fill-red-500 text-red-500' : 'text-muted-foreground')} />
                 </Button>
@@ -226,7 +226,7 @@ export default function MusicPage() {
     
     return (
     <div className="flex flex-col min-h-screen bg-background">
-      <main className="flex-grow p-4 pb-40">
+      <main className="flex-grow p-4 pb-48">
         <div className="max-w-md mx-auto space-y-6">
             
             <div className="flex items-center justify-between">
@@ -391,14 +391,14 @@ export default function MusicPage() {
             </div>
             
             {searchTerm ? (
-                 <div className="space-y-4 mt-4">
+                 <div className="space-y-4 mt-6">
                     <h2 className="text-xl font-semibold">{t('searchResultsFor', { query: searchTerm })}</h2>
                      {isLoading ? (
                         <div className="flex justify-center items-center py-8">
                             <Loader2 className="h-8 w-8 animate-spin text-primary" />
                         </div>
                     ) : searchResults.length > 0 ? (
-                        <div className="space-y-2">
+                        <div className="space-y-1">
                             {searchResults.map(item => item.type === 'artist' ? renderArtistItem(item) : renderTrackItem(item))}
                         </div>
                     ) : (
@@ -406,13 +406,13 @@ export default function MusicPage() {
                     )}
                  </div>
             ) : (
-                <div className="space-y-6">
+                <div className="space-y-8 mt-4">
                     
                     {recommendations.length > 0 && (
                         <div>
-                            <h2 className="text-xl font-semibold mb-2">Recommended For You</h2>
-                            <p className="text-sm text-muted-foreground mb-4">Based on your love for {preferences?.music}</p>
-                            <div className="space-y-2">
+                            <h2 className="text-xl font-semibold">Recommended For You</h2>
+                            <p className="text-sm text-muted-foreground mb-3">Based on your love for {preferences?.music}</p>
+                            <div className="space-y-1">
                                 {recommendations.slice(0, 5).map(renderTrackItem)}
                             </div>
                         </div>
@@ -424,9 +424,7 @@ export default function MusicPage() {
                     )}
 
                     <div>
-                        <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-xl font-semibold">{t('genres')}</h2>
-                        </div>
+                        <h2 className="text-xl font-semibold mb-4">{t('genres')}</h2>
                         <div className="grid grid-cols-2 gap-4">
                             {genres.map(genre => {
                                 const image = PlaceHolderImages.find(p => p.id === genre.imageId);
