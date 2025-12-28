@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect }from 'react';
@@ -125,7 +126,7 @@ function ArtistDetailView({ artistId, onBack, onAddSong, activeTrip, isSongSaved
 
                 <div className="p-4 space-y-6">
                     <h3 className="text-xl font-bold">Albums</h3>
-                    <div className="w-full overflow-x-auto pb-4 no-scrollbar">
+                    <div className="w-full overflow-x-auto pb-4">
                         <div className="flex space-x-4">
                             {albums.map(album => (
                                 <div key={album.id} className="w-36 flex-shrink-0 cursor-pointer" onClick={() => handleAlbumClick(album)}>
@@ -210,6 +211,25 @@ export default function MusicPage() {
     const { savedSongs, saveSong, unsaveSong, isSongSaved, isHydrated: isSavedSongsHydrated } = useSavedSongs();
     const { toast } = useToast();
     const { preferences } = useUserPreferences();
+
+
+    useEffect(() => {
+        if (!isSavedSongsHydrated) return;
+
+        const saveSongWithToast = (song: Track) => {
+            if (isSongSaved(song.id)) return;
+            saveSong(song);
+            toast({ title: "Song Saved", description: `${song.title} has been added to your saved songs.` });
+        };
+
+        const unsaveSongWithToast = (songId: string) => {
+            const song = savedSongs.find(s => s.id === songId);
+            if (!song) return;
+            unsaveSong(songId);
+            toast({ title: "Song Unsaved", description: `${song.title} has been removed.` });
+        };
+
+    }, [isSavedSongsHydrated, isSongSaved, saveSong, unsaveSong, savedSongs, toast]);
 
 
     useEffect(() => {
@@ -657,3 +677,4 @@ export default function MusicPage() {
     </div>
   );
 }
+
