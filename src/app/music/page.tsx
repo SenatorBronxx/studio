@@ -273,41 +273,43 @@ export default function MusicPage() {
                             <div className="py-4 h-full">
                                 {isSavedSongsHydrated && savedSongs.length > 0 ? (
                                     <ScrollArea className="h-[85vh]">
-                                        <div className="space-y-2 pr-4">
+                                        <div className="space-y-2">
                                             {savedSongs.map(track => (
                                                  <div key={track.id} className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50">
                                                     <Avatar className='h-12 w-12 rounded-md flex-shrink-0'>
                                                         {track.albumArt && <AvatarImage src={track.albumArt} alt={track.title} />}
                                                         <AvatarFallback className='rounded-md'><Music /></AvatarFallback>
                                                     </Avatar>
-                                                    <div className='flex-grow overflow-hidden'>
+                                                    <div className='flex-1 w-0 overflow-hidden'>
                                                         <p className='font-semibold truncate'>{track.title}</p>
                                                         <p className='text-sm text-muted-foreground truncate'>{track.artist}</p>
                                                     </div>
-                                                    <Button size="icon" variant="ghost" onClick={() => handleAddSong(track)} disabled={!activeTrip}>
-                                                        <Plus className='h-5 w-5' />
-                                                    </Button>
-                                                    <AlertDialog>
-                                                        <AlertDialogTrigger asChild>
-                                                            <Button size="icon" variant="ghost">
-                                                                <Trash2 className='h-5 w-5 text-destructive' />
-                                                            </Button>
-                                                        </AlertDialogTrigger>
-                                                        <AlertDialogContent>
-                                                            <AlertDialogHeader>
-                                                                <AlertDialogTitle>Unsave Song?</AlertDialogTitle>
-                                                                <AlertDialogDescription>
-                                                                    Are you sure you want to remove "{track.title}" from your saved songs?
-                                                                </AlertDialogDescription>
-                                                            </AlertDialogHeader>
-                                                            <AlertDialogFooter>
-                                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                                <AlertDialogAction onClick={() => unsaveSong(track.id)} className="bg-destructive hover:bg-destructive/90">
-                                                                    Unsave
-                                                                </AlertDialogAction>
-                                                            </AlertDialogFooter>
-                                                        </AlertDialogContent>
-                                                    </AlertDialog>
+                                                    <div className="flex items-center flex-shrink-0">
+                                                        <Button size="icon" variant="ghost" onClick={() => handleAddSong(track)} disabled={!activeTrip}>
+                                                            <Plus className='h-5 w-5' />
+                                                        </Button>
+                                                        <AlertDialog>
+                                                            <AlertDialogTrigger asChild>
+                                                                <Button size="icon" variant="ghost">
+                                                                    <Trash2 className='h-5 w-5 text-destructive' />
+                                                                </Button>
+                                                            </AlertDialogTrigger>
+                                                            <AlertDialogContent>
+                                                                <AlertDialogHeader>
+                                                                    <AlertDialogTitle>Unsave Song?</AlertDialogTitle>
+                                                                    <AlertDialogDescription>
+                                                                        Are you sure you want to remove "{track.title}" from your saved songs?
+                                                                    </AlertDialogDescription>
+                                                                </AlertDialogHeader>
+                                                                <AlertDialogFooter>
+                                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                                    <AlertDialogAction onClick={() => unsaveSong(track.id)} className="bg-destructive hover:bg-destructive/90">
+                                                                        Unsave
+                                                                    </AlertDialogAction>
+                                                                </AlertDialogFooter>
+                                                            </AlertDialogContent>
+                                                        </AlertDialog>
+                                                    </div>
                                                 </div>
                                             ))}
                                         </div>
