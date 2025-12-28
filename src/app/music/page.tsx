@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect }from 'react';
@@ -334,7 +333,7 @@ export default function MusicPage() {
     };
 
     const renderTrackItem = (track: any) => (
-        <div key={track.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50">
+        <div key={track.id} className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50">
             <Avatar className='h-12 w-12 rounded-md flex-shrink-0'>
                 {track.albumArt && <AvatarImage src={track.albumArt} alt={track.title} />}
                 <AvatarFallback className='rounded-md'><Music /></AvatarFallback>
@@ -658,5 +657,3 @@ export default function MusicPage() {
     </div>
   );
 }
-
-    
