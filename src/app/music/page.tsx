@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, Music, Mic, ListMusic, Plus, X, Heart, ArrowLeft, UserSearch } from 'lucide-react';
+import { Loader2, Music, Mic, ListMusic, Plus, X, Heart, ArrowLeft } from 'lucide-react';
 import { BottomNav } from '@/components/bottom-nav';
 import { useLanguage } from '@/context/language-context';
 import { useDebounce } from '@/hooks/use-debounce';
@@ -17,7 +17,6 @@ import { useMusic, Track } from '@/context/music-context';
 import { NowPlayingIcon } from '@/components/icons/now-playing-icon';
 import { useToast } from '@/hooks/use-toast';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import Link from 'next/link';
 
 import { getRecommendations } from '@/ai/flows/get-recommendations-flow';
 import { useUserPreferences } from '@/context/user-preferences-context';
@@ -126,8 +125,8 @@ function ArtistDetailView({ artistId, onBack, onAddSong, activeTrip, isSongSaved
 
                 <div className="p-4 space-y-6">
                     <h3 className="text-xl font-bold">Albums</h3>
-                    <ScrollArea className="w-full">
-                        <div className="flex space-x-4 pb-4">
+                    <div className="w-full overflow-x-auto pb-4 no-scrollbar">
+                        <div className="flex space-x-4">
                             {albums.map(album => (
                                 <div key={album.id} className="w-36 flex-shrink-0 cursor-pointer" onClick={() => handleAlbumClick(album)}>
                                     <Avatar className="h-36 w-36 rounded-md border">
@@ -139,7 +138,7 @@ function ArtistDetailView({ artistId, onBack, onAddSong, activeTrip, isSongSaved
                                 </div>
                             ))}
                         </div>
-                    </ScrollArea>
+                    </div>
 
                     {selectedAlbum && (
                         <div className="space-y-4">
@@ -191,6 +190,7 @@ function ArtistDetailView({ artistId, onBack, onAddSong, activeTrip, isSongSaved
         </div>
     );
 }
+
 
 export default function MusicPage() {
     const router = useRouter();
@@ -341,17 +341,17 @@ export default function MusicPage() {
             <div className='flex-grow overflow-hidden'>
                 <p className='font-semibold truncate'>{track.title}</p>
                 {track.artist && 
-                    <div onClick={() => handleArtistSelect(track)} className='text-sm text-muted-foreground truncate hover:underline cursor-pointer'>
+                    <div onClick={(e) => { e.stopPropagation(); handleArtistSelect(track); }} className='text-sm text-muted-foreground truncate hover:underline cursor-pointer'>
                         {track.artist}
                     </div>
                 }
             </div>
             {track.duration && <p className='text-sm text-muted-foreground font-mono hidden sm:block mx-2'>{formatDuration(track.duration)}</p>}
             <div className='flex items-center flex-shrink-0'>
-                 <Button size="icon" variant="ghost" onClick={() => handleSaveToggle(track)}>
+                 <Button size="icon" variant="ghost" onClick={(e) => { e.stopPropagation(); handleSaveToggle(track); }}>
                     <Heart className={cn('h-5 w-5', isSongSaved(track.id) ? 'fill-red-500 text-red-500' : 'text-muted-foreground')} />
                 </Button>
-                <Button size="icon" variant="ghost" onClick={() => handleAddSong(track)} disabled={!activeTrip}>
+                <Button size="icon" variant="ghost" onClick={(e) => { e.stopPropagation(); handleAddSong(track); }} disabled={!activeTrip}>
                     <Plus className='h-5 w-5' />
                 </Button>
             </div>
