@@ -71,20 +71,18 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     };
 
     const addTransaction = useCallback((transaction: Omit<Transaction, 'id' | 'timestamp'>) => {
-        setBalance(prevBalance => {
-            const newTransaction: Transaction = {
-                ...transaction,
-                id: uuidv4(),
-                timestamp: new Date().toISOString(),
-            };
+        const newTransaction: Transaction = {
+            ...transaction,
+            id: uuidv4(),
+            timestamp: new Date().toISOString(),
+        };
+
+        setTransactions(prevTransactions => {
+            const newBalance = balance + newTransaction.amount;
+            const newTransactions = [newTransaction, ...prevTransactions];
             
-            const newBalance = prevBalance + newTransaction.amount;
-            
-            setTransactions(prevTransactions => {
-                const newTransactions = [newTransaction, ...prevTransactions];
-                updateLocalStorage(newBalance, newTransactions);
-                return newTransactions;
-            });
+            updateLocalStorage(newBalance, newTransactions);
+            setBalance(newBalance);
 
             if (newBalance < 20 && newBalance > 0) {
                 toast({
@@ -93,9 +91,11 @@ export function WalletProvider({ children }: { children: ReactNode }) {
                     description: 'Your wallet balance is getting low. Please top-up.',
                 });
             }
-            return newBalance;
+
+            return newTransactions;
         });
-    }, [toast]);
+    }, [balance, toast]);
+
 
     const clearTransactions = useCallback(() => {
         setTransactions([]);
