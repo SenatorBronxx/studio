@@ -2,7 +2,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, CreditCard, Plus, Trash2, Wallet, Smartphone } from 'lucide-react';
+import { ArrowLeft, CreditCard, Plus, Trash2, Wallet, Smartphone, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { VisaIcon } from '@/components/icons/visa';
@@ -21,6 +21,7 @@ import {
 import Link from 'next/link';
 import { useLanguage } from '@/context/language-context';
 import Image from 'next/image';
+import { useWallet } from '@/context/wallet-context';
 
 const linkedCards = [
     { id: 1, type: 'visa', last4: '4589', expiry: '08/26' },
@@ -34,7 +35,7 @@ const mobileMoneyAccounts = [
 export default function PaymentMethodsPage() {
   const router = useRouter();
   const { t } = useLanguage();
-  const balance = 0;
+  const { balance, isHydrated } = useWallet();
 
   const getCardIcon = (type: string) => {
     switch (type) {
@@ -79,7 +80,11 @@ export default function PaymentMethodsPage() {
               <div className="bg-muted p-4 rounded-lg flex justify-between items-center">
                 <div>
                   <p className="text-sm text-muted-foreground">{t('currentBalance')}</p>
-                  <p className="text-2xl font-bold">GH₵ {balance.toFixed(2)}</p>
+                  {isHydrated ? (
+                    <p className="text-2xl font-bold">GH₵ {balance.toFixed(2)}</p>
+                  ) : (
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                  )}
                 </div>
                 <Link href="/top-up" passHref>
                     <Button>{t('topUp')}</Button>
