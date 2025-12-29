@@ -16,6 +16,7 @@ import { useEffect, useState } from 'react';
 import { useLanguage } from '@/context/language-context';
 import { useSavedPlaces } from '@/context/saved-places-context';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 
 const placeSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
