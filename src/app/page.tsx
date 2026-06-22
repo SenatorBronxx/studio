@@ -55,8 +55,8 @@ export default function LoginPage() {
       <div className="w-full max-w-md space-y-6 z-10">
         <div className="text-center">
             <Image
-                src="https://i.postimg.cc/htqrt1Dn/Screenshot-2025-11-06-192038-removebg-preview-(1).png"
-                alt="Eritas Transport Company Logo"
+                src="https://i.postimg.cc/vDKsVDCs/image-removebg-preview-(1).png"
+                alt="e-mobility Logo"
                 width={150}
                 height={75}
                 priority
